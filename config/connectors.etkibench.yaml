@@ -1,0 +1,19 @@
+# EtkiBench corpus anchor: the bundled English demo project (Meridian CRM).
+# Every EtkiBench case is labeled against THIS contract + codebase + work-item
+# history, so results are reproducible on any machine:
+#   uv run python -m eval.runner --dataset eval/datasets/etkibench/etkibench_v0.json \
+#       --connectors config/connectors.etkibench.yaml
+connectors:
+  documents:
+    adapter: filesystem
+    options:
+      root: samples/demo_project_en
+      globs: ["*.md"]
+  code_repo:
+    adapter: ast
+    options:
+      src_root: samples/demo_project_en/src
+  work_items:
+    adapter: file
+    options:
+      path: samples/demo_project_en/work_items.json

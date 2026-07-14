@@ -1,0 +1,35 @@
+name: Bug report
+description: Something doesn't work as documented
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, what happened instead?
+      placeholder: |
+        1. Started the demo with `docker compose -f docker-compose.demo.yml up`
+        2. Submitted the request "..."
+        3. Expected an OUT_OF_SCOPE decision, got ...
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, Python version, how you run Etki (uv / Docker / compose), LLM provider if any.
+      placeholder: macOS 15, Python 3.12, docker compose demo profile, no LLM
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs or output
+      render: shell
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I searched existing issues for this problem
+          required: true

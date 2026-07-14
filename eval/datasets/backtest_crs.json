@@ -1,0 +1,14 @@
+[
+  {"id": "BT-01", "request_text": "rapora tarih filtresi eklensin", "expected_decision": "IN_SCOPE", "actual_effort_hours": 6},
+  {"id": "BT-02", "request_text": "login ekranına SSO entegrasyonu", "expected_decision": "OUT_OF_SCOPE", "actual_effort_hours": 21},
+  {"id": "BT-03", "request_text": "mobil uygulama geliştirilsin", "expected_decision": "OUT_OF_SCOPE", "actual_effort_hours": 2.5},
+  {"id": "BT-04", "request_text": "kullanıcı parola sıfırlama eklensin", "expected_decision": "IN_SCOPE", "actual_effort_hours": 2.5},
+  {"id": "BT-05", "request_text": "raporu excel olarak dışa aktar", "expected_decision": "IN_SCOPE", "actual_effort_hours": 6},
+  {"id": "BT-06", "request_text": "ayda 8 farklı rapor üretilsin", "expected_decision": "CR_CANDIDATE", "actual_effort_hours": 6},
+  {"id": "BT-07", "request_text": "üretimdeki rapor hatası acilen düzeltilsin", "expected_decision": "MAINTENANCE", "actual_effort_hours": 6},
+  {"id": "BT-08", "request_text": "gösterge paneline yeni grafik eklensin", "expected_decision": "IN_SCOPE", "actual_effort_hours": 10},
+  {"id": "BT-09", "request_text": "push bildirim gönderimi eklensin", "expected_decision": "OUT_OF_SCOPE", "actual_effort_hours": 2.5},
+  {"id": "BT-10", "request_text": "3 farklı dış sisteme entegrasyon yapılsın", "expected_decision": "CR_CANDIDATE", "actual_effort_hours": 21},
+  {"id": "BT-11", "request_text": "oturum süresi uzatılsın", "expected_decision": "GRAY_AREA", "actual_effort_hours": 18},
+  {"id": "BT-12", "request_text": "kullanıcı arayüzü tamamen yeniden tasarlansın", "expected_decision": "CR_CANDIDATE", "actual_effort_hours": 10}
+]

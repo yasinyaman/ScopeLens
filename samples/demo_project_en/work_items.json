@@ -1,0 +1,83 @@
+[
+  {
+    "id": "WI-101",
+    "title": "Added date filter to reports",
+    "description": "added a date-based filter to the reporting module",
+    "category": "reporting",
+    "status": "closed",
+    "effort_seconds": 21600,
+    "closed_at": "2026-03-10"
+  },
+  {
+    "id": "WI-102",
+    "title": "Report xlsx export",
+    "description": "Excel export option for the reporting module",
+    "category": "reporting",
+    "status": "closed",
+    "effort_seconds": 18000,
+    "closed_at": "2026-04-02"
+  },
+  {
+    "id": "WI-201",
+    "title": "SSO integration (different client)",
+    "description": "SAML-based single sign-on integration in the auth module",
+    "category": "auth",
+    "status": "closed",
+    "effort_seconds": 100800,
+    "closed_at": "2026-02-18"
+  },
+  {
+    "id": "WI-202",
+    "title": "OAuth2 identity provider connection",
+    "description": "OAuth2 integration with a third-party IdP",
+    "category": "auth",
+    "status": "closed",
+    "effort_seconds": 86400,
+    "closed_at": "2026-01-30"
+  },
+  {
+    "id": "WI-310",
+    "title": "Session timeout configuration",
+    "description": "configurable session TTL in the auth module",
+    "category": "auth",
+    "status": "closed",
+    "effort_seconds": 10800,
+    "closed_at": "2026-05-12"
+  },
+  {
+    "id": "WI-103",
+    "title": "Improved report generation performance",
+    "description": "query optimization in the reporting module",
+    "category": "reporting",
+    "status": "closed",
+    "effort_seconds": 32400,
+    "closed_at": "2026-05-28"
+  },
+  {
+    "id": "WI-401",
+    "title": "New chart added to the dashboard",
+    "description": "additional chart widget on the management dashboard",
+    "category": "dashboard",
+    "status": "closed",
+    "effort_seconds": 36000,
+    "closed_at": "2026-04-20"
+  },
+  {
+    "id": "WI-501",
+    "title": "External system integration (ERP)",
+    "description": "outbound integration with the client ERP system",
+    "category": "integration",
+    "status": "closed",
+    "effort_seconds": 50400,
+    "closed_at": "2026-03-25"
+  },
+  {
+    "id": "WI-601",
+    "title": "Fixed a production report bug",
+    "description": "bug fix for a report rendering error in production",
+    "category": "maintenance",
+    "status": "closed",
+    "effort_seconds": 14400,
+    "closed_at": "2026-06-05"
+  }
+]

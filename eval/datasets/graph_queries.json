@@ -1,0 +1,170 @@
+[
+  {
+    "id": "GQ-01",
+    "lang": "tr",
+    "query": "login ekranına SSO entegrasyonu",
+    "expected": ["scope:SCOPE-006", "module:auth", "workitem:WI-201"],
+    "note": "SSO açıkça hariç (SCOPE-006, auth'a eşli); WI-201 birebir emsal"
+  },
+  {
+    "id": "GQ-02",
+    "lang": "tr",
+    "query": "kullanıcı parola ile giriş yapamıyor",
+    "expected": ["scope:SCOPE-001", "module:auth"],
+    "note": "SCOPE-001 'kullanıcı adı/parola' oturum maddesi"
+  },
+  {
+    "id": "GQ-03",
+    "lang": "tr",
+    "query": "rapora tarih filtresi eklensin",
+    "expected": ["scope:SCOPE-002", "module:reporting", "workitem:WI-101"],
+    "note": "WI-101 birebir aynı iş"
+  },
+  {
+    "id": "GQ-04",
+    "lang": "tr",
+    "query": "raporları excel formatında dışa aktarma",
+    "expected": ["scope:SCOPE-003", "module:reporting", "workitem:WI-102"],
+    "note": "SCOPE-003 PDF/Excel dışa aktarma maddesi"
+  },
+  {
+    "id": "GQ-05",
+    "lang": "tr",
+    "query": "PDF rapor çıktısı alınamıyor",
+    "expected": ["scope:SCOPE-003", "module:reporting"],
+    "note": "dışa aktarma maddesi + reporting modülü"
+  },
+  {
+    "id": "GQ-06",
+    "lang": "tr",
+    "query": "gösterge paneline yeni grafik eklensin",
+    "expected": ["scope:SCOPE-004", "workitem:WI-401"],
+    "note": "dashboard maddesi + birebir emsal iş kaydı"
+  },
+  {
+    "id": "GQ-07",
+    "lang": "tr",
+    "query": "mobil uygulama geliştirilsin",
+    "expected": ["scope:SCOPE-007"],
+    "note": "açıkça hariç tutulan madde"
+  },
+  {
+    "id": "GQ-08",
+    "lang": "tr",
+    "query": "push bildirim desteği eklensin",
+    "expected": ["scope:SCOPE-008"],
+    "note": "streaming/push açıkça hariç"
+  },
+  {
+    "id": "GQ-09",
+    "lang": "tr",
+    "query": "gerçek zamanlı veri akışı istiyoruz",
+    "expected": ["scope:SCOPE-008"],
+    "note": "streaming hariç maddesi"
+  },
+  {
+    "id": "GQ-10",
+    "lang": "tr",
+    "query": "ERP ile dış sistem entegrasyonu yapılsın",
+    "expected": ["scope:SCOPE-005", "workitem:WI-501"],
+    "note": "entegrasyon maddesi (limit 2) + ERP emsali"
+  },
+  {
+    "id": "GQ-11",
+    "lang": "tr",
+    "query": "üretimdeki rapor hatası düzeltilsin",
+    "expected": ["scope:SCOPE-009", "workitem:WI-601", "module:reporting"],
+    "note": "bakım maddesi + birebir emsal + rapor modülü"
+  },
+  {
+    "id": "GQ-12",
+    "lang": "tr",
+    "query": "oturum süresi uzatılsın",
+    "expected": ["scope:SCOPE-001", "workitem:WI-310", "module:auth"],
+    "note": "oturum yönetimi maddesi + WI-310 emsali"
+  },
+  {
+    "id": "GQ-13",
+    "lang": "tr",
+    "query": "OAuth2 ile üçüncü taraf kimlik sağlayıcı bağlansın",
+    "expected": ["scope:SCOPE-006", "workitem:WI-202", "module:auth"],
+    "note": "üçüncü taraf kimlik sağlayıcı açıkça hariç (SCOPE-006)"
+  },
+  {
+    "id": "GQ-14",
+    "lang": "tr",
+    "query": "aylık standart rapor sayısı artırılsın",
+    "expected": ["scope:SCOPE-002", "module:reporting"],
+    "note": "SCOPE-002 aylık 5 rapor limit maddesi"
+  },
+  {
+    "id": "GQ-15",
+    "lang": "tr",
+    "query": "rapor üretim performansı iyileştirilsin",
+    "expected": ["workitem:WI-103", "scope:SCOPE-002", "module:reporting"],
+    "note": "WI-103 birebir emsal"
+  },
+  {
+    "id": "GQ-16",
+    "lang": "tr",
+    "query": "login modülünün bağımlılıkları neler",
+    "expected": ["module:auth", "module:config", "module:db"],
+    "note": "graf sorusu: auth depends_on config+db (expand yolu)"
+  },
+  {
+    "id": "GQ-17",
+    "lang": "tr",
+    "query": "raporlama hangi modüllere dokunuyor",
+    "expected": ["module:reporting", "module:auth", "module:db"],
+    "note": "graf sorusu: reporting depends_on auth+db (expand yolu)"
+  },
+  {
+    "id": "GQ-18",
+    "lang": "tr",
+    "query": "kimlik doğrulama kodunu hangi modüller kullanıyor",
+    "expected": ["module:auth", "module:api_gateway", "module:reporting"],
+    "note": "graf sorusu: auth depended_by api_gateway+reporting (expand yolu)"
+  },
+  {
+    "id": "GQ-19",
+    "lang": "tr",
+    "query": "bakım kapsamında neler var",
+    "expected": ["scope:SCOPE-009"],
+    "note": "bakım maddesi"
+  },
+  {
+    "id": "GQ-20",
+    "lang": "tr",
+    "query": "grafik panelinde standart grafikler gösterilsin",
+    "expected": ["scope:SCOPE-004"],
+    "note": "dashboard standart grafik maddesi"
+  },
+  {
+    "id": "GQ-21",
+    "lang": "en",
+    "query": "add single sign-on to the login screen",
+    "expected": ["scope:SCOPE-006", "module:auth", "workitem:WI-201"],
+    "note": "EN parafraz — leksik TR eşleşmesi zayıf; embedder ölçüm noktası"
+  },
+  {
+    "id": "GQ-22",
+    "lang": "en",
+    "query": "export reports to excel",
+    "expected": ["scope:SCOPE-003", "module:reporting", "workitem:WI-102"],
+    "note": "EN parafraz — embedder ölçüm noktası"
+  },
+  {
+    "id": "GQ-23",
+    "lang": "en",
+    "query": "date filter for the monthly report",
+    "expected": ["scope:SCOPE-002", "module:reporting", "workitem:WI-101"],
+    "note": "EN parafraz — embedder ölçüm noktası"
+  },
+  {
+    "id": "GQ-24",
+    "lang": "en",
+    "query": "mobile application development",
+    "expected": ["scope:SCOPE-007"],
+    "note": "EN parafraz — embedder ölçüm noktası"
+  }
+]

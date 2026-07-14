@@ -1,0 +1,42 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      # The password comes from env (.env → POSTGRES_PASSWORD); never hard-coded in compose.
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD required (.env)}
+      POSTGRES_DB: etki
+    # The port is NOT published to the host — only the app (compose network) reaches the audit DB.
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  app:
+    build: .
+    environment:
+      ETKI_DB_URL: postgresql+psycopg://postgres:${POSTGRES_PASSWORD}@db:5432/etki
+      ETKI_CONNECTORS_PATH: config/connectors.docker.yaml
+      # Session secret and the first PMO user come from env (.env):
+      ETKI_SESSION_SECRET: ${ETKI_SESSION_SECRET:?SESSION_SECRET required (.env)}
+      ETKI_ADMIN_USER: ${ETKI_ADMIN_USER:-pmo}
+      ETKI_ADMIN_PASSWORD: ${ETKI_ADMIN_PASSWORD:?ADMIN_PASSWORD required (.env)}
+    ports:
+      - "8000:8000"
+    volumes:
+      - etki-index:/app/.etki  # index artifacts survive restarts
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/ready').status==200 else 1)\""]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 20s
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+  etki-index:

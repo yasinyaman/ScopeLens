@@ -1,0 +1,6 @@
+# Jenerik modül ipuçları — HER projede geçerli (talep metni → modül tahmini).
+# Alan-özel ipuçları <profil>.hints.yaml dosyalarına (ör. eticaret.hints.yaml),
+# proje-özel ekler projects.yaml içindeki `module_hints` alanına yazılır.
+module_hints:
+  reporting: [rapor, filtre, report, export, excel, pdf, dışa aktar]
+  auth: [sso, login, giriş, oturum, kimlik, token, session, oauth, idp, parola, kullanıcı, yetki, saml]

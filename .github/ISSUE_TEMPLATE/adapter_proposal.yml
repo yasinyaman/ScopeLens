@@ -1,0 +1,41 @@
+name: New adapter proposal
+description: Propose an integration with a work-item tracker, code host, document source or LLM endpoint
+labels: ["adapter", "enhancement"]
+body:
+  - type: input
+    id: vendor
+    attributes:
+      label: Vendor / system
+      placeholder: e.g. Azure DevOps, GitLab, Linear, Redmine, Confluence
+    validations:
+      required: true
+  - type: dropdown
+    id: port
+    attributes:
+      label: Which port does it implement?
+      options:
+        - WorkItemProvider (tickets + spent effort)
+        - CodeRepositoryProvider (repo access, churn, diff)
+        - DocumentSourceProvider (document listing + content)
+        - LLMClient (OpenAI-compatible / other LLM endpoint)
+    validations:
+      required: true
+  - type: textarea
+    id: capabilities
+    attributes:
+      label: Capabilities and API notes
+      description: |
+        Which capabilities can the vendor support (webhooks, real-time, effort tracking,
+        incremental diff)? Link the relevant API docs. Adapters must normalize vendor
+        quirks internally (e.g. map time-spent to `WorkItem.effort_seconds`) and degrade
+        gracefully when the server is unreachable.
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I read the "Writing an adapter" section in CONTRIBUTING.md
+          required: true
+        - label: I'd like to implement this myself

@@ -1,0 +1,86 @@
+[
+  {
+    "id": "KM-01",
+    "stratum": "in_scope_direct",
+    "request_text": "Show a bar chart of quarterly wins on the dashboard",
+    "expected_decision": "IN_SCOPE",
+    "rationale": "Standard chart components on the dashboard are included by Clause 4.3."
+  },
+  {
+    "id": "KM-02",
+    "stratum": "in_scope_direct",
+    "request_text": "Let admins force a password reset for a locked account",
+    "expected_decision": "IN_SCOPE",
+    "rationale": "Password reset functionality is included by Clause 3.1."
+  },
+  {
+    "id": "KM-03",
+    "stratum": "in_scope_paraphrase",
+    "request_text": "When a colleague leaves the company, kick their open connections out of the system",
+    "expected_decision": "IN_SCOPE",
+    "rationale": "Paraphrase of session management (terminating active sessions), included by Clause 3.1."
+  },
+  {
+    "id": "KM-04",
+    "stratum": "in_scope_paraphrase",
+    "request_text": "Turn the numbers into a spreadsheet our accountants can work with",
+    "expected_decision": "IN_SCOPE",
+    "rationale": "Paraphrase of exporting reports in xlsx format, included by Clause 4.2.2."
+  },
+  {
+    "id": "KM-05",
+    "stratum": "out_of_scope_direct",
+    "request_text": "Send a push notification to managers when a deal closes",
+    "expected_decision": "OUT_OF_SCOPE",
+    "rationale": "Push notifications are explicitly excluded by Clause 7.1."
+  },
+  {
+    "id": "KM-06",
+    "stratum": "out_of_scope_paraphrase",
+    "request_text": "Sign-in should go through our existing corporate directory instead of separate credentials",
+    "expected_decision": "OUT_OF_SCOPE",
+    "rationale": "Paraphrase of third-party identity provider / SSO integration, excluded by Clause 7.1."
+  },
+  {
+    "id": "KM-07",
+    "stratum": "out_of_scope_adversarial",
+    "request_text": "A dashboard tile that streams deal updates as they happen",
+    "expected_decision": "OUT_OF_SCOPE",
+    "rationale": "Wears dashboard vocabulary (Clause 4.3) but is real-time data streaming, excluded by Clause 7.1."
+  },
+  {
+    "id": "KM-08",
+    "stratum": "cr_new_capability",
+    "request_text": "Keep each contact's mobile number on their profile card",
+    "expected_decision": "CR_CANDIDATE",
+    "rationale": "No clause covers contact-profile data fields; a phone-number field is a new deliverable. Deliberately contains 'mobile' — the word alone must not trigger the mobile-app exclusion (anti-lexicon trap)."
+  },
+  {
+    "id": "KM-09",
+    "stratum": "cr_limit_quota",
+    "request_text": "Six standard reports every month for the new region",
+    "expected_decision": "CR_CANDIDATE",
+    "rationale": "Clause 4.2.1 includes up to 5 standard reports per month; six exceeds the contractual limit."
+  },
+  {
+    "id": "KM-10",
+    "stratum": "cr_effort_pool",
+    "request_text": "Connect the ERP to the CRM as an external system",
+    "expected_decision": "CR_CANDIDATE",
+    "rationale": "External system integration falls under Clause 5.1, whose 24-hour effort pool is consumed by the logged work items."
+  },
+  {
+    "id": "KM-11",
+    "stratum": "maintenance",
+    "request_text": "The Excel export has produced a corrupted file since Tuesday's deploy",
+    "expected_decision": "MAINTENANCE",
+    "rationale": "Defect report against delivered export functionality (Clause 4.2.2); bug-fix maintenance is in scope per Clause 8.1."
+  },
+  {
+    "id": "KM-12",
+    "stratum": "cross_lingual_tr",
+    "request_text": "Yönetim panosuna satış hunisi grafiği ekleyelim",
+    "expected_decision": "IN_SCOPE",
+    "rationale": "Turkish request against the English contract; chart components on the dashboard are included by Clause 4.3."
+  }
+]

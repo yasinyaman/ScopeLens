@@ -1,0 +1,35 @@
+{% extends "pmo_base.html" %}
+{% block title %}{{ t('nav.flow') }} — {{ project.name }}{% endblock %}
+{% block screen %}
+<main style="padding:26px 28px 40px;">
+  <div style="margin-bottom:16px;">
+    <h1 style="margin:0; font-size:25px; font-weight:800; letter-spacing:-.02em;">{{ t('sankey.page_title') }}</h1>
+    <p style="margin:6px 0 0; font-size:14px; color:#5C6B72;">{{ t('sankey.page_subtitle')|safe }}{% if data.truncated %} <span class="meta">{{ t('sankey.showing_last', a=data.nodes|selectattr('layer','equalto',0)|list|length, b=data.total) }}</span>{% endif %}</p>
+  </div>
+
+  <div style="display:flex; gap:16px; align-items:center; margin-bottom:12px; font-size:12.5px; color:#55666D; flex-wrap:wrap;">
+    <span style="display:flex; align-items:center; gap:6px;"><span style="width:11px; height:11px; border-radius:3px; background:#55666D;"></span> {{ t('sankey.kind_request') }}</span>
+    <span style="display:flex; align-items:center; gap:6px;"><span style="width:11px; height:11px; border-radius:3px; background:#2E9E5B;"></span> {{ t('sankey.clause_included') }}</span>
+    <span style="display:flex; align-items:center; gap:6px;"><span style="width:11px; height:11px; border-radius:3px; background:#C6413A;"></span> {{ t('sankey.clause_excluded') }}</span>
+    <span style="display:flex; align-items:center; gap:6px;"><span style="width:11px; height:11px; border-radius:3px; background:#3563B0;"></span> {{ t('sankey.kind_module') }}</span>
+  </div>
+
+  <div style="background:#fff; border:1px solid #E6E2D9; border-radius:13px; padding:14px; box-shadow:0 1px 2px rgba(16,40,28,.03);">
+    <div id="sankey" style="width:100%; overflow:hidden;"></div>
+  </div>
+
+  <!-- detail for the selected node (below the chart) -->
+  <div style="margin-top:14px;">
+    <div class="meta" style="font-size:12px; margin-bottom:6px;">{{ t('sankey.detail_hint') }}</div>
+    <div id="sankey-detail"><div class="meta" style="font-size:12.5px;">{{ t('sankey.no_node') }}</div></div>
+  </div>
+</main>
+
+<script>
+  (function () {
+    var DATA = {{ data|tojson }};
+    function go() { if (window.renderSankey) renderSankey('sankey', DATA, { detail: true, minHeight: 440 }); }
+    if (window.renderSankey) go(); else document.addEventListener('DOMContentLoaded', go);
+  })();
+</script>
+{% endblock %}

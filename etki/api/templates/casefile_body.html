@@ -1,0 +1,88 @@
+{% from "macros.html" import dep_compare_block, evidence_details, plain_summary %}
+<div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+  <div>
+    <h2 style="margin:0 0 4px; font-size:20px; font-weight:800;">{{ t('cf.case_file') }} {{ case.request_id }}</h2>
+    <p class="meta" style="margin:0;">{{ t('cf.project') }}: <b>{{ project.name if project else case.project_id }}</b> · {{ t('cf.status') }}:
+      <span class="badge d-{{ 'IN_SCOPE' if case.status.value in ('APPROVE','PENDING') else 'OUT_OF_SCOPE' }}" style="font-size:11px">{{ case.status.value|tr_status }}</span>
+      · "{{ case.raw_request }}"</p>
+  </div>
+  <a href="/ui/casefiles/{{ case.request_id }}/report.docx"><button class="btn ghost" type="button">{{ t('cf.download_report') }}</button></a>
+</div>
+
+{% for d in case.decisions %}
+<div class="card">
+  <span class="badge d-{{ d.decision.value }}">{{ d.decision.value|tr_decision }}</span>
+  <span class="meta">{{ t('ev.confidence') }} {{ '%.0f'|format(d.confidence * 100) }}% · PMO: {{ d.human_decision.value|tr_status }}</span>
+  {% if d.risk.escalation %}<span class="esc">{{ t('ev.escalation_24') }}</span>{% endif %}
+  <p><b>{{ case.sub_requests[loop.index0].item }}</b></p>
+  {{ plain_summary(d) }}
+  <p>{{ t('ps.effort_if_cr') if d.decision.value == 'OUT_OF_SCOPE' else t('ps.effort') }} <b>{{ d.effort_estimate.low }}–{{ d.effort_estimate.high }} {{ d.effort_estimate.unit|tr_unit }}</b>
+     · {{ t('ev.risk') }} <span class="risk-{{ d.risk.level.value }}">{{ d.risk.level.value|tr_risk }}</span>
+     · {{ t('cf.impacted_if_cr') if d.decision.value == 'OUT_OF_SCOPE' else t('cf.impacted') }}: {{ d.evidence.impacted_modules|join(', ') or '—' }}
+     · <span class="meta">{{ t('cards.index') }} {{ d.index_freshness }}</span></p>
+
+  {{ evidence_details(d) }}
+
+  {% set _dep = dep_compare[loop.index0] if dep_compare is defined and dep_compare and loop.index0 < dep_compare|length else none %}
+  {% if _dep %}{{ dep_compare_block(case, _dep, loop.index0, deps_online if deps_online is defined else false) }}{% endif %}
+
+  {% set _cid = d.evidence.cited_clauses[0].id if d.evidence.cited_clauses else (d.evidence.contract_clauses_cited[0] if d.evidence.contract_clauses_cited else none) %}
+  {% set _mem = clause_memory.get(_cid) if clause_memory is defined and clause_memory and _cid else none %}
+  {% if _mem %}
+  <div class="cf-memory" style="margin:10px 0 4px; padding:9px 13px; background:#FDF8EF; border:1px solid #F0E3C8; border-radius:10px; font-size:13px; display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+    <span style="font-weight:700; color:#7A5A10;">🗂 {{ t('cf.memory_title') }}{% if _mem.ref %} · {{ _mem.ref }}{% endif %}</span>
+    {% if _mem.count %}<span>{{ t('cf.memory_precedents', n=_mem.count) }}{% if _mem.last %} · {{ t('cf.memory_last', v=_mem.last) }}{% endif %}</span>{% endif %}
+    {% if _mem.disputed %}<span style="color:#A83228; font-weight:700;">⚠ {{ t('cf.memory_disputed') }}</span>{% endif %}
+  </div>
+  {% endif %}
+
+  {% if d.human_decision.value == 'PENDING' and (request.session.get('user') or {}).get('role') == 'pmo' %}
+  <p style="display:flex; gap:8px; flex-wrap:wrap;">
+    <button class="btn" hx-post="/ui/casefiles/{{ case.request_id }}/decisions/{{ loop.index0 }}/approve"
+            hx-confirm="{{ t('cf.approve_confirm') }}"
+            hx-target="#casefile" hx-swap="innerHTML">{{ t('cf.approve', decision=d.decision.value|tr_decision) }}</button>
+    <button class="btn ghost" hx-post="/ui/casefiles/{{ case.request_id }}/decisions/{{ loop.index0 }}/cr"
+            hx-confirm="{{ t('cf.to_cr_confirm') }}"
+            hx-target="#casefile" hx-swap="innerHTML">{{ t('cf.to_cr') }}</button>
+    <button class="btn ghost danger" hx-post="/ui/casefiles/{{ case.request_id }}/decisions/{{ loop.index0 }}/reject"
+            hx-confirm="{{ t('cf.reject_confirm') }}"
+            hx-target="#casefile" hx-swap="innerHTML">{{ t('cf.reject') }}</button>
+  </p>
+  {% endif %}
+</div>
+{% endfor %}
+
+{% include "case_flow.html" %}
+
+{% if pre_analysis_html or chat_turns_html %}
+<details class="acc">
+  <summary>{{ t('cf.pre_analysis') }}{% if chat_turns_html %} · {{ t('cf.pre_analysis_chat') }} ({{ t('cf.turns', n=chat_turns_html|length) }}){% endif %}</summary>
+  {% if pre_analysis_html %}
+  <div style="border-left:3px solid #3563B0; padding-left:14px; margin:10px 0;">
+    <div class="md">{{ pre_analysis_html|safe }}</div>
+  </div>
+  {% endif %}
+  {% for turn in chat_turns_html %}
+  <div style="margin:8px 0; padding:11px 14px; background:#FAF9F5; border:1px solid #EEEBE4; border-radius:11px;">
+    <div style="font-size:13px; font-weight:600; color:#33424A; display:flex; gap:6px;"><span style="color:#9A5F23;">›</span> {{ turn.question }}</div>
+    <div class="md" style="margin-top:6px;">{{ turn.answer_html|safe }}</div>
+  </div>
+  {% endfor %}
+</details>
+{% endif %}
+
+<details class="acc">
+  <summary>{{ t('cf.audit_summary', n=audit|length) }}</summary>
+  <dl class="kv">
+    {% for e in audit %}
+    <dt>#{{ e.seq }} · {{ e.action }}</dt>
+    <dd><span class="chip">{{ e.actor }}</span>
+        {% for key, val in e.detail.items() %}<span class="meta">{{ key }}={{ val }}</span> {% endfor %}</dd>
+    {% endfor %}
+  </dl>
+</details>
+
+<details class="acc info">
+  <summary>{{ t('cf.how_to_read') }}</summary>
+  <p class="meta">{{ t('cf.how_to_read_desc')|safe }}</p>
+</details>

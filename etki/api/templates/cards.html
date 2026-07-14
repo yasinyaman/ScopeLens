@@ -1,0 +1,18 @@
+{% from "macros.html" import dep_compare_block, evidence_details, plain_summary %}
+<p class="meta">{{ t('cards.request_label') }} #{{ case.request_id }} — {{ t('cards.sub_requests', n=case.sub_requests|length) }}
+  · <a href="/ui/casefiles/{{ case.request_id }}">{{ t('cards.open_case') }}</a></p>
+{% for d in case.decisions %}
+<div class="card">
+  <p><b>{{ case.sub_requests[loop.index0].item }}</b></p>
+  {{ plain_summary(d) }}
+  <span class="badge d-{{ d.decision.value }}">{{ d.decision.value|tr_decision }}</span>
+  <span class="meta">{{ t('ev.confidence') }} {{ '%.0f'|format(d.confidence * 100) }}%</span>
+  <p>{{ t('ps.effort_if_cr') if d.decision.value == 'OUT_OF_SCOPE' else t('ps.effort') }}: <b>{{ d.effort_estimate.low }}–{{ d.effort_estimate.high }} {{ d.effort_estimate.unit|tr_unit }}</b>
+     · {{ t('ev.risk') }}: <span class="risk-{{ d.risk.level.value }}">{{ d.risk.level.value|tr_risk }}</span>
+     · {{ t('cf.impacted_if_cr') if d.decision.value == 'OUT_OF_SCOPE' else t('cf.impacted') }}: {{ d.evidence.impacted_modules|join(', ') or '—' }}
+     · <span class="meta">{{ t('cards.index') }} {{ d.index_freshness }}</span></p>
+  {{ evidence_details(d) }}
+  {% set _dep = dep_compare[loop.index0] if dep_compare is defined and dep_compare and loop.index0 < dep_compare|length else none %}
+  {% if _dep %}{{ dep_compare_block(case, _dep, loop.index0, deps_online if deps_online is defined else false) }}{% endif %}
+</div>
+{% endfor %}

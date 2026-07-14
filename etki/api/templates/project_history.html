@@ -1,0 +1,37 @@
+{% extends "pmo_base.html" %}
+{% block title %}Geçmiş — {{ project.name }}{% endblock %}
+{% block screen %}
+<main style="padding:26px 28px 40px;">
+  <div style="margin-bottom:18px;">
+    <h1 style="margin:0; font-size:25px; font-weight:800; letter-spacing:-.02em;">{{ t('nav.history') }}</h1>
+    <p style="margin:6px 0 0; font-size:14px; color:#5C6B72;">{% if filtre == 'analiz' %}{{ t('analyses.subtitle', n=rows|length)|safe }}{% else %}{{ t('history.subtitle', n=rows|length) }}{% endif %}</p>
+  </div>
+
+  <div style="display:flex; gap:8px; margin-bottom:14px; align-items:center; flex-wrap:wrap;">
+    {% for f, label in [('', t('history.tab_all', n=counts.all)), ('bekleyen', t('history.tab_pending', n=counts.bekleyen)), ('analiz', t('history.tab_analyses', n=counts.analiz))] %}
+    <a href="?{% if f %}filtre={{ f }}{% endif %}{% if karar %}{% if f %}&amp;{% endif %}karar={{ karar }}{% endif %}" class="mono" style="font-size:12px; font-weight:600; padding:5px 13px; border-radius:20px; text-decoration:none; {% if filtre == f %}color:#fff; background:#0E7C7B; border:1px solid #0E7C7B;{% else %}color:#55666D; background:#fff; border:1px solid #DCD7CC;{% endif %}">{{ label }}</a>
+    {% endfor %}
+    {% if karar %}
+    <a href="?{% if filtre %}filtre={{ filtre }}{% endif %}" title="{{ t('history.clear_decision_filter') }}" class="badge d-{{ karar }}" style="text-decoration:none; font-size:11px;">{{ karar|tr_decision }} ✕</a>
+    {% endif %}
+  </div>
+
+  <div style="background:#fff; border:1px solid #E6E2D9; border-radius:13px; overflow:hidden; box-shadow:0 1px 2px rgba(16,40,28,.03);">
+    <div class="mono" style="display:grid; grid-template-columns:3fr 2fr 1.1fr 1fr 1.1fr 40px; gap:14px; padding:13px 22px; background:#FAF9F5; border-bottom:1px solid #ECE9E2; font-size:11.5px; font-weight:600; color:var(--pmo-muted); letter-spacing:.03em; text-transform:uppercase;">
+      <span>{{ t('list.col_request') }}</span><span>{{ t('list.col_decisions') }}</span><span>{{ t('list.col_status') }}</span><span>{{ t('list.col_pre_analysis') }}</span><span>{{ t('list.col_date') }}</span><span></span>
+    </div>
+    {% for r in rows %}
+    <a href="/ui/casefiles/{{ r.id }}" class="pmo-row" style="display:grid; grid-template-columns:3fr 2fr 1.1fr 1fr 1.1fr 40px; gap:14px; padding:14px 22px; {% if not loop.last %}border-bottom:1px solid #F2F0EA;{% endif %} align-items:center; cursor:pointer;">
+      <div style="min-width:0;"><div style="display:flex; align-items:center; gap:6px; min-width:0;"><span style="flex:1 1 auto; min-width:0; font-size:13.5px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ r.request }}</span>{% if r.is_analysis %}<span style="flex:0 0 auto; font-size:10px; font-weight:700; color:#1E7A43; background:#E6F4EC; padding:1px 7px; border-radius:10px;">{{ t('badge.analysis') }}</span>{% endif %}{% if r.escalated %}<span class="esc" style="flex:0 0 auto;">{{ t('badge.escalation') }}</span>{% endif %}</div><div class="mono" style="font-size:11px; color:var(--pmo-muted);">{{ r.id }}</div></div>
+      <div style="display:flex; gap:5px; flex-wrap:wrap;">{% for d in r.decisions %}<span class="badge d-{{ d }}" style="font-size:10.5px; padding:2px 8px;">{{ d|tr_decision }}</span>{% endfor %}</div>
+      <span style="font-size:11px; font-weight:600; color:{{ r.status_color }}; background:{{ r.status_bg }}; padding:3px 10px; border-radius:20px; justify-self:start;">{{ r.status_label }}</span>
+      <span>{% if r.has_pre_analysis %}<span style="font-size:11px; font-weight:600; color:#3563B0; background:#EAF1FB; padding:3px 9px; border-radius:20px;">{{ t('badge.ready') }}</span>{% else %}<span class="meta" style="font-size:11px;">—</span>{% endif %}</span>
+      <span class="mono" style="font-size:11px; color:var(--pmo-muted); white-space:nowrap;">{{ r.created_at }}</span>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#B4ADA0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6 l6 6 -6 6"/></svg>
+    </a>
+    {% else %}
+    <div style="padding:18px 22px; font-size:13px; color:var(--pmo-muted);">{% if filtre == 'analiz' %}{{ t('list.empty_analyses') }}{% elif filtre == 'bekleyen' %}{{ t('list.empty_approvals') }}{% else %}{{ t('list.empty_history') }}{% endif %} <a href="/projeler/{{ project.id }}/triyaj" style="color:#9A5F23; font-weight:600;">{{ t('list.go_triage') }}</a></div>
+    {% endfor %}
+  </div>
+</main>
+{% endblock %}

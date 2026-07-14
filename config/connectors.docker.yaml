@@ -1,0 +1,17 @@
+# In-container connector configuration.
+# The container ships no JVM → the dependency-free `ast` adapter replaces Joern for the
+# code graph. A live Joern index can be built on the host/CI and mounted as .etki/index.json.
+connectors:
+  documents:
+    adapter: filesystem
+    options:
+      root: samples/demo_project
+      globs: ["*.md"]
+  code_repo:
+    adapter: ast
+    options:
+      src_root: samples/demo_project/src
+  work_items:
+    adapter: file
+    options:
+      path: samples/demo_project/work_items.json

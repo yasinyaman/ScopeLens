@@ -1,0 +1,7 @@
+[
+  {"id": "SH-101", "title": "Sepete ürün ekleme akışı", "description": "cart modülü sepet yönetimi", "category": "cart", "status": "closed", "effort_seconds": 25200, "closed_at": "2026-03-12"},
+  {"id": "SH-102", "title": "Sipariş durumu takibi", "description": "cart sipariş durum güncelleme", "category": "cart", "status": "closed", "effort_seconds": 18000, "closed_at": "2026-04-01"},
+  {"id": "SH-201", "title": "Kredi kartı ödeme entegrasyonu", "description": "payment modülü kredi kartı sağlayıcı", "category": "payment", "status": "closed", "effort_seconds": 43200, "closed_at": "2026-02-20"},
+  {"id": "SH-202", "title": "Kripto ödeme denemesi (başka proje)", "description": "payment bitcoin entegrasyonu", "category": "payment", "status": "closed", "effort_seconds": 90000, "closed_at": "2026-01-15"},
+  {"id": "SH-301", "title": "Ürün arama ve filtreleme", "description": "catalog ürün listeleme arama", "category": "catalog", "status": "closed", "effort_seconds": 21600, "closed_at": "2026-05-08"}
+]

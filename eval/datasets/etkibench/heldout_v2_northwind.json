@@ -1,0 +1,86 @@
+[
+  {
+    "id": "N2-01",
+    "stratum": "in_scope_direct",
+    "request_text": "Customers can pay with their debit card",
+    "expected_decision": "IN_SCOPE",
+    "rationale": "Clause 2.2 includes accepting payments by credit card and debit card."
+  },
+  {
+    "id": "N2-02",
+    "stratum": "in_scope_paraphrase",
+    "request_text": "Let a shopper see how far along their purchase is",
+    "expected_decision": "IN_SCOPE",
+    "rationale": "Paraphrase of order status tracking, included by Clause 2.1."
+  },
+  {
+    "id": "N2-03",
+    "stratum": "in_scope_paraphrase",
+    "request_text": "Group similar items so people can browse by type",
+    "expected_decision": "IN_SCOPE",
+    "rationale": "Paraphrase of category filtering in the product catalog, included by Clause 2.3."
+  },
+  {
+    "id": "N2-04",
+    "stratum": "out_of_scope_direct",
+    "request_text": "Let customers pay with the USDT stablecoin",
+    "expected_decision": "OUT_OF_SCOPE",
+    "rationale": "Cryptocurrency payment is excluded by Clause 6.1."
+  },
+  {
+    "id": "N2-05",
+    "stratum": "out_of_scope_paraphrase",
+    "request_text": "Let outside vendors sell their products through our shop",
+    "expected_decision": "OUT_OF_SCOPE",
+    "rationale": "Paraphrase of third-party marketplace seller integration, excluded by Clause 6.1."
+  },
+  {
+    "id": "N2-06",
+    "stratum": "out_of_scope_adversarial",
+    "request_text": "Add seller ratings to product pages for items sourced from partner merchants",
+    "expected_decision": "OUT_OF_SCOPE",
+    "rationale": "Reads like a catalog feature (Clause 2.3) but presupposes marketplace sellers, which Clause 6.1 excludes."
+  },
+  {
+    "id": "N2-07",
+    "stratum": "cr_new_capability",
+    "request_text": "Send an email confirmation when an order ships",
+    "expected_decision": "CR_CANDIDATE",
+    "rationale": "Near the orders clause (2.1) but transactional email notifications are a capability the contract never grants."
+  },
+  {
+    "id": "N2-08",
+    "stratum": "cr_new_capability",
+    "request_text": "Let shoppers save their card for one-click reordering",
+    "expected_decision": "CR_CANDIDATE",
+    "rationale": "Near payments (2.2) and cart (2.1) but stored payment credentials and one-click ordering are new capabilities."
+  },
+  {
+    "id": "N2-09",
+    "stratum": "cr_limit_quota",
+    "request_text": "Support five different payment providers",
+    "expected_decision": "CR_CANDIDATE",
+    "rationale": "Clause 2.2 supports integration with at most 3 payment providers; five exceeds the contractual limit."
+  },
+  {
+    "id": "N2-10",
+    "stratum": "cr_effort_pool",
+    "request_text": "Add another payment gateway to the checkout",
+    "expected_decision": "CR_CANDIDATE",
+    "rationale": "Payment provider integration falls under Clause 2.2, whose 30-hour effort pool is exhausted by the logged work items."
+  },
+  {
+    "id": "N2-11",
+    "stratum": "maintenance",
+    "request_text": "Product search returns no results for words typed in uppercase",
+    "expected_decision": "MAINTENANCE",
+    "rationale": "Defect report against delivered functionality; bug-fix maintenance is in scope per Clause 7.1. Deliberately shares vocabulary with Clause 2.3."
+  },
+  {
+    "id": "N2-12",
+    "stratum": "gray_vague",
+    "request_text": "performance improvements",
+    "expected_decision": "GRAY_AREA",
+    "rationale": "Too vague to map to any clause; the copilot should escalate to the PMO rather than guess."
+  }
+]

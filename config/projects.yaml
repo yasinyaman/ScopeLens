@@ -1,0 +1,75 @@
+projects:
+- id: demo
+  name: Demo Proje (CTR-DEMO-001)
+  contract_id: CTR-DEMO-001
+  index_path: .etki/index-{id}.json
+  connectors:
+    work_items:
+      adapter: file
+      options:
+        path: samples/demo_project/work_items.json
+    code_repo:
+      adapter: joern
+      options:
+        src_root: samples/demo_project/src
+        export_path: .etki/code_index-demo.json
+        refresh: true
+    documents:
+      adapter: filesystem
+      options:
+        root: samples/demo_project
+        globs:
+        - '*.md'
+  repos: []
+  language: tr
+  instructions: ''
+  module_hints: {}
+- id: shop
+  name: E-Ticaret Projesi (CTR-SHOP-002)
+  contract_id: CTR-SHOP-002
+  index_path: .etki/index-{id}.json
+  connectors:
+    work_items:
+      adapter: file
+      options:
+        path: samples/demo_project_b/work_items.json
+    code_repo:
+      adapter: joern
+      options:
+        src_root: samples/demo_project_b/src
+        export_path: .etki/code_index-shop.json
+        refresh: true
+    documents:
+      adapter: filesystem
+      options:
+        root: samples/demo_project_b
+        globs:
+        - '*.md'
+  repos: []
+  language: tr
+  domain_profile: eticaret
+  instructions: ''
+  module_hints: {}
+- id: warp
+  name: Warp Engine (gerçek-dünya örnek)
+  contract_id: CTR-WARP-003
+  index_path: .etki/index-{id}.json
+  connectors:
+    work_items:
+      adapter: none
+      options: {}
+    code_repo:
+      adapter: fake
+      options: {}
+    documents:
+      adapter: fake
+      options: {}
+  doc_root: .etki/projects/warp/docs
+  repos:
+  - name: main
+    src_root: .etki/projects/warp/repos/main
+    git_url: https://github.com/yasinyaman/warp
+    engine: graphify
+  language: tr
+  instructions: ''
+  module_hints: {}

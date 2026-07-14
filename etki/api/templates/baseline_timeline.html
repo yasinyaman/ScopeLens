@@ -1,0 +1,52 @@
+{% extends "pmo_base.html" %}
+{% block title %}{{ t('bl.title') }} — {{ project.name }}{% endblock %}
+{% block screen %}
+<main style="padding:22px 28px 40px; max-width:900px;">
+  <a href="/projeler/{{ project.id }}" style="display:inline-flex; align-items:center; gap:7px; font-size:13px; font-weight:600; color:#5C6B72; margin-bottom:16px;">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6 l-6 6 6 6"/></svg>
+    {{ t('clause.back') }}
+  </a>
+
+  <div style="margin-bottom:18px;">
+    <h1 style="margin:0; font-size:22px; font-weight:800; letter-spacing:-.02em;">{{ t('bl.title') }}</h1>
+    <p style="margin:6px 0 0; font-size:14px; color:#5C6B72;">{{ t('bl.subtitle', v=current_version) }}</p>
+  </div>
+
+  <div style="display:flex; flex-direction:column; gap:0;">
+    {% if not entries and current_version > 1 %}
+    <p class="meta" style="margin:0 0 14px;">{{ t('bl.no_history', v=current_version) }}</p>
+    {% endif %}
+    {% for e in entries %}
+    <div style="display:flex; gap:16px;">
+      <div style="display:flex; flex-direction:column; align-items:center; flex:0 0 auto;">
+        <span class="mono" style="font-size:13px; font-weight:700; color:#fff; background:#0E7C7B; border-radius:16px; padding:4px 12px;">v{{ e.version }}</span>
+        {% if not loop.last or true %}<div style="width:2px; flex:1; background:#DCD7CC; margin:6px 0;"></div>{% endif %}
+      </div>
+      <div class="card" style="flex:1; margin:0 0 16px;">
+        <p class="meta" style="margin:0 0 8px;">{{ e.at }} · {{ t('bl.item_count', n=e.item_count) }}</p>
+        {% for s in e.added %}
+        <div style="border-left:3px solid #3563B0; padding-left:12px; margin:8px 0;">
+          <p style="margin:0; font-size:13.5px; line-height:1.5;">{{ s.description }}</p>
+          <p class="mono" style="margin:4px 0 0; font-size:11px; color:var(--pmo-muted);">
+            <a href="/projeler/{{ project.id }}/madde/{{ s.id|urlencode }}" style="color:#9A5F23; text-decoration:none;">{{ s.id }}</a>
+            {% if e.case_id %} · <a href="/ui/casefiles/{{ e.case_id }}" style="color:#3563B0; text-decoration:none;">{{ t('bl.source_case') }}: {{ e.case_id }}</a>{% endif %}
+          </p>
+        </div>
+        {% else %}
+        <p class="meta" style="margin:0; font-size:12.5px;">{{ t('bl.no_diff') }}</p>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+
+    <div style="display:flex; gap:16px;">
+      <div style="flex:0 0 auto;">
+        <span class="mono" style="font-size:13px; font-weight:700; color:#33424A; background:#EEEBE4; border-radius:16px; padding:4px 12px;">v1</span>
+      </div>
+      <div class="card" style="flex:1; margin:0;">
+        <p style="margin:0; font-size:13.5px;">{{ t('bl.initial', n=initial_count) }}</p>
+      </div>
+    </div>
+  </div>
+</main>
+{% endblock %}

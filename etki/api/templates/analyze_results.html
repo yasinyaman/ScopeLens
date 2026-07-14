@@ -1,0 +1,34 @@
+{% from "macros.html" import evidence_details %}
+{% if mode == "scope" %}
+  <p class="meta">📄 <b>{{ filename }}</b> — {{ t('an.scope_extracted', n=clauses|length) }} [{{ project_id }}]</p>
+  {% for c in clauses %}
+  <div class="card">
+    <span class="badge {{ 'd-OUT_OF_SCOPE' if c.polarity.value == 'EXCLUDED' else 'd-IN_SCOPE' }}">{{ t('badge.excluded') if c.polarity.value == 'EXCLUDED' else t('badge.included') }}</span>
+    <b>{{ c.source_clause or c.id }}</b> <span class="meta">· {{ c.category }} · {{ c.id }}</span>
+    <p>{{ c.description }}</p>
+    {% if c.limits.quantity %}<p class="meta">{{ t('ev.limit') }} {{ c.limits.quantity }}{% if c.limits.period %}/{{ c.limits.period }}{% endif %}
+      {% if c.effort_pool_hours %}· {{ t('ev.effort_pool') }} {{ c.effort_pool_hours|int }} {{ t('common.hours_short') }}{% endif %}</p>{% endif %}
+  </div>
+  {% else %}
+  <p class="meta">{{ t('an.no_clauses') }}</p>
+  {% endfor %}
+{% else %}
+  <p class="meta">📄 <b>{{ filename }}</b> — {{ t('an.triaged', n=total) }} [{{ project_id }}]
+    {% if truncated %}· {{ t('an.showing_first', n=cases|length) }}{% endif %}</p>
+  {% for case in cases %}
+  <div class="card">
+    <a href="/ui/casefiles/{{ case.request_id }}"><b>{{ case.raw_request }}</b></a>
+    <p>
+      {% for d in case.decisions %}
+      <span class="badge d-{{ d.decision.value }}">{{ d.decision.value|tr_decision }}</span>
+      <span class="meta">{{ d.effort_estimate.low }}–{{ d.effort_estimate.high }}{{ t('common.hours_short') }}
+        · {{ d.risk.level.value|tr_risk }}
+        {%- if d.evidence.contract_clauses_cited %} · {{ d.evidence.contract_clauses_cited|join(', ') }}{% endif %}</span>
+      {% endfor %}
+    </p>
+    {% for d in case.decisions %}{{ evidence_details(d) }}{% endfor %}
+  </div>
+  {% else %}
+  <p class="meta">{{ t('an.no_lines') }}</p>
+  {% endfor %}
+{% endif %}

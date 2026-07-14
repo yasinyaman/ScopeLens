@@ -1,0 +1,24 @@
+# 5-minute demo — NO .env required:
+#   docker compose -f docker-compose.demo.yml up --build
+# → http://localhost:8000  (login: demo / demo)
+#
+# English sample project (Meridian CRM), SQLite, AST code graph, no LLM key, no JVM.
+# Credentials and session secret are INTENTIONALLY hard-coded: local evaluation only —
+# for a real deployment use docker-compose.yml (Postgres + secrets from .env).
+services:
+  demo:
+    build: .
+    environment:
+      ETKI_PROJECTS_PATH: config/projects.demo.yaml
+      ETKI_DB_URL: sqlite:////app/data/etki.db
+      ETKI_SESSION_SECRET: demo-only-not-for-production
+      ETKI_ADMIN_USER: demo
+      ETKI_ADMIN_PASSWORD: demo
+      ETKI_DEFAULT_LANGUAGE: en
+    ports:
+      - "8000:8000"
+    volumes:
+      - etki-demo-index:/app/.etki
+
+volumes:
+  etki-demo-index:

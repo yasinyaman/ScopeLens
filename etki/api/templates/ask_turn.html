@@ -1,0 +1,55 @@
+{# One chat turn: user question + labeled deterministic answer (+ auto-loading LLM answer). #}
+<div style="display:flex; justify-content:flex-end; margin:14px 0 8px;">
+  <div style="max-width:78%; background:#E6F4EC; border:1px solid #CBE4E2; border-radius:14px 14px 3px 14px; padding:10px 14px; font-size:13.5px;">{{ question }}</div>
+</div>
+
+<div style="display:flex; margin:0 0 8px;">
+  <div style="max-width:92%; min-width:60%; background:#fff; border:1px solid #E6E2D9; border-radius:14px 14px 14px 3px; padding:12px 14px;">
+    <p class="meta" style="margin:0 0 8px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+      <span class="mono" style="font-size:10px; font-weight:700; color:#3563B0; background:#EAF1FB; padding:2px 8px; border-radius:10px; letter-spacing:.03em;">{{ t('ask.src_graph') }}</span>
+      {% if result %}<span style="font-size:11.5px;">{{ t('ask.strategy') }}: <span class="mono" style="font-weight:700;">{{ result.strategy }}</span>{% if result.tool %} · {{ t('ask.tool') }}: <span class="mono">{{ result.tool }}</span>{% endif %}{% if result.subgraph and result.subgraph.truncated %} · <span style="color:#8F5F00; font-weight:600;">{{ t('ask.truncated') }}</span>{% endif %}</span>{% endif %}
+    </p>
+    {% if error %}
+    <p class="meta" style="margin:0;">⚠ {{ error }}</p>
+    {% elif nodes %}
+    <div style="display:flex; flex-direction:column; gap:8px;">
+      {% for n in nodes %}
+      {% set kind = n.id.split(':', 1)[0] %}
+      {% set bare = n.id.split(':', 1)[1] if ':' in n.id else n.id %}
+      <div style="display:flex; align-items:flex-start; gap:10px;">
+        {% if kind == 'scope' %}
+        <a href="/projeler/{{ project_id }}/madde/{{ bare|urlencode }}" class="mono" style="flex:0 0 auto; font-size:10.5px; font-weight:700; color:#1E7A43; background:#E6F4EC; padding:2px 8px; border-radius:10px; text-decoration:none; margin-top:1px;">{{ t('ask.kind_scope') }}</a>
+        {% elif kind == 'module' %}
+        <a href="/projeler/{{ project_id }}/moduller" class="mono" style="flex:0 0 auto; font-size:10.5px; font-weight:700; color:#3563B0; background:#EAF1FB; padding:2px 8px; border-radius:10px; text-decoration:none; margin-top:1px;">{{ t('ask.kind_module') }}</a>
+        {% elif kind == 'package' %}
+        <span class="mono" style="flex:0 0 auto; font-size:10.5px; font-weight:700; color:#55666D; background:#EEEBE4; padding:2px 8px; border-radius:10px; margin-top:1px;">{{ t('ask.kind_package') }}</span>
+        {% else %}
+        <span class="mono" style="flex:0 0 auto; font-size:10.5px; font-weight:700; color:#7A5A10; background:#FBF3E2; padding:2px 8px; border-radius:10px; margin-top:1px;">{{ t('ask.kind_workitem') }}</span>
+        {% endif %}
+        <div style="flex:1; min-width:0;">
+          <span class="mono" style="font-size:12px; font-weight:700;">{{ bare }}</span>
+          {% if n.score %}<span class="mono" style="font-size:10.5px; color:var(--pmo-muted);"> · {{ '%.2f'|format(n.score) }}</span>{% endif %}
+          <div style="font-size:12.5px; color:#33424A; line-height:1.45;">{{ n.text[:220] }}{% if n.text|length > 220 %}…{% endif %}</div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% elif result and result.tool_result is not none %}
+    <pre class="mono" style="font-size:11.5px; background:#FAF9F5; border:1px solid #EEEBE4; border-radius:9px; padding:10px 12px; overflow-x:auto; margin:0;">{{ result.tool_result|tojson(indent=2) }}</pre>
+    {% else %}
+    <p class="meta" style="margin:0;">{{ t('ask.empty') }}</p>
+    {% endif %}
+  </div>
+</div>
+
+{% if llm_follow %}
+{# Auto-loads the AI answer after the deterministic one lands; replaces itself. #}
+<form hx-post="/ui/ask-llm" hx-trigger="load" hx-swap="outerHTML" style="display:flex; margin:0 0 8px;">
+  <input type="hidden" name="question" value="{{ question }}">
+  <input type="hidden" name="project_id" value="{{ project_id }}">
+  <textarea name="context" style="display:none;">{{ graph_context }}</textarea>
+  <div style="background:#fff; border:1px solid #E6E2D9; border-radius:14px 14px 14px 3px; padding:10px 14px;">
+    <span class="meta" style="font-size:12px;"><span class="spin"></span> {{ t('ask.llm_wait') }}</span>
+  </div>
+</form>
+{% endif %}

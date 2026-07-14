@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Questions & ideas
+    url: https://github.com/yasinyaman/etki/discussions
+    about: Use Discussions for questions, design conversations and show-and-tell.
+  - name: Security reports
+    url: https://github.com/yasinyaman/etki/security/advisories/new
+    about: Please report vulnerabilities privately, not as public issues.

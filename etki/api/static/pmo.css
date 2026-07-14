@@ -1,0 +1,286 @@
+/* Etki — "PMO Guard" tasarımı (Claude Design handoff).
+   Yerel servis edilir: harici font/CDN'e bağımlılık YOK (air-gapped/KVKK). Fontlar
+   isimle anılır + sistem yedeği (mevcut app.css'in Inter konvansiyonuyla aynı):
+   marka sisteminde Hanken Grotesk / IBM Plex Mono yüklüyse kullanılır, değilse yedek.
+   Ekran gövdeleri prototipin satır-içi stillerini birebir taşır; bu dosya yalnızca
+   küresel sıfırlama + token + kaydırma çubuğunu tanımlar. */
+
+:root {
+  /* "Petrol" paleti — marka teal, durum renkleri markadan bağımsız rezerve,
+     bakır aksan (kanıt/mühür). Küçük metinlerde AA (>=4.5:1) için her durum
+     renginin koyu METİN türevi vardır; canlı ton çubuk/zemin/ikon içindir. */
+  --pmo-bg: #F7F5F0;            /* kırık beyaz zemin */
+  --pmo-surface: #FFFFFF;
+  --pmo-sidebar: #101C24;       /* mürekkep lacivert */
+  --pmo-sidebar-line: #1E2C36;
+  --pmo-border: #E6E2D9;
+  --pmo-border-2: #DFDACF;
+  --pmo-text: #101C24;
+  --pmo-text-2: #5C6B72;
+  --pmo-muted: #5D6B6E;         /* AA: 5.1:1 on --pmo-bg */
+  --pmo-primary: #0E7C7B;       /* canlı petrol; koyusu #0F5257 (hover/derin) */
+  --pmo-primary-deep: #0F5257;
+  --pmo-primary-grad-1: #16A19B;
+  --pmo-primary-grad-2: #0E7C7B;
+  --pmo-green-soft: #E6F4EC;
+  --pmo-green-accent: #7FD1CD;
+  /* Durum: canlı ton (bar/ikon/zemin) + AA metin türevi */
+  --pmo-ok-vivid: #2E9E5B;   --pmo-ok: #1E7A43;   --pmo-ok-soft: #E6F4EC;
+  --pmo-warn-vivid: #D98E04; --pmo-warn: #8F5F00; --pmo-warn-soft: #FBF3E2;
+  --pmo-risk-vivid: #C6413A; --pmo-risk: #A83228; --pmo-risk-soft: #FBEAE8;
+  /* Bakır aksan — kanıt zinciri/linkler ("mühür" hissi); metinde koyu türev */
+  --pmo-accent: #C47F3D;
+  --pmo-accent-text: #9A5F23;   /* AA: 4.8:1 on --pmo-bg */
+
+  --pmo-font: "Hanken Grotesk", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --pmo-mono: "IBM Plex Mono", "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+}
+
+body {
+  font-family: var(--pmo-font);
+  color: var(--pmo-text);
+  background: var(--pmo-bg);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+a { color: inherit; text-decoration: none; }
+
+/* Mono fontunu metrik/etiket/sayılarda kullanan yardımcı sınıf */
+.mono { font-family: var(--pmo-mono); }
+
+/* İnce kaydırma çubuğu (handoff) */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb {
+  background: #CFC9BD; border-radius: 8px;
+  border: 2px solid transparent; background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover { background: #B4ADA0; background-clip: padding-box; }
+
+/* Kenar-çubuğu nav etkileşimi (satır-içi stil yerine hover/aktif burada) */
+.pmo-nav {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 12px; border-radius: 9px;
+  font-size: 14px; font-weight: 500; cursor: pointer;
+  text-decoration: none; border: none; width: 100%; text-align: left;
+  font-family: inherit; color: #96A9AD; background: transparent;
+  transition: background .15s, color .15s;
+}
+.pmo-nav:hover { background: rgba(22, 161, 155, .10); color: #C6D4D6; }
+.pmo-nav.active { background: rgba(22, 161, 155, .18); color: #7FD1CD; font-weight: 600; }
+.pmo-nav .pmo-badge { margin-left: auto; }
+.pmo-badge {
+  font-size: 11px; font-weight: 700; color: #fff; min-width: 20px; height: 20px;
+  padding: 0 6px; border-radius: 10px; display: flex; align-items: center;
+  justify-content: center; font-family: var(--pmo-mono);
+}
+
+/* Tıklanabilir tablo/list satırı hover'ı (prototipteki style-hover yerine) */
+.pmo-row { transition: background .15s; }
+.pmo-row:hover { background: #FAFCFB; }
+.pmo-listitem { transition: background .15s; cursor: pointer; }
+.pmo-listitem:hover { background: #FAF9F5; }
+
+/* Genel buton odak erişilebilirliği */
+button { font-family: inherit; }
+button:focus-visible, a:focus-visible {
+  outline: 2px solid var(--pmo-primary); outline-offset: 2px;
+}
+
+/* Canlı izleme noktası — istenirse nabız animasyonu */
+@media (prefers-reduced-motion: no-preference) {
+  .pmo-live-dot { animation: pmo-pulse 2s ease-in-out infinite; }
+}
+@keyframes pmo-pulse {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(26, 158, 104, .18); }
+  50% { box-shadow: 0 0 0 5px rgba(26, 158, 104, .08); }
+}
+
+/* ============================================================================
+   Bileşen katmanı — Triyaj / Onaylar / Raporlar ekranları (geri getirilen akışlar).
+   Eski sınıf adları korunur (.card/.badge/.d-*/.risk-*/.acc/.kv/.chip/.kpi/.md),
+   ama görsel dil PMO Guard yeşil temasıdır.
+   ============================================================================ */
+
+.meta { color: var(--pmo-muted); font-size: 13px; }
+.danger { color: var(--pmo-risk); }
+
+/* Kartlar */
+.card {
+  background: #fff; border: 1px solid var(--pmo-border); border-radius: 13px;
+  padding: 16px 18px; margin: 14px 0; box-shadow: 0 1px 2px rgba(16, 40, 28, .03);
+}
+.card p { margin: 8px 0; }
+.card > :first-child { margin-top: 0; }
+.card > :last-child { margin-bottom: 0; }
+
+/* Karar rozetleri (soft pill — handoff durum renkleri) */
+.badge {
+  display: inline-block; padding: 4px 11px; border-radius: 20px;
+  font-size: 11.5px; font-weight: 600; vertical-align: middle; letter-spacing: .01em;
+}
+.d-IN_SCOPE     { color: var(--pmo-ok); background: var(--pmo-ok-soft); }
+.d-OUT_OF_SCOPE { color: var(--pmo-risk); background: var(--pmo-risk-soft); }
+.d-CR_CANDIDATE { color: var(--pmo-warn); background: var(--pmo-warn-soft); }
+.d-GRAY_AREA    { color: #55666D; background: #EEEBE4; }
+.d-MAINTENANCE  { color: #3563B0; background: #EAF1FB; }
+/* Durum ikonu: renk tek başına taşıyıcı olmasın (renk körlüğü) — etiket + glif */
+.badge.d-IN_SCOPE::before     { content: "✓ "; }
+.badge.d-OUT_OF_SCOPE::before { content: "✕ "; }
+.badge.d-CR_CANDIDATE::before { content: "± "; }
+.badge.d-GRAY_AREA::before    { content: "? "; }
+.badge.d-MAINTENANCE::before  { content: "⟲ "; }
+.risk-LOW    { color:#1E7A43; font-weight: 600; }
+.risk-MEDIUM { color: #8F5F00; font-weight: 600; }
+.risk-HIGH, .risk-CRITICAL { color:#A83228; font-weight: 700; }
+.esc {
+  background:#C6413A; color: #fff; padding: 2px 9px; border-radius: 20px;
+  font-size: 11px; font-weight: 700; margin-left: 4px;
+}
+
+/* Sade özet kutusu — sol şerit DURUM rengidir (markadan bağımsız) */
+.summary {
+  background: #E9F2EC; border: 1px solid #CFE6D8; border-left: 3px solid var(--pmo-ok-vivid);
+  padding: 11px 14px; border-radius: 10px; margin: 10px 0; font-size: 14px; line-height: 1.5;
+}
+.summary.err { background: #FBF1F0; border-color: #F3D9D5; border-left-color: var(--pmo-risk-vivid); color: #8A4A44; }
+/* Karar polaritesine göre özet bandı: hariç=kırmızı, CR/gri=amber, bakım=mavi (dahil=yeşil kalır) */
+.summary.sum-OUT_OF_SCOPE { background: #FBF1F0; border-color: #F3D9D5; border-left-color: var(--pmo-risk-vivid); }
+.summary.sum-CR_CANDIDATE,
+.summary.sum-GRAY_AREA    { background: #FBF6E9; border-color: #EAD9B0; border-left-color: var(--pmo-warn-vivid); }
+.summary.sum-MAINTENANCE  { background: #F4F8FE; border-color: #D8E4F5; border-left-color: #3563B0; }
+
+/* Açılır akordeon (kanıt zinciri / denetim izi) */
+details.acc {
+  border: 1px solid var(--pmo-border); border-radius: 10px; padding: 10px 14px; margin: 10px 0;
+  background: #FAF9F5;
+}
+details.acc[open] { background: #fff; box-shadow: 0 1px 2px rgba(16, 40, 28, .03); }
+details.acc > summary {
+  font-weight: 600; color: var(--pmo-text); list-style: none; cursor: pointer; user-select: none;
+}
+details.acc > summary::-webkit-details-marker { display: none; }
+details.acc > summary::before {
+  content: "›"; display: inline-block; margin-right: 8px; color: var(--pmo-accent-text);
+  transition: transform .15s;   /* bakır: kanıt/denetim "mühür" aksanı */
+}
+details.acc[open] > summary::before { transform: rotate(90deg); }
+details.acc.info { background: #FBF3E2; border-color: #EAD9B0; }
+
+/* Anahtar/değer listesi */
+dl.kv { display: grid; grid-template-columns: 190px 1fr; gap: 7px 14px; margin: 10px 0; font-size: 13px; }
+dl.kv dt { color: var(--pmo-muted); font-weight: 600; }
+dl.kv dd { margin: 0; }
+
+/* Çipler */
+.chip {
+  display: inline-block; background: #F1EFE9; border: 1px solid var(--pmo-border);
+  border-radius: 20px; padding: 3px 11px; font-size: 12px; margin: 2px;
+}
+.chip[onclick] { cursor: pointer; transition: background .15s, border-color .15s; }
+.chip[onclick]:hover { background: #E6F4EC; border-color: var(--pmo-primary); }
+
+/* KPI grid */
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 16px; }
+.kpi {
+  background: #fff; border: 1px solid var(--pmo-border); border-radius: 13px; padding: 18px;
+  box-shadow: 0 1px 2px rgba(16, 40, 28, .03);
+}
+.kpi b { font-size: 30px; display: block; font-weight: 600; letter-spacing: -.02em; margin-bottom: 2px;
+  font-family: var(--pmo-mono); }
+/* Tıklanabilir KPI kutusu — sayının cevapladığı listeye götürür */
+.kpi-link { display: block; text-decoration: none; color: inherit; transition: border-color .15s; }
+.kpi-link:hover { border-color: var(--pmo-primary); }
+
+/* Markdown / tablo (kanıt zinciri modül metrik tablosu) */
+.md { font-size: 13px; line-height: 1.55; }
+.md table { border-collapse: collapse; margin: 8px 0; width: 100%; }
+.md th, .md td { border: 1px solid var(--pmo-border); padding: 6px 10px; font-size: 12.5px; text-align: left; }
+.md th { background: #FAF9F5; font-weight: 600; }
+
+/* Form öğeleri */
+textarea, select, input[type=text], input[type=password], input:not([type]) {
+  font-family: inherit; color: var(--pmo-text); background: #fff;
+  border: 1px solid var(--pmo-border-2); border-radius: 10px; font-size: 14px;
+  padding: 10px 13px; transition: border-color .15s, box-shadow .15s;
+}
+textarea { width: 100%; line-height: 1.5; resize: vertical; }
+textarea:focus, select:focus, input:focus { outline: none; border-color: var(--pmo-primary); box-shadow: 0 0 0 3px rgba(15, 138, 91, .15); }
+textarea::placeholder { color: var(--pmo-muted); }
+
+/* Genel butonlar (satır-içi stil verilmeyenler için varsayılan = birincil yeşil) */
+.btn, button.btn {
+  display: inline-flex; align-items: center; gap: 8px; background: var(--pmo-primary); color: #fff;
+  border: none; border-radius: 9px; padding: 10px 16px; font-size: 13.5px; font-weight: 600;
+  cursor: pointer; box-shadow: 0 2px 8px rgba(14, 124, 123, .25); transition: background .15s, transform .08s;
+}
+.btn:hover { background: var(--pmo-primary-deep); }
+.btn:active { transform: translateY(1px); }
+.btn.ghost {
+  background: #fff; color: #33424A; border: 1px solid var(--pmo-border-2); box-shadow: none;
+}
+.btn.ghost:hover { background: #FAF9F5; }
+.btn.ghost.danger { color: var(--pmo-risk); border-color: #E7C7C2; }
+.btn.ghost.danger:hover { background: #FBEAE8; }
+.htmx-indicator { opacity: 0; transition: opacity .2s; }
+.htmx-request .htmx-indicator, .htmx-request.htmx-indicator { opacity: 1; }
+.spin {
+  display: inline-block; width: 12px; height: 12px; vertical-align: -1px;
+  border: 2px solid var(--pmo-border-2); border-top-color: var(--pmo-primary);
+  border-radius: 50%; animation: pmo-spin .7s linear infinite;
+}
+@keyframes pmo-spin { to { transform: rotate(360deg); } }
+
+/* Grid öğeleri kolonlarını genişletemesin: satır-içi stilli grid'lerde uzun
+   nowrap/ellipsis içerik içsel min-genişlikle kolonu taşırıyordu (1280px'te
+   içerik sağdan kesiliyordu — .pmo-scroll overflow-x:hidden). */
+main div[style*="grid-template-columns"] > * { min-width: 0; }
+
+/* ============================================================================
+   Duyarlı yerleşim — ~980px altında kenar çubuğu üste yatay şerit olur,
+   sayfa doğal akışta kayar. Ekran gövdeleri satır-içi stilli olduğundan
+   buradaki geçersiz kılmalar bilinçli olarak !important kullanır.
+   ============================================================================ */
+@media (max-width: 980px) {
+  .pmo-shell  { flex-direction: column !important; height: auto !important;
+                min-height: 100vh; overflow: visible !important; }
+  .pmo-side   { width: 100% !important; flex: 0 0 auto !important;
+                flex-direction: row !important; flex-wrap: wrap; align-items: center;
+                padding: 8px 12px !important; gap: 2px !important; }
+  .pmo-brand  { padding: 4px 8px !important; }
+  .pmo-side-caption { display: none !important; }
+  .pmo-nav    { width: auto !important; padding: 8px 10px !important; }
+  .pmo-user   { margin-top: 0 !important; margin-left: auto; }
+  .pmo-user-box { border-top: none !important; margin-top: 0 !important; padding: 4px 6px !important; }
+  .pmo-main   { overflow: visible !important; }
+  .pmo-scroll { overflow: visible !important; }
+  .pmo-topbar { height: auto !important; flex: 0 0 auto !important; flex-wrap: wrap;
+                padding: 10px 14px !important; gap: 10px !important; }
+  .pmo-search { order: 2; width: 100% !important; max-width: none !important; }
+  main { padding: 18px 16px 34px !important; }
+  /* Satır-içi grid'ler: 4 kolonlu stat kartları → 2 kolon; yan yana paneller → tek kolon.
+     minmax(0,1fr): grid öğesinin içsel min-genişliği kolonu taşırmasın. */
+  main div[style*="grid-template-columns:repeat(4"]  { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+  main div[style*="grid-template-columns:1.4fr"],
+  main div[style*="grid-template-columns:1.5fr"]     { grid-template-columns: minmax(0, 1fr) !important; }
+}
+@media (max-width: 560px) {
+  main div[style*="grid-template-columns:repeat(4"]  { grid-template-columns: minmax(0, 1fr) !important; }
+  .pmo-user-box > div:not(:first-child) { display: none !important; } /* ad/rol gizle, avatar+çıkış kalır */
+}
+
+/* Dosya girdileri — native görünüm yerine tema butonu */
+input[type="file"] { font-family: inherit; font-size: 13px; color: var(--pmo-text-2); }
+input[type="file"]::file-selector-button {
+  font-family: inherit; font-size: 12.5px; font-weight: 600; color: #33424A;
+  background: #fff; border: 1px solid var(--pmo-border-2); border-radius: 8px;
+  padding: 8px 14px; margin-right: 10px; cursor: pointer; transition: background .15s;
+}
+input[type="file"]::file-selector-button:hover { background: #FAF9F5; }

@@ -1,0 +1,24 @@
+# Demo profile (docker compose up demo) — a single English demo project.
+# No API key, no JVM, no Postgres: heuristic extraction + AST code graph + SQLite.
+projects:
+  - id: meridian
+    name: Meridian CRM (demo)
+    contract_id: CTR-CRM-100
+    index_path: .etki/index-{id}.json
+    connectors:
+      work_items:
+        adapter: file
+        options:
+          path: samples/demo_project_en/work_items.json
+      code_repo:
+        adapter: ast
+        options:
+          src_root: samples/demo_project_en/src
+          export_path: .etki/code_index-meridian.json
+      documents:
+        adapter: filesystem
+        options:
+          root: samples/demo_project_en
+          globs:
+            - "*.md"
+    language: en

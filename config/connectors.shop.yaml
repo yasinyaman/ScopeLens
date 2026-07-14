@@ -1,0 +1,18 @@
+# Second graph-retrieval eval corpus: TR e-commerce (samples/demo_project_b).
+# projects.yaml's "shop" entry uses the joern engine (live indexing); this
+# anchor pins the SAME corpus to the ast engine so the CI gate stays
+# reproducible without a JVM (same rule as eval/runner).
+connectors:
+  documents:
+    adapter: filesystem
+    options:
+      root: samples/demo_project_b
+      globs: ["*.md"]
+  code_repo:
+    adapter: ast
+    options:
+      src_root: samples/demo_project_b/src
+  work_items:
+    adapter: file
+    options:
+      path: samples/demo_project_b/work_items.json

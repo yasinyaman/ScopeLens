@@ -1,0 +1,58 @@
+[
+  {
+    "id": "GQN-01",
+    "lang": "en",
+    "query": "accept crypto payments",
+    "expected": ["scope:SCOPE-004", "workitem:NW-202", "module:payment"],
+    "note": "crypto explicitly excluded (SCOPE-004); NW-202 exact precedent"
+  },
+  {
+    "id": "GQN-02",
+    "lang": "en",
+    "query": "credit card payment integration",
+    "expected": ["scope:SCOPE-002", "workitem:NW-201", "module:payment"],
+    "note": "SCOPE-002 credit/debit card clause + NW-201 precedent"
+  },
+  {
+    "id": "GQN-03",
+    "lang": "en",
+    "query": "the add-to-cart flow is broken",
+    "expected": ["scope:SCOPE-001", "workitem:NW-101", "module:cart"],
+    "note": "cart/orders clause + exact precedent"
+  },
+  {
+    "id": "GQN-04",
+    "lang": "en",
+    "query": "order status tracking",
+    "expected": ["scope:SCOPE-001", "workitem:NW-102", "module:cart"],
+    "note": "NW-102 exact same work item"
+  },
+  {
+    "id": "GQN-05",
+    "lang": "en",
+    "query": "improve product search and filtering",
+    "expected": ["scope:SCOPE-003", "workitem:NW-301", "module:catalog"],
+    "note": "catalog clause + NW-301 precedent"
+  },
+  {
+    "id": "GQN-06",
+    "lang": "en",
+    "query": "marketplace seller integration",
+    "expected": ["scope:SCOPE-005"],
+    "note": "explicitly excluded"
+  },
+  {
+    "id": "GQN-07",
+    "lang": "en",
+    "query": "fix a bug found in production",
+    "expected": ["scope:SCOPE-006"],
+    "note": "maintenance clause"
+  },
+  {
+    "id": "GQN-08",
+    "lang": "en",
+    "query": "what are the dependencies of the payment module",
+    "expected": ["module:payment", "module:cart", "module:db"],
+    "note": "graph question: payment depends_on cart+db (expand path)"
+  }
+]

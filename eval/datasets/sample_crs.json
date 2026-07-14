@@ -1,0 +1,17 @@
+[
+  {
+    "id": "CR-DEMO-1",
+    "request_text": "rapora yeni filtre eklensin",
+    "expected": ["IN_SCOPE"]
+  },
+  {
+    "id": "CR-DEMO-2",
+    "request_text": "login ekranına SSO entegrasyonu",
+    "expected": ["OUT_OF_SCOPE"]
+  },
+  {
+    "id": "CR-DEMO-3",
+    "request_text": "Müşteri rapora yeni filtre eklensin, ayrıca login ekranına SSO eklensin dedi.",
+    "expected": ["IN_SCOPE", "OUT_OF_SCOPE"]
+  }
+]

@@ -1,0 +1,5 @@
+# E-ticaret alan profili modül ipuçları (eticaret.md profili seçili projelerde).
+module_hints:
+  cart: [sepet, sipariş]
+  payment: [ödeme, kredi, banka kartı, kripto, bitcoin]
+  catalog: [ürün, katalog, kategori, arama]

@@ -1,0 +1,26 @@
+# Docs site: mkdocs-material → GitHub Pages, on every push to master that touches docs.
+# One-time setup: repo Settings → Pages → Source: "Deploy from a branch" → branch gh-pages.
+name: Docs
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - "docs/**"
+      - "mkdocs.yml"
+      - ".github/workflows/docs.yml"
+
+permissions:
+  contents: write # gh-pages push
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+          enable-cache: true
+      - run: uv sync --frozen --only-group docs
+      - run: uv run --no-sync mkdocs gh-deploy --force

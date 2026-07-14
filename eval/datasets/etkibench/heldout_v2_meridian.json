@@ -1,0 +1,86 @@
+[
+  {
+    "id": "M2-01",
+    "stratum": "in_scope_direct",
+    "request_text": "List a user's active sessions and end a selected one",
+    "expected_decision": "IN_SCOPE",
+    "rationale": "Session management is included by Clause 3.1."
+  },
+  {
+    "id": "M2-02",
+    "stratum": "in_scope_direct",
+    "request_text": "Enforce the three-session limit when a user signs in on another device",
+    "expected_decision": "IN_SCOPE",
+    "rationale": "Clause 3.1 includes session management and states at most 3 concurrent sessions per user are supported."
+  },
+  {
+    "id": "M2-03",
+    "stratum": "in_scope_paraphrase",
+    "request_text": "When someone locks themselves out, let them get back in on their own",
+    "expected_decision": "IN_SCOPE",
+    "rationale": "Paraphrase of password reset, included by Clause 3.1."
+  },
+  {
+    "id": "M2-04",
+    "stratum": "in_scope_paraphrase",
+    "request_text": "A pie chart on the management screen showing deals by stage",
+    "expected_decision": "IN_SCOPE",
+    "rationale": "Paraphrase of standard chart/widget components on the dashboard, included by Clause 4.3."
+  },
+  {
+    "id": "M2-05",
+    "stratum": "out_of_scope_direct",
+    "request_text": "Send push notifications when a deal changes owner",
+    "expected_decision": "OUT_OF_SCOPE",
+    "rationale": "Clause 7.1 explicitly excludes push notifications."
+  },
+  {
+    "id": "M2-06",
+    "stratum": "out_of_scope_paraphrase",
+    "request_text": "Let staff sign in with the account they already use at the office",
+    "expected_decision": "OUT_OF_SCOPE",
+    "rationale": "Paraphrase of SSO / third-party identity provider login, excluded by Clause 7.1."
+  },
+  {
+    "id": "M2-07",
+    "stratum": "out_of_scope_adversarial",
+    "request_text": "Keep users logged in when they switch to the phone app",
+    "expected_decision": "OUT_OF_SCOPE",
+    "rationale": "Reads like session management (Clause 3.1) but presupposes a mobile application, which Clause 7.1 excludes."
+  },
+  {
+    "id": "M2-08",
+    "stratum": "cr_new_capability",
+    "request_text": "Schedule reports to be emailed automatically every Monday",
+    "expected_decision": "CR_CANDIDATE",
+    "rationale": "Near the reporting clause (4.2.1) but scheduled generation and email delivery are capabilities the contract never grants."
+  },
+  {
+    "id": "M2-09",
+    "stratum": "cr_limit_quota",
+    "request_text": "Raise the concurrent session cap to 10 per user",
+    "expected_decision": "CR_CANDIDATE",
+    "rationale": "Clause 3.1 supports at most 3 concurrent sessions per user; 10 exceeds the contractual limit."
+  },
+  {
+    "id": "M2-10",
+    "stratum": "cr_effort_pool",
+    "request_text": "Wire the invoicing service into Meridian as an integration",
+    "expected_decision": "CR_CANDIDATE",
+    "rationale": "External system integration falls under Clause 5.1, whose 24-hour effort pool is consumed by the logged work items."
+  },
+  {
+    "id": "M2-11",
+    "stratum": "maintenance",
+    "request_text": "The password reset email never arrives since the last deploy",
+    "expected_decision": "MAINTENANCE",
+    "rationale": "Defect report against delivered functionality; bug-fix maintenance is in scope per Clause 8.1. Deliberately shares vocabulary with Clause 3.1."
+  },
+  {
+    "id": "M2-12",
+    "stratum": "cross_lingual_tr",
+    "request_text": "Panoya yeni bir grafik bileşeni ekleyelim",
+    "expected_decision": "IN_SCOPE",
+    "rationale": "Turkish request against the English contract; chart components on the dashboard are included by Clause 4.3."
+  }
+]

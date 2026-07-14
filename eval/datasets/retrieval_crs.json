@@ -1,0 +1,32 @@
+[
+  {
+    "id": "RCR-1",
+    "request_text": "rapora tarih filtresi eklensin",
+    "scope_ids": ["SCOPE-002"],
+    "modules": ["reporting"]
+  },
+  {
+    "id": "RCR-2",
+    "request_text": "login ekranına SSO entegrasyonu",
+    "scope_ids": ["SCOPE-006"],
+    "modules": ["auth"]
+  },
+  {
+    "id": "RCR-3",
+    "request_text": "kullanıcı parola sıfırlama eklensin",
+    "scope_ids": ["SCOPE-001"],
+    "modules": ["auth"]
+  },
+  {
+    "id": "RCR-4",
+    "request_text": "raporu excel olarak dışa aktar",
+    "scope_ids": ["SCOPE-003"],
+    "modules": ["reporting"]
+  },
+  {
+    "id": "RCR-5",
+    "request_text": "mobil uygulama geliştirilsin",
+    "scope_ids": ["SCOPE-007"],
+    "modules": []
+  }
+]

@@ -1,0 +1,57 @@
+{% extends "pmo_base.html" %}
+{% block title %}{{ t('mod.title') }} — {{ project.name }}{% endblock %}
+{% block screen %}
+<main style="padding:22px 28px 40px;">
+  <a href="/projeler/{{ project.id }}" style="display:inline-flex; align-items:center; gap:7px; font-size:13px; font-weight:600; color:#5C6B72; margin-bottom:16px;">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6 l-6 6 6 6"/></svg>
+    {{ t('clause.back') }}
+  </a>
+
+  <div style="margin-bottom:16px;">
+    <h1 style="margin:0; font-size:22px; font-weight:800; letter-spacing:-.02em;">{{ t('mod.title') }}</h1>
+    <p style="margin:6px 0 0; font-size:14px; color:#5C6B72;">{{ t('mod.subtitle', n=rows|length) }}
+      {% if repo %}<a href="?" class="mono" style="font-size:11px; color:#1E7A43; background:#E6F4EC; padding:2px 9px; border-radius:12px; text-decoration:none; margin-left:6px;">repo: {{ repo }} ✕</a>{% endif %}
+    </p>
+  </div>
+
+  <div style="background:#fff; border:1px solid #E6E2D9; border-radius:13px; overflow:hidden; box-shadow:0 1px 2px rgba(16,40,28,.03);">
+    <div class="mono" style="display:grid; grid-template-columns:2.2fr .7fr .9fr .8fr .8fr 1.6fr .9fr; gap:12px; padding:13px 22px; background:#FAF9F5; border-bottom:1px solid #ECE9E2; font-size:11px; font-weight:600; color:var(--pmo-muted); letter-spacing:.03em; text-transform:uppercase;">
+      <span>{{ t('mod.col_module') }}</span><span>LOC</span><span>{{ t('mod.col_cyclo') }}</span><span>{{ t('mod.col_churn') }}</span><span>{{ t('mod.col_deps') }}</span><span>{{ t('mod.col_clauses') }}</span><span>{{ t('mod.col_cases') }}</span>
+    </div>
+    {% for r in rows %}
+    <details style="border-bottom:1px solid #F2F0EA;">
+      <summary class="pmo-row" style="display:grid; grid-template-columns:2.2fr .7fr .9fr .8fr .8fr 1.6fr .9fr; gap:12px; padding:13px 22px; align-items:center; cursor:pointer; list-style:none;">
+        <div style="min-width:0;"><div style="font-size:13.5px; font-weight:600;">{{ r.id }}{% if r.stale %} <span style="font-size:9.5px; font-weight:700; color:#8F5F00; background:#FBF3E2; padding:1px 6px; border-radius:8px; vertical-align:middle;">{{ t('mod.stale') }}</span>{% endif %}</div>{% if r.path %}<div class="mono" style="font-size:11px; color:var(--pmo-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ r.path }}</div>{% endif %}</div>
+        <span class="mono" style="font-size:12.5px;">{{ r.loc or '—' }}</span>
+        <span class="mono" style="font-size:12.5px; {% if r.cyclo >= 8 %}color:#8F5F00; font-weight:700;{% endif %}">{{ r.cyclo or '—' }}</span>
+        <span class="mono" style="font-size:12.5px; {% if r.churn >= 10 %}color:#A83228; font-weight:700;{% endif %}">{{ r.churn or '—' }}</span>
+        <span class="mono" style="font-size:12.5px;" title="{{ t('mod.deps_hint') }}">{{ r.deps }}/{{ r.rdeps }}</span>
+        <div style="display:flex; gap:4px; flex-wrap:wrap; min-width:0;">
+          {% for cid in r.clauses[:3] %}<a href="/projeler/{{ project.id }}/madde/{{ cid|urlencode }}" class="mono" style="font-size:10.5px; color:#1E7A43; background:#E6F4EC; padding:1px 7px; border-radius:10px; text-decoration:none;">{{ cid }}</a>{% endfor %}
+          {% if r.clauses|length > 3 %}<span class="mono" style="font-size:10.5px; color:var(--pmo-muted);">+{{ r.clauses|length - 3 }}</span>{% endif %}
+          {% if not r.clauses %}<span class="meta" style="font-size:11px;">—</span>{% endif %}
+        </div>
+        <span class="mono" style="font-size:12.5px; {% if r.case_count %}color:#9A5F23; font-weight:700;{% endif %}">{{ r.case_count or '—' }}</span>
+      </summary>
+      <div style="padding:4px 22px 14px; background:#FAF9F5;">
+        {% if r.packages %}<p class="meta" style="margin:8px 0;">{{ t('mod.packages') }}: <span class="mono">{{ r.packages|join(', ') }}</span></p>{% endif %}
+        {% if r.cases %}
+        <p class="meta" style="margin:8px 0 6px; font-weight:600;">{{ t('mod.cases_touching', n=r.case_count) }}</p>
+        {% for c in r.cases %}
+        <a href="/ui/casefiles/{{ c.id }}" style="display:flex; align-items:center; gap:10px; padding:7px 10px; margin:3px 0; background:#fff; border:1px solid #EEEBE4; border-radius:9px; text-decoration:none; color:inherit;">
+          <span style="flex:1 1 auto; min-width:0; font-size:12.5px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ c.request }}</span>
+          {% for d in c.decisions %}<span style="font-size:10px; font-weight:600; color:{{ d.color }}; background:{{ d.bg }}; padding:1px 7px; border-radius:10px; flex:0 0 auto;">{{ d.label }}</span>{% endfor %}
+          <span class="mono" style="font-size:10.5px; color:var(--pmo-muted); flex:0 0 auto;">{{ c.created_at }}</span>
+        </a>
+        {% endfor %}
+        {% else %}
+        <p class="meta" style="margin:8px 0;">{{ t('mod.no_cases') }}</p>
+        {% endif %}
+      </div>
+    </details>
+    {% else %}
+    <div style="padding:18px 22px; font-size:13px; color:var(--pmo-muted);">{{ t('mod.empty') }}</div>
+    {% endfor %}
+  </div>
+</main>
+{% endblock %}

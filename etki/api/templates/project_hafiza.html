@@ -1,0 +1,62 @@
+{% extends "pmo_base.html" %}
+{% block title %}{{ t('nav.memory') }} — {{ project.name }}{% endblock %}
+{% block screen %}
+<main style="padding:26px 28px 40px;">
+  <div style="margin-bottom:18px;">
+    <h1 style="margin:0; font-size:25px; font-weight:800; letter-spacing:-.02em;">{{ t('nav.memory') }}</h1>
+    <p style="margin:6px 0 0; font-size:14px; color:#5C6B72;">{{ t('mem.subtitle') }}</p>
+  </div>
+
+  {% if wiki_on %}
+  <form method="get" style="display:flex; gap:8px; margin-bottom:18px; max-width:560px;">
+    <input type="search" name="q" value="{{ q }}" placeholder="{{ t('mem.search_placeholder') }}"
+           style="flex:1; padding:10px 14px; border:1px solid #DCD7CC; border-radius:11px; font-size:14px;">
+    <button class="btn" type="submit">{{ t('mem.search_btn') }}</button>
+  </form>
+  {% else %}
+  <p class="meta" style="margin:0 0 18px; font-size:12.5px;">{{ t('mem.wiki_off') }}</p>
+  {% endif %}
+
+  {% if q %}
+  <div class="card" style="margin-bottom:18px;">
+    <h3 style="margin:0 0 10px; font-size:15.5px; font-weight:700;">{{ t('mem.results', n=hits|length) }}</h3>
+    {% for h in hits %}
+    <div style="padding:9px 0; {% if not loop.last %}border-bottom:1px solid #F2F0EA;{% endif %}">
+      <div class="mono" style="font-size:12.5px; font-weight:700;">{{ h.doc_id }} <span class="meta" style="font-weight:400;">(skor {{ '%.2f'|format(h.score) }})</span></div>
+      {% if h.snippet %}<div class="meta" style="font-size:12.5px; margin-top:3px;">{{ h.snippet }}</div>{% endif %}
+    </div>
+    {% else %}
+    <p class="meta" style="margin:0;">{{ t('mem.no_results') }}</p>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <div class="card" style="margin-bottom:18px; {% if disputes %}border-left:3px solid #C2410C; background:linear-gradient(180deg,#FFF7ED,#fff 55%);{% endif %}">
+    <h3 style="margin:0 0 10px; font-size:15.5px; font-weight:700; {% if disputes %}color:#9A3412;{% endif %}">⚠ {{ t('mem.disputed_title', n=disputes|length) }}</h3>
+    <p class="meta" style="margin:0 0 10px;">{{ t('mem.disputed_desc') }}</p>
+    {% for d in disputes %}
+    <div style="padding:8px 0; {% if not loop.last %}border-bottom:1px solid #FBE7D4;{% endif %}">
+      <div style="font-size:13.5px; font-weight:700;">{{ d.clause_id }}{% if d.clause_ref %} <span class="meta">({{ d.clause_ref }})</span>{% endif %}</div>
+      {% if d.description %}<div class="meta" style="font-size:12.5px; margin:2px 0 4px;">{{ d.description }}</div>{% endif %}
+      <div style="display:flex; gap:6px; flex-wrap:wrap;">
+        {% for e in d.entries %}<a href="/ui/casefiles/{{ e.case_id }}" class="chip mono" style="font-size:11px; text-decoration:none;">{{ e.case_id }} → {{ e.verdict }}</a>{% endfor %}
+      </div>
+    </div>
+    {% else %}
+    <p class="meta" style="margin:0;">{{ t('mem.no_disputes') }}</p>
+    {% endfor %}
+  </div>
+
+  <div class="card" style="margin-bottom:18px; {% if precedents %}border-left:3px solid #B7791F;{% endif %}">
+    <h3 style="margin:0 0 10px; font-size:15.5px; font-weight:700;">🗂 {{ t('mem.precedents_title', n=precedents|length) }}</h3>
+    {% for p in precedents %}
+    <a href="/ui/casefiles/{{ p.case_id }}" style="display:block; padding:9px 0; {% if not loop.last %}border-bottom:1px solid #F2F0EA;{% endif %} text-decoration:none; color:inherit;">
+      <div style="font-size:13.5px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ p.request or p.case_id }}</div>
+      <div class="meta mono" style="font-size:11.5px; margin-top:2px;">{{ p.system }} → <b>{{ p.human }}</b> · {{ p.actor }}{% if p.at %} · {{ p.at }}{% endif %}</div>
+    </a>
+    {% else %}
+    <p class="meta" style="margin:0;">{{ t('mem.no_precedents') }}</p>
+    {% endfor %}
+  </div>
+</main>
+{% endblock %}

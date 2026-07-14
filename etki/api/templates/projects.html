@@ -1,0 +1,70 @@
+{% extends "pmo_base.html" %}
+{% block title %}{{ t('projects.title') }} — Etki{% endblock %}
+{% block screen %}
+<main style="padding:26px 28px 40px;">
+  <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:16px; margin-bottom:22px; flex-wrap:wrap;">
+    <div>
+      <h1 style="margin:0; font-size:25px; font-weight:800; letter-spacing:-.02em;">{{ t('projects.title') }}</h1>
+      <p style="margin:6px 0 0; font-size:14px; color:#5C6B72;">{{ t('projects.subtitle')|safe }}</p>
+    </div>
+  </div>
+
+  <!-- portfolio summary strip (real data) -->
+  <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:16px; margin-bottom:20px;">
+    <div style="background:#fff; border:1px solid #E6E2D9; border-radius:13px; padding:16px 18px; box-shadow:0 1px 2px rgba(16,40,28,.03);">
+      <span style="font-size:12.5px; color:#5C6B72;">{{ t('projects.stat_projects') }}</span>
+      <div class="mono" style="font-size:26px; font-weight:600; margin-top:6px; line-height:1;">{{ totals.projects }}</div>
+    </div>
+    <div style="background:#fff; border:1px solid #E6E2D9; border-radius:13px; padding:16px 18px; box-shadow:0 1px 2px rgba(16,40,28,.03);">
+      <span style="font-size:12.5px; color:#5C6B72;">{{ t('projects.stat_modules') }}</span>
+      <div class="mono" style="font-size:26px; font-weight:600; margin-top:6px; line-height:1;">{{ totals.modules }}</div>
+    </div>
+    <div style="background:#fff; border:1px solid #E6E2D9; border-radius:13px; padding:16px 18px; box-shadow:0 1px 2px rgba(16,40,28,.03);">
+      <span style="font-size:12.5px; color:#5C6B72;">{{ t('projects.stat_clauses') }}</span>
+      <div class="mono" style="font-size:26px; font-weight:600; margin-top:6px; line-height:1;">{{ totals.clauses }}</div>
+    </div>
+    <div style="background:#fff; border:1px solid #E6E2D9; border-radius:13px; padding:16px 18px; box-shadow:0 1px 2px rgba(16,40,28,.03);">
+      <span style="font-size:12.5px; color:#5C6B72;">{{ t('projects.stat_requests') }}</span>
+      <div class="mono" style="font-size:26px; font-weight:600; margin-top:6px; line-height:1;">{{ totals.cases }}</div>
+    </div>
+  </div>
+
+  <!-- project cards -->
+  <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:16px;">
+    {% for p in projects %}
+    <a href="/projeler/{{ p.id }}" class="pmo-row" style="display:block; background:#fff; border:1px solid #E6E2D9; border-radius:13px; padding:20px 22px; box-shadow:0 1px 2px rgba(16,40,28,.03); cursor:pointer;">
+      <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:12px;">
+        <div style="display:flex; gap:13px; align-items:flex-start; min-width:0;">
+          <div style="width:44px; height:44px; border-radius:11px; background:#E9F2F1; display:flex; align-items:center; justify-content:center; flex:0 0 44px;">
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#0E7C7B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+          </div>
+          <div style="min-width:0;">
+            <div style="font-size:15.5px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ p.name }}</div>
+            <div class="mono" style="font-size:11.5px; color:var(--pmo-muted); margin-top:2px;">{{ p.contract_id }}</div>
+          </div>
+        </div>
+        {% if p.indexed %}
+        <span style="font-size:10.5px; font-weight:600; color:#1E7A43; background:#E6F4EC; padding:3px 9px; border-radius:20px; flex:0 0 auto;">{{ t('common.indexed') }}</span>
+        {% else %}
+        <span style="font-size:10.5px; font-weight:600; color:#A83228; background:#FBEAE8; padding:3px 9px; border-radius:20px; flex:0 0 auto;">{{ t('common.no_index') }}</span>
+        {% endif %}
+      </div>
+      <div style="display:flex; gap:18px; margin-top:16px; flex-wrap:wrap;">
+        <div><div class="mono" style="font-size:18px; font-weight:600;">{{ p.modules }}</div><div style="font-size:11px; color:var(--pmo-muted);">{{ t('common.module') }}</div></div>
+        <div><div class="mono" style="font-size:18px; font-weight:600;">{{ p.clauses }}</div><div style="font-size:11px; color:var(--pmo-muted);">{{ t('common.clause') }}</div></div>
+        <div><div class="mono" style="font-size:18px; font-weight:600;">{{ p.cases }}</div><div style="font-size:11px; color:var(--pmo-muted);">{{ t('common.request') }}</div></div>
+        <div><div class="mono" style="font-size:18px; font-weight:600;">v{{ p.baseline_version }}</div><div style="font-size:11px; color:var(--pmo-muted);">{{ t('common.baseline') }}</div></div>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px; margin-top:16px; font-size:12px; color:var(--pmo-muted); border-top:1px solid #F2F0EA; padding-top:12px;">
+        <span>{{ t('projects.card_footer', d=p.documents, r=p.repos, w=p.work_items) }}</span>
+        <span style="margin-left:auto; color:#9A5F23; font-weight:600;">{{ t('common.open_arrow') }}</span>
+      </div>
+    </a>
+    {% else %}
+    <div style="grid-column:1/-1; background:#fff; border:1px dashed #C9C3B6; border-radius:13px; padding:36px; text-align:center; color:var(--pmo-muted);">
+      {{ t('projects.empty')|safe }}
+    </div>
+    {% endfor %}
+  </div>
+</main>
+{% endblock %}

@@ -1,0 +1,83 @@
+[
+  {
+    "id": "WI-101",
+    "title": "Rapora tarih filtresi eklendi",
+    "description": "reporting modülüne tarih bazlı filtre eklendi",
+    "category": "reporting",
+    "status": "closed",
+    "effort_seconds": 21600,
+    "closed_at": "2026-03-10"
+  },
+  {
+    "id": "WI-102",
+    "title": "Rapor xlsx dışa aktarma",
+    "description": "reporting modülü Excel export seçeneği",
+    "category": "reporting",
+    "status": "closed",
+    "effort_seconds": 18000,
+    "closed_at": "2026-04-02"
+  },
+  {
+    "id": "WI-201",
+    "title": "SSO entegrasyonu (başka müşteri)",
+    "description": "auth modülüne SAML tabanlı tek oturum açma entegrasyonu",
+    "category": "auth",
+    "status": "closed",
+    "effort_seconds": 100800,
+    "closed_at": "2026-02-18"
+  },
+  {
+    "id": "WI-202",
+    "title": "OAuth2 kimlik sağlayıcı bağlantısı",
+    "description": "üçüncü taraf IdP ile OAuth2 entegrasyonu",
+    "category": "auth",
+    "status": "closed",
+    "effort_seconds": 86400,
+    "closed_at": "2026-01-30"
+  },
+  {
+    "id": "WI-310",
+    "title": "Oturum süresi yapılandırması",
+    "description": "auth modülünde oturum TTL ayarı",
+    "category": "auth",
+    "status": "closed",
+    "effort_seconds": 10800,
+    "closed_at": "2026-05-05"
+  },
+  {
+    "id": "WI-103",
+    "title": "Rapor üretim performansı iyileştirildi",
+    "description": "reporting modülü sorgu optimizasyonu",
+    "category": "reporting",
+    "status": "closed",
+    "effort_seconds": 32400,
+    "closed_at": "2026-05-20"
+  },
+  {
+    "id": "WI-401",
+    "title": "Gösterge paneline yeni grafik eklendi",
+    "description": "dashboard standart grafik bileşeni",
+    "category": "dashboard",
+    "status": "closed",
+    "effort_seconds": 36000,
+    "closed_at": "2026-04-18"
+  },
+  {
+    "id": "WI-501",
+    "title": "Dış sistem entegrasyonu (ERP)",
+    "description": "tek dış sistem ile entegrasyon",
+    "category": "integration",
+    "status": "closed",
+    "effort_seconds": 50400,
+    "closed_at": "2026-03-22"
+  },
+  {
+    "id": "WI-601",
+    "title": "Üretimdeki rapor hatası düzeltildi",
+    "description": "bakım kapsamında hata düzeltme",
+    "category": "maintenance",
+    "status": "closed",
+    "effort_seconds": 14400,
+    "closed_at": "2026-05-28"
+  }
+]

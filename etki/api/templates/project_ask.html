@@ -1,0 +1,27 @@
+{% extends "pmo_base.html" %}
+{% from "macros.html" import llm_chip %}
+{% block title %}{{ t('ask.title') }} — {{ project.name }}{% endblock %}
+{% block screen %}
+<main style="padding:26px 28px 40px; max-width:1040px;">
+  <div style="margin-bottom:18px;">
+    <h1 style="margin:0; font-size:25px; font-weight:800; letter-spacing:-.02em;">{{ t('ask.title') }}</h1>
+    <p style="margin:6px 0 0; font-size:14px; color:#5C6B72;">{{ t('ask.subtitle')|safe }}</p>
+    <p style="margin:8px 0 0;">{{ llm_chip(llm) }}</p>
+  </div>
+
+  <div style="background:#fff; border:1px solid #E6E2D9; border-radius:13px; padding:20px 22px; box-shadow:0 1px 2px rgba(16,40,28,.03);">
+    <div id="ask-thread"></div>
+    <form hx-post="/ui/ask" hx-target="#ask-thread" hx-swap="beforeend" hx-indicator="#ask-sp"
+          hx-disabled-elt="find button[type='submit']"
+          hx-on--after-request="this.querySelector('[name=question]').value=''">
+      <input type="hidden" name="project_id" value="{{ project.id }}">
+      <div style="display:flex; gap:10px; align-items:center;">
+        <input type="text" name="question" required placeholder="{{ t('ask.placeholder') }}" style="flex:1;">
+        <button class="btn" type="submit">{{ t('ask.send') }}</button>
+        <span id="ask-sp" class="htmx-indicator meta"><span class="spin"></span> {{ t('ask.searching') }}</span>
+      </div>
+    </form>
+    <p class="meta" style="margin:10px 0 0; font-size:12px;">{{ t('ask.examples')|safe }}</p>
+  </div>
+</main>
+{% endblock %}

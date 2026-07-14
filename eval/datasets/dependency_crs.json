@@ -1,0 +1,86 @@
+[
+  {
+    "id": "DEP-01",
+    "request_text": "requests kütüphanesini 2.32 sürümüne yükseltelim",
+    "expected_decision": "MAINTENANCE",
+    "note": "7.1 bakım maddesi kütüphane sürüm güncellemelerini açıkça kapsıyor; paket manifestte bildirilmiş"
+  },
+  {
+    "id": "DEP-02",
+    "request_text": "pandas sürümünü güncelleyelim",
+    "expected_decision": "MAINTENANCE",
+    "note": "bildirilen paket + sürüm güncelleme maddesi (7.1)"
+  },
+  {
+    "id": "DEP-03",
+    "request_text": "güvenlik zafiyeti için PyYAML yamasını uygulayalım",
+    "expected_decision": "MAINTENANCE",
+    "note": "7.1 güvenlik yamaları; CVE dili bakım"
+  },
+  {
+    "id": "DEP-04",
+    "request_text": "redis kütüphanesini projeye ekleyelim",
+    "expected_decision": "CR_CANDIDATE",
+    "note": "manifestte olmayan YENİ bağımlılık; hiçbir madde yeni altyapı bileşenini kapsamıyor"
+  },
+  {
+    "id": "DEP-05",
+    "request_text": "grafana entegrasyonu için yeni kütüphane eklensin",
+    "expected_decision": "CR_CANDIDATE",
+    "note": "yeni yetenek (izleme entegrasyonu) — sözleşmede karşılığı yok"
+  },
+  {
+    "id": "DEP-06",
+    "request_text": "sqlalchemy 3 sürümüne geçilsin",
+    "expected_decision": "MAINTENANCE",
+    "note": "bildirilen paket + 7.1 sürüm güncellemeleri"
+  },
+  {
+    "id": "DEP-07",
+    "request_text": "upgrade httpx to version 0.28",
+    "expected_decision": "MAINTENANCE",
+    "note": "EN parafraz; bildirilen paket + 7.1"
+  },
+  {
+    "id": "DEP-08",
+    "request_text": "add the stripe payment library",
+    "expected_decision": "CR_CANDIDATE",
+    "note": "EN; ödeme yeteneği sözleşmede hiç yok, paket bildirilmemiş"
+  },
+  {
+    "id": "DEP-09",
+    "request_text": "leftpad paketini son sürüme yükseltelim",
+    "expected_decision": "GRAY_AREA",
+    "note": "bildirilmemiş bir paketin 'yükseltilmesi' — çelişkili durum, PMO'ya eskalasyon beklenir"
+  },
+  {
+    "id": "DEP-10",
+    "request_text": "planımızı premium pakete yükseltelim",
+    "expected_decision": "CR_CANDIDATE",
+    "note": "çeldirici: bağımlılık DEĞİL (ticari talep); sözleşmede karşılığı olmayan yeni istek"
+  },
+  {
+    "id": "DEP-11",
+    "request_text": "rapor üretimindeki hatayı düzeltin",
+    "expected_decision": "MAINTENANCE",
+    "note": "kontrol vakası: klasik hata düzeltme (7.1), bağımlılık dili yok"
+  },
+  {
+    "id": "DEP-12",
+    "request_text": "yeni bir API uç noktası ekleyin",
+    "expected_decision": "IN_SCOPE",
+    "note": "kontrol vakası: 2.1 API servisleri kapsam içinde"
+  },
+  {
+    "id": "DEP-13",
+    "request_text": "migrate the reporting job to Spark",
+    "expected_decision": "CR_CANDIDATE",
+    "note": "EN; framework geçişi = yeni altyapı yeteneği, sözleşmede yok"
+  },
+  {
+    "id": "DEP-14",
+    "request_text": "pytest bağımlılığını son sürüme yükselt",
+    "expected_decision": "MAINTENANCE",
+    "note": "dev bağımlılığı ama yine 7.1 sürüm güncellemesi"
+  }
+]

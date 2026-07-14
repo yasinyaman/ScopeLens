@@ -1,0 +1,58 @@
+{% extends "pmo_base.html" %}
+{% from "macros.html" import glossary, llm_chip %}
+{% block title %}Triyaj — {{ project.name }}{% endblock %}
+{% block screen %}
+<main style="padding:26px 28px 40px; max-width:1040px;">
+  <div style="margin-bottom:18px;">
+    <h1 style="margin:0; font-size:25px; font-weight:800; letter-spacing:-.02em;">{{ t('nav.triage') }}</h1>
+    <p style="margin:6px 0 0; font-size:14px; color:#5C6B72;">{{ t('triage.subtitle')|safe }}</p>
+    <p style="margin:8px 0 0;">{{ llm_chip(llm) }}</p>
+  </div>
+
+  {% set _viewer = (request.session.get('user') or {}).get('role') == 'viewer' %}
+  {% if _viewer %}
+  <div class="summary" style="margin:0 0 16px;">{{ t('triage.viewer_readonly') }}</div>
+  {% else %}
+  <!-- tek talep -->
+  <div style="background:#fff; border:1px solid #E6E2D9; border-radius:13px; padding:20px 22px; box-shadow:0 1px 2px rgba(16,40,28,.03);">
+    <form hx-post="/ui/triage" hx-target="#results" hx-swap="innerHTML" hx-indicator="#sp"
+          hx-disabled-elt="find button[type='submit']">
+      <input type="hidden" name="project_id" value="{{ project.id }}">
+      <textarea name="request_text" rows="3" required
+        placeholder="{{ t('triage.placeholder') }}"></textarea>
+      <div style="display:flex; align-items:center; gap:12px; margin-top:12px;">
+        <button class="btn" type="submit">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12 h14"/><path d="M13 6 l6 6 -6 6"/></svg>
+          {{ t('triage.submit') }}
+        </button>
+        <span id="sp" class="htmx-indicator meta"><span class="spin"></span> {{ t('triage.analyzing') }}</span>
+      </div>
+    </form>
+  </div>
+
+  <div id="results"></div>
+
+  <!-- batch triage via document / scope extraction (Analysis) -->
+  <div style="background:#fff; border:1px solid #E6E2D9; border-radius:13px; padding:20px 22px; box-shadow:0 1px 2px rgba(16,40,28,.03); margin-top:18px;">
+    <h3 style="margin:0 0 4px; font-size:15.5px; font-weight:700;">{{ t('triage.doc_analysis') }}</h3>
+    <p style="margin:0 0 14px; font-size:12.5px; color:var(--pmo-muted);">{{ t('triage.doc_desc')|safe }}</p>
+    <form hx-post="/ui/analyze" hx-target="#analyze-results" hx-swap="innerHTML" hx-encoding="multipart/form-data" hx-indicator="#sp2"
+          hx-disabled-elt="find button[type='submit']">
+      <input type="hidden" name="project_id" value="{{ project.id }}">
+      <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+        <select name="mode">
+          <option value="triage">{{ t('triage.mode_batch') }}</option>
+          <option value="scope">{{ t('triage.mode_scope') }}</option>
+        </select>
+        <input type="file" name="file" required style="padding:8px; border:1px dashed #C9C3B6; background:#FAF9F5;">
+        <button class="btn ghost" type="submit">{{ t('triage.upload_process') }}</button>
+        <span id="sp2" class="htmx-indicator meta"><span class="spin"></span> {{ t('triage.processing') }}</span>
+      </div>
+    </form>
+    <div id="analyze-results"></div>
+  </div>
+  {% endif %}
+
+  {{ glossary() }}
+</main>
+{% endblock %}

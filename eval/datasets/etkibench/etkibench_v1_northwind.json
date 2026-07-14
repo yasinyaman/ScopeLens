@@ -1,0 +1,86 @@
+[
+  {
+    "id": "KN-01",
+    "stratum": "in_scope_direct",
+    "request_text": "Track the order status from the warehouse to the customer's door",
+    "expected_decision": "IN_SCOPE",
+    "rationale": "Order status tracking is included by Clause 2.1."
+  },
+  {
+    "id": "KN-02",
+    "stratum": "in_scope_paraphrase",
+    "request_text": "The site should remember what someone piled into their basket last week",
+    "expected_decision": "IN_SCOPE",
+    "rationale": "Paraphrase of persistent shopping-cart management, included by Clause 2.1."
+  },
+  {
+    "id": "KN-03",
+    "stratum": "in_scope_paraphrase",
+    "request_text": "Browse only the kitchenware section of the shop",
+    "expected_decision": "IN_SCOPE",
+    "rationale": "Paraphrase of category filtering in the catalog, included by Clause 2.3."
+  },
+  {
+    "id": "KN-04",
+    "stratum": "out_of_scope_direct",
+    "request_text": "Let sellers from other companies list their goods in our catalog",
+    "expected_decision": "OUT_OF_SCOPE",
+    "rationale": "Third-party marketplace seller integration is excluded by Clause 6.1."
+  },
+  {
+    "id": "KN-05",
+    "stratum": "out_of_scope_paraphrase",
+    "request_text": "Take payments in coins that live on a blockchain",
+    "expected_decision": "OUT_OF_SCOPE",
+    "rationale": "Paraphrase of cryptocurrency payment, excluded by Clause 6.1."
+  },
+  {
+    "id": "KN-06",
+    "stratum": "out_of_scope_adversarial",
+    "request_text": "Show partner merchants' items in the search results",
+    "expected_decision": "OUT_OF_SCOPE",
+    "rationale": "Wears product-search vocabulary (Clause 2.3) but presupposes marketplace sellers, excluded by Clause 6.1."
+  },
+  {
+    "id": "KN-07",
+    "stratum": "cr_new_capability",
+    "request_text": "Offer a gift-wrap option on the order",
+    "expected_decision": "CR_CANDIDATE",
+    "rationale": "Near the orders clause (2.1) but gift-wrapping is a deliverable no clause grants."
+  },
+  {
+    "id": "KN-08",
+    "stratum": "cr_new_capability",
+    "request_text": "Customers earn loyalty points with every purchase",
+    "expected_decision": "CR_CANDIDATE",
+    "rationale": "A loyalty program is a new capability; no clause covers it."
+  },
+  {
+    "id": "KN-09",
+    "stratum": "cr_limit_quota",
+    "request_text": "Add a fourth payment provider to the lineup",
+    "expected_decision": "CR_CANDIDATE",
+    "rationale": "Clause 2.2 supports at most 3 payment providers; a fourth exceeds the contractual limit."
+  },
+  {
+    "id": "KN-10",
+    "stratum": "cr_effort_pool",
+    "request_text": "Integrate the bank's new card gateway",
+    "expected_decision": "CR_CANDIDATE",
+    "rationale": "Card-payment integration falls under Clause 2.2, whose 30-hour effort pool is exhausted by the logged work items."
+  },
+  {
+    "id": "KN-11",
+    "stratum": "maintenance",
+    "request_text": "The category filter shows an empty page for the electronics aisle",
+    "expected_decision": "MAINTENANCE",
+    "rationale": "Defect report against delivered catalog filtering (Clause 2.3); bug-fix maintenance is in scope per Clause 7.1."
+  },
+  {
+    "id": "KN-12",
+    "stratum": "gray_vague",
+    "request_text": "better onboarding",
+    "expected_decision": "GRAY_AREA",
+    "rationale": "Too vague to map to any clause; the copilot should escalate to the PMO rather than guess."
+  }
+]

@@ -1,0 +1,16 @@
+# Held-out validation corpus anchor: Northwind Shop (EN e-commerce).
+# See eval/datasets/etkibench/README.md — "Held-out validation" protocol.
+connectors:
+  documents:
+    adapter: filesystem
+    options:
+      root: samples/demo_shop_en
+      globs: ["*.md"]
+  code_repo:
+    adapter: ast
+    options:
+      src_root: samples/demo_shop_en/src
+  work_items:
+    adapter: file
+    options:
+      path: samples/demo_shop_en/work_items.json

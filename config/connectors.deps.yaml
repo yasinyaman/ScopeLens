@@ -1,0 +1,17 @@
+# Dependency-change measurement corpus anchor (samples/demo_deps): the 7.1
+# maintenance clause covers library version updates and the manifests declare
+# real packages — the corpus eval/datasets/dependency_crs.json is labeled
+# against. ast engine → reproducible without a JVM.
+connectors:
+  documents:
+    adapter: filesystem
+    options:
+      root: samples/demo_deps
+      globs: ["*.md"]
+  code_repo:
+    adapter: ast
+    options:
+      src_root: samples/demo_deps/src
+  work_items:
+    adapter: none
+    options: {}

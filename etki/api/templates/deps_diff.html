@@ -1,0 +1,84 @@
+{% if r.error %}
+<p class="meta" style="margin:8px 0 0; color:#A83228;">⚠ {{ r.error }}</p>
+{% else %}
+<div style="margin-top:12px; padding:14px 16px; background:#FAF9F5; border:1px solid #ECE9E2; border-radius:11px;">
+  <div style="font-weight:700; font-size:13.5px; margin-bottom:10px;">
+    <span class="mono">{{ r.package }}</span> {{ r.old_version }} → {{ r.new_version }}
+    <span class="meta" style="font-weight:500;">({{ t('vd.api_summary', removed=r.counts.removed, added=r.counts.added, changed=r.counts.changed) }})</span>
+  </div>
+
+  <!-- your_code: what breaks THIS project -->
+  <div style="font-size:12.5px; font-weight:700; margin-bottom:5px;">{{ t('vd.your_code') }}</div>
+  {% if not r.used_paths %}
+  <p class="meta" style="font-size:12px; margin:0 0 8px;">{{ t('vd.no_usage') }}</p>
+  {% else %}
+  {% for b in r.your_code.broken %}
+  <div style="font-size:12.5px; color:#A83228; margin:2px 0;">✗ <span class="mono">{{ b.path }}</span> — {{ t('vd.broken') }}{% if b.hint %} <span class="meta">({{ t('vd.hint') }}: {{ b.hint|join(', ') }})</span>{% endif %}</div>
+  {% endfor %}
+  {% for c in r.your_code.changed %}
+  <div style="font-size:12.5px; color:#A84E12; margin:2px 0;">~ <span class="mono">{{ c.path }}</span>: <span class="mono" style="color:var(--pmo-muted);">{{ c.old }}</span> → <span class="mono">{{ c.new }}</span></div>
+  {% endfor %}
+  {% for u in r.your_code.unresolved %}
+  <div style="font-size:12.5px; color:var(--pmo-muted); margin:2px 0;">? <span class="mono">{{ u }}</span> — {{ t('vd.unresolved') }}</div>
+  {% endfor %}
+  <div style="font-size:12px; color:#1E7A43; margin:3px 0 8px;">✓ {{ t('vd.ok', n=r.your_code.ok|length) }}</div>
+  {% endif %}
+
+  <!-- library API diff: the actual removed / changed / added symbols -->
+  {% set _c = r.counts %}
+  {% if _c.removed or _c.changed or _c.added %}
+  <details style="margin:8px 0;">
+    <summary style="font-size:12.5px; font-weight:700; cursor:pointer;">{{ t('vd.api_changes', removed=_c.removed, changed=_c.changed, added=_c.added) }}</summary>
+    <div style="margin:7px 0 0 2px; max-height:340px; overflow-y:auto;">
+      {% if r.used.removed or r.used.changed %}
+      <div style="font-size:12px; font-weight:700; color:#A83228; margin:2px 0 4px;">{{ t('vd.used_hits') }}</div>
+      {% for s in r.used.removed %}
+      <div style="font-size:12px; margin:1px 0;">✗ <span class="mono">{{ s }}</span></div>
+      {% endfor %}
+      {% for c in r.used.changed %}
+      <div style="font-size:12px; margin:1px 0;">~ <span class="mono">{{ c.symbol }}</span>: <span class="mono" style="color:var(--pmo-muted);">{{ c.old }}</span> → <span class="mono">{{ c.new }}</span></div>
+      {% endfor %}
+      {% endif %}
+      {% if r.all.removed %}
+      <div style="font-size:12px; font-weight:700; margin:6px 0 3px;">{{ t('vd.removed_h') }}</div>
+      {% for s in r.all.removed[:25] %}
+      <div style="font-size:12px; color:#A83228; margin:1px 0;">✗ <span class="mono">{{ s }}</span></div>
+      {% endfor %}
+      {% if _c.removed > 25 %}<div class="meta" style="font-size:11.5px;">{{ t('vd.more', n=_c.removed - 25) }}</div>{% endif %}
+      {% endif %}
+      {% if r.all.changed %}
+      <div style="font-size:12px; font-weight:700; margin:6px 0 3px;">{{ t('vd.changed_h') }}</div>
+      {% for c in r.all.changed[:25] %}
+      <div style="font-size:12px; color:#A84E12; margin:1px 0;">~ <span class="mono">{{ c.symbol }}</span>: <span class="mono" style="color:var(--pmo-muted);">{{ c.old }}</span> → <span class="mono">{{ c.new }}</span></div>
+      {% endfor %}
+      {% if _c.changed > 25 %}<div class="meta" style="font-size:11.5px;">{{ t('vd.more', n=_c.changed - 25) }}</div>{% endif %}
+      {% endif %}
+      {% if r.all.added %}
+      <div style="font-size:12px; font-weight:700; margin:6px 0 3px;">{{ t('vd.added_h') }}</div>
+      {% for s in r.all.added[:25] %}
+      <div style="font-size:12px; color:#1E7A43; margin:1px 0;">+ <span class="mono">{{ s }}</span></div>
+      {% endfor %}
+      {% if _c.added > 25 %}<div class="meta" style="font-size:11.5px;">{{ t('vd.more', n=_c.added - 25) }}</div>{% endif %}
+      {% endif %}
+    </div>
+  </details>
+  {% else %}
+  <p class="meta" style="font-size:12px; margin:8px 0;">{{ t('vd.no_api_changes') }}</p>
+  {% endif %}
+
+  <!-- vulnerabilities per exact version -->
+  <div style="font-size:12.5px; font-weight:700; margin:8px 0 5px;">{{ t('vd.vulns') }}</div>
+  <div style="font-size:12.5px; margin:2px 0;">
+    <span class="mono">{{ r.old_version }}</span>:
+    {% if r.vulnerabilities.old %}<b style="color:#A83228;">{{ r.vulnerabilities.old|length }}</b>
+      {% for v in r.vulnerabilities.old[:4] %}<a href="https://osv.dev/vulnerability/{{ v.id }}" target="_blank" rel="noopener" class="mono" style="font-size:11px; margin-left:4px;">{{ v.aliases[0] if v.aliases else v.id }}</a>{% endfor %}
+    {% else %}<span style="color:#1E7A43;">{{ t('vd.clean') }}</span>{% endif %}
+  </div>
+  <div style="font-size:12.5px; margin:2px 0;">
+    <span class="mono">{{ r.new_version }}</span>:
+    {% if r.vulnerabilities.new %}<b style="color:#A84E12;">{{ r.vulnerabilities.new|length }}</b>
+      {% for v in r.vulnerabilities.new[:4] %}<a href="https://osv.dev/vulnerability/{{ v.id }}" target="_blank" rel="noopener" class="mono" style="font-size:11px; margin-left:4px;">{{ v.aliases[0] if v.aliases else v.id }}</a>{% endfor %}
+    {% else %}<span style="color:#1E7A43;">{{ t('vd.clean') }}</span>{% endif %}
+  </div>
+</div>
+{% endif %}

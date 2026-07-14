@@ -1,0 +1,13 @@
+{% if events %}
+<div style="margin-top:8px; padding:10px 12px; background:#FAF9F5; border:1px solid #EEEBE4; border-radius:9px;">
+  {% for e in events %}
+  <div style="display:flex; align-items:center; gap:10px; padding:3px 0; font-size:12.5px;">
+    <span class="mono" style="color:var(--pmo-muted); flex:0 0 auto;">{{ e.ts[:16]|replace('T', ' ') }}</span>
+    <span style="flex:1 1 auto;">{{ t('ih.row', m=e.modules, c=e.clauses) }}</span>
+    <span class="mono" style="flex:0 0 auto; color:#5C6B72;">{{ e.seconds }} sn</span>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<p class="meta" style="margin:8px 0 0; font-size:12px;">{{ t('ih.empty') }}</p>
+{% endif %}

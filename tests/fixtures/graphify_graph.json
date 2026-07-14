@@ -1,0 +1,20 @@
+{
+  "input_tokens": 0,
+  "output_tokens": 0,
+  "nodes": [
+    {"id": "auth_service", "label": "service.py", "file_type": "code", "source_file": "auth/service.py", "source_location": "L1", "_origin": "ast"},
+    {"id": "auth_service_login", "label": "login()", "file_type": "code", "source_file": "auth/service.py", "source_location": "L10", "_origin": "ast"},
+    {"id": "auth_service_AuthService", "label": "AuthService", "type": "class", "file_type": "code", "source_file": "auth/service.py", "source_location": "L20", "_origin": "ast"},
+    {"id": "db_models", "label": "models.py", "file_type": "code", "source_file": "db/models.py", "source_location": "L1", "_origin": "ast"},
+    {"id": "db_models_get_user", "label": "get_user()", "type": "function", "file_type": "code", "source_file": "db/models.py", "source_location": "L5", "_origin": "ast"},
+    {"id": "pkg_util", "label": "pkg.util", "file_type": "code", "source_file": "pkg/util.py", "source_location": "L1", "_origin": "ast"},
+    {"id": "concept_scope", "label": "Scope management", "file_type": "concept", "source_file": "docs/notes.md", "source_location": "L1"}
+  ],
+  "edges": [
+    {"source": "auth_service", "target": "db", "relation": "imports_from", "context": "import", "confidence": "EXTRACTED", "source_file": "auth/service.py", "source_location": "L3", "weight": 1.0},
+    {"source": "auth_service", "target": "pkg_util", "relation": "imports", "confidence": "EXTRACTED", "weight": 1.0},
+    {"source": "auth_service", "target": "auth_service_login", "relation": "contains", "confidence": "EXTRACTED", "source_file": "auth/service.py", "source_location": "L10", "weight": 1.0},
+    {"source": "auth_service_login", "target": "db_models_get_user", "relation": "calls", "confidence": "EXTRACTED", "weight": 1.0}
+  ],
+  "hyperedges": []
+}

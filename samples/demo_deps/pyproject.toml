@@ -1,0 +1,10 @@
+[project]
+name = "demo-deps"
+version = "0.1.0"
+dependencies = [
+  "httpx[http2]>=0.27",
+  "sqlalchemy",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]

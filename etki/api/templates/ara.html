@@ -1,0 +1,29 @@
+{% extends "pmo_base.html" %}
+{% block title %}{{ t('ara.title') }} — Etki{% endblock %}
+{% block screen %}
+<main style="padding:26px 28px 40px;">
+  <h1 style="margin:0; font-size:25px; font-weight:800; letter-spacing:-.02em;">{{ t('ara.title') }}</h1>
+  {% if q %}
+  <p style="margin:6px 0 18px; font-size:14px; color:#5C6B72;">{{ t('ara.found', p=project_hits|length, c=case_hits|length) }} · "<b>{{ q }}</b>"</p>
+
+  <h3 style="font-size:13px; font-weight:700; color:var(--pmo-muted); text-transform:uppercase; letter-spacing:.04em; margin:14px 0 8px;" class="mono">{{ t('nav.projects') }}</h3>
+  {% for p in project_hits %}
+  <a href="/projeler/{{ p.id }}" class="pmo-row" style="display:flex; align-items:center; gap:11px; background:#fff; border:1px solid #E6E2D9; border-radius:11px; padding:13px 16px; margin-bottom:8px; box-shadow:0 1px 2px rgba(16,40,28,.03);">
+    <span style="width:8px; height:8px; border-radius:50%; background:{{ '#12938F' if p.indexed else '#C6413A' }}; flex:0 0 8px;"></span>
+    <div style="flex:1; min-width:0;"><div style="font-size:13.5px; font-weight:600;">{{ p.name }}</div><div class="mono" style="font-size:11.5px; color:var(--pmo-muted);">{{ p.contract_id }} · {{ t('ara.modules_clauses', m=p.modules, c=p.clauses) }}</div></div>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#B4ADA0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6 l6 6 -6 6"/></svg>
+  </a>
+  {% else %}<p class="meta" style="margin:0 0 10px;">{{ t('ara.no_project') }}</p>{% endfor %}
+
+  <h3 style="font-size:13px; font-weight:700; color:var(--pmo-muted); text-transform:uppercase; letter-spacing:.04em; margin:22px 0 8px;" class="mono">{{ t('ara.requests_section') }}</h3>
+  {% for c in case_hits %}
+  <a href="/ui/casefiles/{{ c.id }}" class="pmo-row" style="display:flex; align-items:center; gap:11px; background:#fff; border:1px solid #E6E2D9; border-radius:11px; padding:13px 16px; margin-bottom:8px; box-shadow:0 1px 2px rgba(16,40,28,.03);">
+    <div style="flex:1; min-width:0;"><div style="font-size:13.5px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ c.request }}</div><div class="mono" style="font-size:11.5px; color:var(--pmo-muted);">{{ c.project }} · {{ c.id }}</div></div>
+    {% for d in c.decisions %}<span style="font-size:10.5px; font-weight:600; color:{{ d.color }}; background:{{ d.bg }}; padding:2px 8px; border-radius:12px;">{{ d.label }}</span>{% endfor %}
+  </a>
+  {% else %}<p class="meta" style="margin:0;">{{ t('ara.no_request') }}</p>{% endfor %}
+  {% else %}
+  <p style="margin:10px 0 0; font-size:14px; color:#5C6B72;">{{ t('ara.hint') }}</p>
+  {% endif %}
+</main>
+{% endblock %}

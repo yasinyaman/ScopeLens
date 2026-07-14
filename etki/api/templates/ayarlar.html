@@ -1,0 +1,152 @@
+{% extends "pmo_base.html" %}
+{% from "macros.html" import llm_chip %}
+{% block title %}{{ t('nav.settings') }} — Etki{% endblock %}
+{% block screen %}
+<main style="padding:26px 28px 40px; max-width:860px;">
+  <div style="margin-bottom:18px;">
+    <h1 style="margin:0; font-size:25px; font-weight:800; letter-spacing:-.02em;">{{ t('nav.settings') }}</h1>
+    <p style="margin:6px 0 0; font-size:14px; color:#5C6B72;">{{ t('set.subtitle') }}</p>
+  </div>
+
+  {% if saved %}<div class="summary" style="margin:0 0 16px;">✓ {{ t('set.saved') }}</div>{% endif %}
+  {% if error %}<div class="summary err" style="margin:0 0 16px;">⚠ {{ error }}</div>{% endif %}
+
+  <!-- LLM PROVIDER -->
+  <div style="background:#fff; border:1px solid #E6E2D9; border-radius:13px; padding:20px 22px; box-shadow:0 1px 2px rgba(16,40,28,.03);">
+    <h3 style="margin:0 0 4px; font-size:15.5px; font-weight:700;">{{ t('set.llm_title') }} {{ llm_chip(llm) }}</h3>
+    <p style="margin:0 0 14px; font-size:12.5px; color:var(--pmo-muted);">{{ t('set.llm_desc') }}</p>
+
+    <form method="post" action="/ayarlar/llm">
+      <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:16px;">
+        <label style="display:flex; align-items:center; gap:9px; font-size:13.5px; cursor:pointer;">
+          <input type="radio" name="mode" value="off" {{ 'checked' if form.mode == 'off' else '' }} style="accent-color:#9A5F23;">
+          {{ t('set.mode_off') }}
+        </label>
+        <label style="display:flex; align-items:center; gap:9px; font-size:13.5px; cursor:pointer;">
+          <input type="radio" name="mode" value="anthropic" {{ 'checked' if form.mode == 'anthropic' else '' }} style="accent-color:#9A5F23;">
+          {{ t('set.mode_anthropic') }}
+        </label>
+        <label style="display:flex; align-items:center; gap:9px; font-size:13.5px; cursor:pointer;">
+          <input type="radio" name="mode" value="openai" {{ 'checked' if form.mode == 'openai' else '' }} style="accent-color:#9A5F23;">
+          {{ t('set.mode_openai') }}
+        </label>
+      </div>
+
+      <!-- Anthropic -->
+      <fieldset style="border:1px solid #E6E2D9; border-radius:10px; padding:14px 16px; margin:0 0 12px;">
+        <legend style="font-size:12.5px; font-weight:700; color:#33424A; padding:0 6px;">{{ t('set.mode_anthropic') }}</legend>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+          <div>
+            <label style="display:block; font-size:13px; font-weight:600; color:#33424A; margin-bottom:6px;">{{ t('set.api_key') }}</label>
+            <input type="password" name="anthropic_api_key" autocomplete="off" style="width:100%;"
+                   placeholder="{{ t('set.key_saved_ph') if form.has_anthropic_key else t('set.key_empty_ph') }}">
+          </div>
+          <div>
+            <label style="display:block; font-size:13px; font-weight:600; color:#33424A; margin-bottom:6px;">{{ t('set.model') }}</label>
+            <input type="text" name="anthropic_model" value="{{ form.anthropic_model }}" style="width:100%;">
+          </div>
+        </div>
+      </fieldset>
+
+      <!-- OpenAI-compatible -->
+      <fieldset style="border:1px solid #E6E2D9; border-radius:10px; padding:14px 16px; margin:0 0 14px;">
+        <legend style="font-size:12.5px; font-weight:700; color:#33424A; padding:0 6px;">{{ t('set.mode_openai') }}</legend>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+          <div>
+            <label style="display:block; font-size:13px; font-weight:600; color:#33424A; margin-bottom:6px;">{{ t('set.base_url') }}</label>
+            <input type="text" name="llm_base_url" value="{{ form.llm_base_url }}" placeholder="http://localhost:11434/v1" style="width:100%;">
+          </div>
+          <div>
+            <label style="display:block; font-size:13px; font-weight:600; color:#33424A; margin-bottom:6px;">{{ t('set.model') }}</label>
+            <input type="text" name="llm_model" value="{{ form.llm_model }}" style="width:100%;">
+          </div>
+          <div>
+            <label style="display:block; font-size:13px; font-weight:600; color:#33424A; margin-bottom:6px;">{{ t('set.api_key_opt') }}</label>
+            <input type="password" name="llm_api_key" autocomplete="off" style="width:100%;"
+                   placeholder="{{ t('set.key_saved_ph') if form.has_llm_key else '' }}">
+          </div>
+          <div>
+            <label style="display:block; font-size:13px; font-weight:600; color:#33424A; margin-bottom:6px;">{{ t('set.timeout') }}</label>
+            <input type="text" name="llm_timeout" value="{{ form.llm_timeout }}" style="width:140px;">
+          </div>
+        </div>
+      </fieldset>
+
+      <label style="display:flex; align-items:center; gap:8px; font-size:12.5px; color:#8A4A44; margin-bottom:16px; cursor:pointer;">
+        <input type="checkbox" name="clear_keys" value="1" style="accent-color:#A83228;">
+        {{ t('set.clear_keys') }}
+      </label>
+
+      <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+        <button class="btn" type="submit">{{ t('set.save') }}</button>
+        <button class="btn ghost" type="button"
+                hx-post="/ayarlar/llm/test" hx-target="#llm-test-result" hx-swap="innerHTML"
+                hx-indicator="#llm-test-sp">{{ t('set.test') }}</button>
+        <span id="llm-test-sp" class="htmx-indicator meta">{{ t('set.testing') }}</span>
+        <span id="llm-test-result"></span>
+      </div>
+    </form>
+
+    <p class="meta" style="margin:16px 0 0; font-size:12px;">{{ t('set.storage_note')|safe }}</p>
+  </div>
+
+  <!-- USERS -->
+  <div style="background:#fff; border:1px solid #E6E2D9; border-radius:13px; padding:20px 22px; box-shadow:0 1px 2px rgba(16,40,28,.03); margin-top:18px;">
+    <h3 style="margin:0 0 4px; font-size:15.5px; font-weight:700;">{{ t('set.users_title') }}</h3>
+    <p style="margin:0 0 14px; font-size:12.5px; color:var(--pmo-muted);">{{ t('set.users_desc')|safe }}</p>
+
+    <table class="md" style="width:100%; margin:0 0 6px;">
+      <thead><tr>
+        <th style="text-align:left;">{{ t('set.username') }}</th>
+        <th style="text-align:left;">{{ t('set.role') }} · {{ t('set.projects_grants') }}</th>
+        <th style="text-align:left;">{{ t('set.new_password') }}</th>
+        <th></th>
+      </tr></thead>
+      <tbody>
+      {% for u in users %}
+      <tr>
+        <td style="vertical-align:top; padding-top:14px;"><b>{{ u.username }}</b></td>
+        <td>
+          <form method="post" action="/ayarlar/kullanicilar/{{ u.username }}/guncelle"
+                style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+            <select name="role">
+              {% for r in roles %}<option value="{{ r }}" {{ 'selected' if u.role == r else '' }}>{{ t('role.' ~ r) }}</option>{% endfor %}
+            </select>
+            <input type="text" name="projects" value="{{ u.projects }}" placeholder="{{ t('set.projects_ph') }}" style="width:200px;">
+            <button class="btn ghost" type="submit" style="padding:7px 12px;">{{ t('set.update') }}</button>
+          </form>
+        </td>
+        <td>
+          <form method="post" action="/ayarlar/kullanicilar/{{ u.username }}/parola"
+                style="display:flex; gap:8px; align-items:center;">
+            <input type="password" name="new_password" required autocomplete="new-password" style="width:150px;">
+            <button class="btn ghost" type="submit" style="padding:7px 12px;">{{ t('set.reset_pw') }}</button>
+          </form>
+        </td>
+        <td style="text-align:right;">
+          <form method="post" action="/ayarlar/kullanicilar/{{ u.username }}/sil"
+                onsubmit="return confirm('{{ t('set.delete_user_confirm', u=u.username) }}');">
+            <button class="btn ghost danger" type="submit" style="padding:7px 12px;">{{ t('set.delete_user') }}</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    <p class="meta" style="margin:0 0 16px; font-size:12px;">{{ t('set.reset_pw_note') }}</p>
+
+    <h4 style="margin:0 0 8px; font-size:13.5px; font-weight:700;">{{ t('set.user_new') }}</h4>
+    <form method="post" action="/ayarlar/kullanicilar"
+          style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+      <input type="text" name="username" required placeholder="{{ t('set.username') }}" style="width:160px;">
+      <input type="password" name="password" required autocomplete="new-password" placeholder="{{ t('set.password') }}" style="width:150px;">
+      <select name="role">
+        {% for r in roles %}<option value="{{ r }}">{{ t('role.' ~ r) }}</option>{% endfor %}
+      </select>
+      <input type="text" name="projects" placeholder="{{ t('set.projects_ph') }}" style="width:220px;">
+      <button class="btn" type="submit">{{ t('set.create') }}</button>
+    </form>
+    <p class="meta" style="margin:10px 0 0; font-size:12px;">{{ all_projects|join(' · ') }}</p>
+  </div>
+</main>
+{% endblock %}

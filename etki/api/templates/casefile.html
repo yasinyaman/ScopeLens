@@ -1,0 +1,11 @@
+{% extends "pmo_base.html" %}
+{% block title %}Case {{ case.request_id }} — Etki{% endblock %}
+{% block screen %}
+<main style="padding:22px 28px 40px; max-width:1040px;">
+  <a href="{% if case.project_id %}/projeler/{{ case.project_id }}/gecmis?filtre=bekleyen{% else %}/{% endif %}" style="display:inline-flex; align-items:center; gap:7px; font-size:13px; font-weight:600; color:#5C6B72; margin-bottom:16px;">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6 l-6 6 6 6"/></svg>
+    {{ t('cf.back_approvals') }}
+  </a>
+  <div id="casefile">{% include "casefile_body.html" %}</div>
+</main>
+{% endblock %}

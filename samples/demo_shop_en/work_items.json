@@ -1,0 +1,47 @@
+[
+  {
+    "id": "NW-101",
+    "title": "Add-to-cart flow",
+    "description": "adding products to the shopping cart with quantity handling",
+    "category": "cart",
+    "status": "closed",
+    "effort_seconds": 25200,
+    "closed_at": "2026-02-14"
+  },
+  {
+    "id": "NW-102",
+    "title": "Order status tracking",
+    "description": "order state machine and status page in the cart module",
+    "category": "cart",
+    "status": "closed",
+    "effort_seconds": 18000,
+    "closed_at": "2026-03-08"
+  },
+  {
+    "id": "NW-201",
+    "title": "Credit card payment integration",
+    "description": "first payment provider integration with card processing",
+    "category": "payment",
+    "status": "closed",
+    "effort_seconds": 43200,
+    "closed_at": "2026-04-02"
+  },
+  {
+    "id": "NW-202",
+    "title": "Crypto payment experiment (different client)",
+    "description": "bitcoin payment gateway prototype in the payment module",
+    "category": "payment",
+    "status": "closed",
+    "effort_seconds": 90000,
+    "closed_at": "2026-01-20"
+  },
+  {
+    "id": "NW-301",
+    "title": "Product search and filtering",
+    "description": "catalog search by name and category filter",
+    "category": "catalog",
+    "status": "closed",
+    "effort_seconds": 21600,
+    "closed_at": "2026-05-11"
+  }
+]

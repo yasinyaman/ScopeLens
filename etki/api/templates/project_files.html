@@ -1,0 +1,123 @@
+{% extends "pmo_base.html" %}
+{% from "macros.html" import llm_chip %}
+{% block title %}{{ t('pd.files_settings') }} — {{ project.name }}{% endblock %}
+{% block screen %}
+<main style="padding:26px 28px 40px; max-width:1040px;">
+  <div style="margin-bottom:18px;">
+    <h1 style="margin:0; font-size:25px; font-weight:800; letter-spacing:-.02em;">{{ t('pd.files_settings') }}</h1>
+    <p style="margin:6px 0 0; font-size:14px; color:#5C6B72;">{{ t('pf.subtitle') }}</p>
+  </div>
+
+  {% if error %}<div class="summary err" style="margin:0 0 16px;">⚠ {{ error }}</div>{% endif %}
+
+  <!-- DOCUMENTS -->
+  <div style="background:#fff; border:1px solid #E6E2D9; border-radius:13px; padding:20px 22px; box-shadow:0 1px 2px rgba(16,40,28,.03); margin-bottom:16px;">
+    <h3 style="margin:0 0 4px; font-size:15.5px; font-weight:700;">{{ t('pd.documents') }}</h3>
+    <p style="margin:0 0 14px; font-size:12.5px; color:var(--pmo-muted);">{{ t('pf.doc_desc') }}</p>
+    <form method="post" action="/projeler/{{ project.id }}/dosyalar/upload" enctype="multipart/form-data">
+      <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+        <input type="file" name="files" multiple required style="padding:8px; border:1px dashed #C9C3B6; background:#FAF9F5;">
+        <button class="btn" type="submit">{{ t('pf.upload_index') }}</button>
+      </div>
+    </form>
+    <div style="display:flex; flex-direction:column; gap:8px; margin-top:14px;">
+      {% for doc in documents %}
+      <div style="display:flex; align-items:center; gap:10px; padding:8px 0; {% if not loop.last %}border-bottom:1px solid #F2F0EA;{% endif %}">
+        <span style="width:26px; height:26px; border-radius:7px; background:#F1EFE9; color:#55666D; display:flex; align-items:center; justify-content:center; flex:0 0 26px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3 H14 L18 7 V21 H6 Z"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="16.5" x2="15" y2="16.5"/></svg></span>
+        <div style="flex:1; min-width:0;">
+          <div style="font-size:12.5px; color:#33424A; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ doc.name }}{% if not doc.deletable %} <span class="mono" style="font-size:9.5px; font-weight:600; color:#5C6B72; background:#EAF1FB; padding:1px 6px; border-radius:9px;">{{ t('pf.source_badge') }}</span>{% endif %}</div>
+          <div class="mono" style="font-size:10.5px; color:var(--pmo-muted);">{% if doc.size is not none %}{{ doc.size }} B · {% endif %}{{ doc.source }}</div>
+        </div>
+        <button type="button" class="btn ghost" style="font-size:11.5px; padding:4px 10px;"
+                hx-get="/projeler/{{ project.id }}/dosyalar/onizle?doc={{ doc.id|urlencode }}"
+                hx-target="#doc-preview" hx-swap="innerHTML" hx-indicator="#prev-sp">{{ t('pf.preview') }}</button>
+        {% if doc.deletable %}
+        <form method="post" action="/projeler/{{ project.id }}/dosyalar/{{ doc.name }}/sil" onsubmit="return confirm('{{ t('pf.confirm_doc') }}');" style="display:flex;">
+          <button class="btn ghost danger" type="submit" style="font-size:11.5px; padding:4px 10px;">{{ t('common.delete') }}</button>
+        </form>
+        {% endif %}
+      </div>
+      {% else %}
+      <p style="font-size:13px; color:var(--pmo-muted); margin:6px 0 0;">{{ t('pf.no_docs') }}</p>
+      {% endfor %}
+    </div>
+    <span id="prev-sp" class="htmx-indicator meta" style="margin-top:8px;">{{ t('pf.preview_loading') }}</span>
+    <div id="doc-preview" style="margin-top:12px;"></div>
+  </div>
+
+  <!-- REPOLAR -->
+  <div style="background:#fff; border:1px solid #E6E2D9; border-radius:13px; padding:20px 22px; box-shadow:0 1px 2px rgba(16,40,28,.03); margin-bottom:16px;">
+    <h3 style="margin:0 0 4px; font-size:15.5px; font-weight:700;">{{ t('pf.repos') }}</h3>
+    <p style="margin:0 0 14px; font-size:12.5px; color:var(--pmo-muted);">{{ t('pf.repos_desc')|safe }}</p>
+    <form method="post" action="/projeler/{{ project.id }}/repolar/ekle">
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+        <input type="text" name="name" required placeholder="{{ t('pf.repo_name_ph') }}" pattern="[A-Za-z0-9_-]+">
+        <select name="engine"><option value="ast">{{ t('pf.engine_ast') }}</option><option value="joern">{{ t('pf.engine_joern') }}</option><option value="graphify">{{ t('pf.engine_graphify') }}</option></select>
+        <input type="text" name="git_url" placeholder="https://… (git URL)">
+        <input type="text" name="src_root" placeholder="{{ t('pf.src_root_ph') }}">
+      </div>
+      <div style="margin-top:10px;"><button class="btn" type="submit">{{ t('pf.add_repo') }}</button></div>
+    </form>
+    <div style="display:flex; flex-direction:column; gap:8px; margin-top:14px;">
+      {% for r in repos %}
+      <div style="display:flex; align-items:center; gap:10px; padding:8px 0; {% if not loop.last %}border-bottom:1px solid #F2F0EA;{% endif %}">
+        <div style="flex:1; min-width:0;"><div style="font-size:13px; font-weight:600;">{{ r.name }} <span class="mono" style="font-size:10px; font-weight:600; color:#5C6B72; background:#F1EFE9; padding:1px 6px; border-radius:10px;">{{ r.engine }}</span></div><div class="mono" style="font-size:11px; color:var(--pmo-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ r.source }}</div></div>
+        <form method="post" action="/projeler/{{ project.id }}/repolar/{{ r.name }}/sil" onsubmit="return confirm('{{ t('pf.confirm_repo') }}');" style="display:flex;">
+          <button class="btn ghost danger" type="submit" style="font-size:11.5px; padding:4px 10px;">{{ t('common.delete') }}</button>
+        </form>
+      </div>
+      {% else %}
+      <p style="font-size:13px; color:var(--pmo-muted); margin:6px 0 0;">{{ t('pd.repos_empty') }}</p>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- WORK-ITEM TRACKER SETTING -->
+  <div style="background:#fff; border:1px solid #E6E2D9; border-radius:13px; padding:20px 22px; box-shadow:0 1px 2px rgba(16,40,28,.03);">
+    <h3 style="margin:0 0 4px; font-size:15.5px; font-weight:700;">{{ t('pf.work_items') }}</h3>
+    <p style="margin:0 0 14px; font-size:12.5px; color:var(--pmo-muted);">{{ t('pf.work_items_desc')|safe }}</p>
+    <form method="post" action="/projeler/{{ project.id }}/ayarlar/work-items">
+      <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-bottom:10px;">
+        <label style="font-size:13px; font-weight:600; color:#33424A;">{{ t('pf.adapter') }}</label>
+        <select name="adapter">
+          {% for a in ['none', 'file', 'jira', 'glpi'] %}
+          <option value="{{ a }}" {{ 'selected' if a == work_items.adapter else '' }}>{{ a }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <textarea name="options" rows="3" placeholder="{{ t('pf.options_ph')|safe }}">{% for k, v in work_items.options.items() %}{{ k }}: {{ v }}
+{% endfor %}</textarea>
+      <div style="margin-top:10px;"><button class="btn" type="submit">{{ t('pf.save_index') }}</button></div>
+    </form>
+  </div>
+
+  <!-- LLM / LANGUAGE & DOMAIN PROFILE -->
+  <div style="background:#fff; border:1px solid #E6E2D9; border-radius:13px; padding:20px 22px; box-shadow:0 1px 2px rgba(16,40,28,.03); margin-top:16px;">
+    <h3 style="margin:0 0 4px; font-size:15.5px; font-weight:700;">{{ t('pf.llm_profile') }} {{ llm_chip(llm) }}</h3>
+    <p style="margin:0 0 14px; font-size:12.5px; color:var(--pmo-muted);">{{ t('pf.llm_desc') }}</p>
+    <form method="post" action="/projeler/{{ project.id }}/ayarlar/llm-profili">
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+        <div>
+          <label style="display:block; font-size:13px; font-weight:600; color:#33424A; margin-bottom:6px;">{{ t('pf.lang_label') }}</label>
+          <input type="text" name="language" value="{{ llm_profile.language }}" placeholder="{{ t('pf.lang_ph') }}" style="width:100%;">
+        </div>
+        <div>
+          <label style="display:block; font-size:13px; font-weight:600; color:#33424A; margin-bottom:6px;">{{ t('pf.domain_label') }}</label>
+          <select name="domain_profile" style="width:100%;">
+            <option value="">{{ t('pf.domain_none') }}</option>
+            {% for d in available_domains %}
+            <option value="{{ d.id }}" {{ 'selected' if d.id == llm_profile.domain_profile else '' }}>{{ d.title }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <label style="display:block; font-size:13px; font-weight:600; color:#33424A; margin:12px 0 6px;">{{ t('pf.instructions_label') }}</label>
+      <textarea name="instructions" rows="3" placeholder="{{ t('pf.instructions_ph') }}">{{ llm_profile.instructions }}</textarea>
+      <label style="display:block; font-size:13px; font-weight:600; color:#33424A; margin:12px 0 6px;">{{ t('pf.pivot_label') }}</label>
+      <input type="text" name="pivot_language" value="{{ llm_profile.pivot_language }}" placeholder="{{ t('pf.pivot_ph') }}" style="width:220px;">
+      <p class="meta" style="margin:6px 0 0; font-size:11.5px;">{{ t('pf.pivot_hint') }}</p>
+      <div style="margin-top:12px;"><button class="btn" type="submit">{{ t('common.save') }}</button></div>
+    </form>
+  </div>
+</main>
+{% endblock %}

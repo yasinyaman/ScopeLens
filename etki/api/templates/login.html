@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="{{ lang }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ t('login.page_title') }}</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230E7C7B' stroke-width='2.1'><circle cx='12' cy='12' r='2' fill='%230E7C7B' stroke='none'/><circle cx='12' cy='12' r='6.5'/><circle cx='12' cy='12' r='10' opacity='.45'/></svg>">
+  <link rel="stylesheet" href="/static/pmo.css?v={{ app_version }}-{{ css_stamp }}">
+</head>
+<body>
+<div style="display:flex; height:100vh; width:100%;">
+
+  <!-- brand panel -->
+  <div style="flex:0 0 46%; background:#101C24; position:relative; overflow:hidden; display:flex; flex-direction:column; justify-content:space-between; padding:48px;">
+    <div style="position:absolute; width:520px; height:520px; border-radius:50%; border:1px solid rgba(38,180,120,.12); top:-120px; right:-160px;"></div>
+    <div style="position:absolute; width:360px; height:360px; border-radius:50%; border:1px solid rgba(38,180,120,.10); top:-40px; right:-80px;"></div>
+    <div style="position:absolute; width:200px; height:200px; border-radius:50%; background:radial-gradient(circle, rgba(38,180,120,.16), transparent 70%); bottom:60px; left:-40px;"></div>
+
+    <div style="display:flex; align-items:center; gap:12px; position:relative;">
+      <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#3BAFAD" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="2" fill="#F1F6F3" stroke="none"/><circle cx="12" cy="12" r="6.5" stroke-dasharray="2.6 3.4"/><circle cx="12" cy="12" r="10" opacity=".45"/></svg>
+      <span style="font-size:18px; font-weight:800; color:#F1F6F3; letter-spacing:-.01em;">Etki</span>
+      <span class="mono" style="font-size:9px; font-weight:700; color:#0B2E33; background:#E3B341; padding:1px 6px; border-radius:9px; letter-spacing:.05em;">ALPHA</span>
+    </div>
+
+    <div style="position:relative;">
+      <h2 style="margin:0; font-size:34px; font-weight:800; color:#F1F6F3; line-height:1.2; letter-spacing:-.02em; max-width:440px;">{{ t('login.hero_title') }}</h2>
+      <p style="margin:18px 0 0; font-size:15px; color:#8FA89B; line-height:1.6; max-width:430px;">{{ t('login.hero_desc')|safe }}</p>
+      <div style="display:flex; gap:28px; margin-top:34px;">
+        <div><div class="mono" style="font-size:20px; font-weight:600; color:#7FD1CD;">{{ t('login.kpi_evidence') }}</div><div style="font-size:12px; color:#5E7278; margin-top:4px;">{{ t('login.kpi_evidence_sub') }}</div></div>
+        <div><div class="mono" style="font-size:20px; font-weight:600; color:#7FD1CD;">{{ t('login.kpi_triage') }}</div><div style="font-size:12px; color:#5E7278; margin-top:4px;">{{ t('login.kpi_triage_sub') }}</div></div>
+        <div><div class="mono" style="font-size:20px; font-weight:600; color:#7FD1CD;">{{ t('login.kpi_flow') }}</div><div style="font-size:12px; color:#5E7278; margin-top:4px;">{{ t('login.kpi_flow_sub') }}</div></div>
+      </div>
+    </div>
+
+    <div style="position:relative; display:flex; align-items:center; justify-content:space-between; gap:12px;">
+      <span class="mono" style="font-size:12px; color:#3E564A;">© 2026 Etki · <span style="color:#E3B341; font-weight:700;">ALPHA</span> v{{ app_version }}</span>
+      <form method="post" action="/dil" style="display:flex; gap:1px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1); border-radius:8px; padding:2px;">
+        {% for code in supported_langs %}
+        <button type="submit" name="lang" value="{{ code }}"
+                style="border:none; cursor:pointer; border-radius:6px; padding:4px 8px; font-size:11px; font-weight:600; box-shadow:none; {{ 'background:#0E7C7B; color:#fff;' if code == lang else 'background:transparent; color:#7E978A;' }}">{{ code|upper }}</button>
+        {% endfor %}
+      </form>
+    </div>
+  </div>
+
+  <!-- form panel -->
+  <div style="flex:1; display:flex; align-items:center; justify-content:center; padding:40px; background:#F7F5F0;">
+    <form method="post" action="/login" style="width:100%; max-width:380px;">
+      <input type="hidden" name="next" value="{{ next }}">
+      <h1 style="margin:0; font-size:26px; font-weight:800; letter-spacing:-.02em;">{{ t('login.welcome') }}</h1>
+      <p style="margin:8px 0 30px; font-size:14px; color:#5C6B72;">{{ t('login.subtitle') }}</p>
+
+      {% if error %}
+      <div role="alert" style="background:#FBEAE8; border:1px solid #F3D9D5; color:#B23A30; font-size:13px; border-radius:10px; padding:11px 14px; margin-bottom:18px;">{{ error }}</div>
+      {% endif %}
+
+      <label for="username" style="display:block; font-size:13px; font-weight:600; color:#33424A; margin-bottom:7px;">{{ t('login.username') }}</label>
+      <div style="display:flex; align-items:center; gap:9px; background:#fff; border:1px solid #DFDACF; border-radius:10px; padding:12px 14px; margin-bottom:18px;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#90A096" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M4 7 l8 6 8-6"/></svg>
+        <input id="username" name="username" autocomplete="username" required placeholder="ayse.yilmaz"
+               style="flex:1; border:none; outline:none; background:transparent; font-size:14px; color:#101C24; font-family:inherit; padding:0;">
+      </div>
+
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:7px;">
+        <label for="password" style="font-size:13px; font-weight:600; color:#33424A;">{{ t('login.password') }}</label>
+        <span title="{{ t('login.forgot_hint') }}" style="font-size:12.5px; font-weight:600; color:var(--pmo-muted); cursor:help;">{{ t('login.forgot') }}</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:9px; background:#fff; border:1px solid #DFDACF; border-radius:10px; padding:12px 14px; margin-bottom:18px;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#90A096" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="9" rx="2.5"/><path d="M8 11 V8 a4 4 0 0 1 8 0 v3"/></svg>
+        <input id="password" name="password" type="password" autocomplete="current-password" required placeholder="••••••••••"
+               style="flex:1; border:none; outline:none; background:transparent; font-size:14px; color:#101C24; font-family:inherit; padding:0;">
+      </div>
+
+      <label style="display:flex; align-items:center; gap:9px; font-size:13px; color:#33424A; margin-bottom:24px; cursor:pointer; user-select:none;">
+        <input type="checkbox" name="remember" checked style="width:18px; height:18px; accent-color:#9A5F23; margin:0;">
+        {{ t('login.remember') }}
+      </label>
+
+      <button type="submit" style="width:100%; background:#0E7C7B; color:#fff; border:none; cursor:pointer; border-radius:10px; padding:14px; font-size:15px; font-weight:700; box-shadow:0 4px 14px rgba(15,138,91,.3); display:flex; align-items:center; justify-content:center; gap:8px;">
+        {{ t('login.submit') }}
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><path d="M13 6 l6 6 -6 6"/></svg>
+      </button>
+
+      <div style="display:flex; align-items:center; gap:14px; margin:22px 0;"><span style="flex:1; height:1px; background:#DFDACF;"></span><span style="font-size:12px; color:var(--pmo-muted);">{{ t('login.or') }}</span><span style="flex:1; height:1px; background:#DFDACF;"></span></div>
+
+      <button type="button" disabled title="{{ t('login.sso_title') }}"
+              style="width:100%; background:#fff; color:#33424A; border:1px solid #DFDACF; cursor:not-allowed; border-radius:10px; padding:13px; font-size:14px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:9px; box-shadow:none; opacity:.7;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#55666D" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="9" rx="2.5"/><path d="M8 11 V8 a4 4 0 0 1 8 0 v3"/></svg>
+        {{ t('login.sso') }}
+        <span class="mono" style="font-size:9.5px; font-weight:700; color:#8A6D1F; background:#FBF3E2; padding:2px 7px; border-radius:9px; letter-spacing:.04em;">{{ t('login.soon') }}</span>
+      </button>
+
+      <p style="margin:26px 0 0; font-size:12.5px; color:var(--pmo-muted); text-align:center;">{{ t('login.support') }}</p>
+    </form>
+  </div>
+</div>
+</body>
+</html>

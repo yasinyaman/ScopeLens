@@ -1,0 +1,59 @@
+{% extends "pmo_base.html" %}
+{% block title %}{{ clause.source_clause or clause.id }} — {{ project.name }}{% endblock %}
+{% block screen %}
+<main style="padding:22px 28px 40px; max-width:1040px;">
+  <a href="/projeler/{{ project.id }}" style="display:inline-flex; align-items:center; gap:7px; font-size:13px; font-weight:600; color:#5C6B72; margin-bottom:16px;">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6 l-6 6 6 6"/></svg>
+    {{ t('clause.back') }}
+  </a>
+
+  <div style="margin-bottom:16px;">
+    <h1 style="margin:0; font-size:22px; font-weight:800; letter-spacing:-.02em;">{{ t('clause.title') }}</h1>
+    <p style="margin:6px 0 0; font-size:14px; color:#5C6B72;">{{ project.name }} · <span class="mono">{{ clause.id }}</span></p>
+  </div>
+
+  <div class="card" style="border-left:3px solid {{ '#C6413A' if clause.polarity.value == 'EXCLUDED' else '#0E7C7B' }};">
+    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:8px;">
+      {% if clause.polarity.value == 'EXCLUDED' %}
+      <span style="font-size:11px; font-weight:700; color:#A83228; background:#FBEAE8; padding:3px 10px; border-radius:12px;">{{ t('badge.excluded') }}</span>
+      {% else %}
+      <span style="font-size:11px; font-weight:700; color:#1E7A43; background:#E6F4EC; padding:3px 10px; border-radius:12px;">{{ t('badge.included') }}</span>
+      {% endif %}
+      {% if clause.source_clause %}<b style="font-size:14px;">{{ clause.source_clause }}</b>{% endif %}
+      {% if clause.category and clause.category != 'genel' %}<span class="mono" style="font-size:11px; color:#5C6B72; background:#F1EFE9; padding:2px 8px; border-radius:10px;">{{ clause.category }}</span>{% endif %}
+    </div>
+    <p style="margin:0 0 10px; font-size:14.5px; line-height:1.55; color:#101C24;">{{ clause.description }}</p>
+    <p class="meta" style="margin:0; display:flex; gap:16px; flex-wrap:wrap;">
+      {% if clause.limits.quantity %}<span>{{ t('clause.limit') }}: <b>{{ clause.limits.quantity }}{% if clause.limits.period %}/{{ clause.limits.period }}{% endif %}</b></span>{% endif %}
+      {% if clause.effort_pool_hours %}<span>{{ t('clause.pool') }}: <b>{{ pool_used|round(1) if pool_used is not none else 0 }}/{{ clause.effort_pool_hours|round(0)|int }} {{ t('common.hours_short') }}</b></span>{% endif %}
+      {% if clause.mapped_modules %}<span>{{ t('clause.mapped') }}: <span class="mono">{{ clause.mapped_modules|join(', ') }}</span></span>{% endif %}
+      {% if clause.id.startswith('CR-') %}<span style="color:#3563B0; font-weight:600;">{{ t('clause.added_by_cr') }}</span>{% endif %}
+    </p>
+  </div>
+
+  {% if memory and (memory.count or memory.disputed) %}
+  <div class="cf-memory" style="margin:14px 0; padding:9px 13px; background:#FDF8EF; border:1px solid #F0E3C8; border-radius:10px; font-size:13px; display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+    <span style="font-weight:700; color:#7A5A10;">{{ t('cf.memory_title') }}{% if memory.ref %} · {{ memory.ref }}{% endif %}</span>
+    {% if memory.count %}<span>{{ t('cf.memory_precedents', n=memory.count) }}{% if memory.last %} · {{ t('cf.memory_last', v=memory.last) }}{% endif %}</span>{% endif %}
+    {% if memory.disputed %}<span style="color:#A83228; font-weight:700;">{{ t('cf.memory_disputed') }}</span>{% endif %}
+  </div>
+  {% endif %}
+
+  <div style="background:#fff; border:1px solid #E6E2D9; border-radius:13px; overflow:hidden; box-shadow:0 1px 2px rgba(16,40,28,.03); margin-top:14px;">
+    <div style="padding:14px 22px; border-bottom:1px solid #ECE9E2; display:flex; align-items:center; justify-content:space-between;">
+      <h3 style="margin:0; font-size:15px; font-weight:700;">{{ t('clause.cited_cases') }}</h3>
+      <span class="mono" style="font-size:12px; color:#5C6B72;">{{ rows|length }}</span>
+    </div>
+    {% for r in rows %}
+    <a href="/ui/casefiles/{{ r.id }}" class="pmo-row" style="display:grid; grid-template-columns:3fr 2fr 1.1fr 1.1fr; gap:14px; padding:13px 22px; {% if not loop.last %}border-bottom:1px solid #F2F0EA;{% endif %} align-items:center; cursor:pointer;">
+      <div style="min-width:0;"><div style="display:flex; align-items:center; gap:6px; min-width:0;"><span style="flex:1 1 auto; min-width:0; font-size:13.5px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ r.request }}</span>{% if r.escalated %}<span class="esc" style="flex:0 0 auto;">{{ t('badge.escalation') }}</span>{% endif %}</div><div class="mono" style="font-size:11px; color:var(--pmo-muted);">{{ r.id }}</div></div>
+      <div style="display:flex; gap:5px; flex-wrap:wrap;">{% for d in r.decisions %}<span style="font-size:10.5px; font-weight:600; color:{{ d.color }}; background:{{ d.bg }}; padding:2px 8px; border-radius:12px;">{{ d.label }}</span>{% endfor %}</div>
+      <span style="font-size:11px; font-weight:600; color:{{ r.status_color }}; background:{{ r.status_bg }}; padding:3px 10px; border-radius:20px; justify-self:start;">{{ r.status_label }}</span>
+      <span class="mono" style="font-size:11px; color:var(--pmo-muted); white-space:nowrap;">{{ r.created_at }}</span>
+    </a>
+    {% else %}
+    <div style="padding:18px 22px; font-size:13px; color:var(--pmo-muted);">{{ t('clause.no_cases') }}</div>
+    {% endfor %}
+  </div>
+</main>
+{% endblock %}

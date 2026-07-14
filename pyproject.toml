@@ -1,0 +1,95 @@
+[project]
+name = "etki"
+version = "0.1.0a1"
+description = "Evidence-backed scope/CR triage for PMO teams — fusing contract scope, a code knowledge graph and historical effort into auditable decisions."
+readme = "README.md"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+requires-python = ">=3.12"
+keywords = ["pmo", "scope-management", "change-request", "triage", "decision-support"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3.12",
+    "Natural Language :: English",
+    "Natural Language :: Turkish",
+]
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
+    "pydantic>=2.7",
+    "pydantic-settings>=2.3",
+    "pyyaml>=6.0",
+    "mcp>=1.28.0",
+    "sqlalchemy>=2.0.51",
+    "jinja2>=3.1.6",
+    "psycopg[binary]>=3.3.4",
+    "python-docx>=1.2.0",
+    "openpyxl>=3.1.5",
+    "pypdf>=6.14.2",
+    "anthropic>=0.69",
+    "python-dotenv>=1.0",
+    "markdown-it-py>=3.0",
+    "itsdangerous>=2.2.0",
+    "alembic>=1.18.5",
+]
+
+[project.optional-dependencies]
+# Optional code-graph engine: tree-sitter based, 165+ languages, no JVM.
+graphify = ["graphifyy>=0.9.8,<1.0"]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.2",
+    "pytest-asyncio>=0.23",
+    "httpx>=0.27",
+    "ruff>=0.6",
+    "mypy>=1.11",
+    "types-PyYAML>=6.0",
+    "pytest-cov>=7.1.0",
+]
+docs = [
+    "mkdocs-material>=9.5",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["etki"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+src = ["etki", "tests", "eval"]
+extend-exclude = ["samples", ".etki", "alembic/versions"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "C4", "SIM"]
+
+[tool.ruff.lint.per-file-ignores]
+# Çeviri kataloğu — uzun çok-dilli string'ler doğaldır (satır uzunluğu muaf).
+"etki/i18n/catalog.py" = ["E501"]
+
+[tool.mypy]
+python_version = "3.12"
+plugins = ["pydantic.mypy"]
+exclude = ["^samples/", "^alembic/"]
+warn_unused_ignores = true
+warn_redundant_casts = true
+disallow_untyped_defs = true
+check_untyped_defs = true
+
+[[tool.mypy.overrides]]
+module = ["tests.*", "eval.*"]
+disallow_untyped_defs = false
+
+[[tool.mypy.overrides]]
+module = ["docx.*", "openpyxl.*", "pypdf.*", "graphify_mcp.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+addopts = "-q"

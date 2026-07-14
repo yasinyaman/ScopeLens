@@ -1,0 +1,16 @@
+[
+  {"question": "ödeme modülünün bağımlılıkları neler", "expected_strategy": "expand"},
+  {"question": "sepet modülünü hangi modüller kullanıyor", "expected_strategy": "expand"},
+  {"question": "bu değişikliğin etki alanı nedir", "expected_strategy": "expand"},
+  {"question": "what depends on the payment module", "expected_strategy": "expand"},
+  {"question": "which modules are affected by the cart change", "expected_strategy": "expand"},
+  {"question": "kapsamda kaç madde var?", "expected_strategy": "nl_query"},
+  {"question": "bakım havuzunda ne kadar efor kaldı", "expected_strategy": "nl_query"},
+  {"question": "baseline özeti ver", "expected_strategy": "nl_query"},
+  {"question": "how many clauses are excluded", "expected_strategy": "nl_query"},
+  {"question": "give me a summary of the baseline", "expected_strategy": "nl_query"},
+  {"question": "kripto para ile ödeme", "expected_strategy": "find_k"},
+  {"question": "sepete ürün ekleme akışı", "expected_strategy": "find_k"},
+  {"question": "credit card payment integration", "expected_strategy": "find_k"},
+  {"question": "ürün arama filtreleme", "expected_strategy": "find_k"}
+]

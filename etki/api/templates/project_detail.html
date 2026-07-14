@@ -1,0 +1,274 @@
+{% extends "pmo_base.html" %}
+{% block title %}{{ p.name }} — Etki{% endblock %}
+{% block screen %}
+<main style="padding:22px 28px 40px;">
+  <a href="/" style="display:inline-flex; align-items:center; gap:7px; font-size:13px; font-weight:600; color:#5C6B72; margin-bottom:16px;">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6 l-6 6 6 6"/></svg>
+    {{ t('common.back_projects') }}
+  </a>
+
+  <!-- header (real data) -->
+  <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:18px; flex-wrap:wrap; margin-bottom:22px;">
+    <div style="display:flex; gap:16px; align-items:flex-start;">
+      <div style="width:52px; height:52px; border-radius:12px; background:#E9F2F1; display:flex; align-items:center; justify-content:center; flex:0 0 52px;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0E7C7B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+      </div>
+      <div>
+        <div style="display:flex; align-items:center; gap:11px; flex-wrap:wrap;">
+          <h1 style="margin:0; font-size:24px; font-weight:800; letter-spacing:-.02em;">{{ p.name }}</h1>
+          {% if p.indexed %}
+          <span style="font-size:11.5px; font-weight:600; color:#1E7A43; background:#E6F4EC; padding:4px 11px; border-radius:20px;">{{ t('common.indexed_full') }}</span>
+          {% else %}
+          <span style="font-size:11.5px; font-weight:600; color:#A83228; background:#FBEAE8; padding:4px 11px; border-radius:20px;">{{ t('common.no_index') }}</span>
+          {% endif %}
+        </div>
+        <p style="margin:8px 0 0; font-size:13.5px; color:#5C6B72; display:flex; gap:16px; flex-wrap:wrap;">
+          <span class="mono">{{ p.contract_id }}</span>
+          <span>{{ t('pd.freshness') }}: <b class="mono" style="color:#33424A;">{{ p.freshness }}</b>
+            {% if p.freshness_days is not none and p.freshness_days > 7 %}
+            <a href="/projeler/{{ p.id }}/dosyalar" title="{{ t('pd.stale_hint') }}"
+               style="font-size:11px; font-weight:700; padding:2px 9px; border-radius:20px; margin-left:6px;
+                      {% if p.freshness_days > 30 %}color:#A83228; background:#FBEAE8;{% else %}color:#8F5F00; background:#FBF3E2;{% endif %}">
+              ⚠ {{ t('pd.stale_badge', n=p.freshness_days) }}</a>
+            {% endif %}
+            <a href="#" onclick="return false;" hx-get="/projeler/{{ p.id }}/indeks-gecmisi"
+               hx-target="#index-history-inline" hx-swap="innerHTML"
+               class="mono" style="font-size:11px; color:#9A5F23; text-decoration:none; margin-left:6px;">{{ t('ih.link') }}</a></span>
+          <span>{{ t('pd.work_items') }}: <b style="color:#33424A; font-weight:600;">{{ p.work_items }}</b></span>
+        </p>
+        <div id="index-history-inline" style="max-width:560px;"></div>
+      </div>
+    </div>
+    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+      <a href="/projeler/{{ p.id }}/triyaj"><button class="btn" type="button">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 L3 14 h7 l-1 8 L20 10 h-7 Z"/></svg>
+        {{ t('nav.triage') }}
+      </button></a>
+      <a href="/projeler/{{ p.id }}/dosyalar"><button class="btn ghost" type="button">{{ t('pd.files_settings') }}</button></a>
+    </div>
+  </div>
+
+  <!-- stat cards (real data) -->
+  <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:16px; margin-bottom:18px;">
+    <a href="/projeler/{{ p.id }}/moduller" style="display:block; background:#fff; border:1px solid #E6E2D9; border-radius:13px; padding:17px; box-shadow:0 1px 2px rgba(16,40,28,.03); text-decoration:none; color:inherit;" onmouseover="this.style.borderColor='#0E7C7B'" onmouseout="this.style.borderColor='#E6E2D9'">
+      <span style="font-size:12.5px; color:#5C6B72;">{{ t('projects.stat_modules') }}</span>
+      <div class="mono" style="font-size:28px; font-weight:600; margin:8px 0 6px; line-height:1;">{{ p.modules }}</div>
+      <div style="font-size:11.5px; color:#5C6B72;">{{ t('pd.stat_modules_sub') }} →</div>
+    </a>
+    <div style="background:#fff; border:1px solid #E6E2D9; border-radius:13px; padding:17px; box-shadow:0 1px 2px rgba(16,40,28,.03);">
+      <span style="font-size:12.5px; color:#5C6B72;">{{ t('projects.stat_clauses') }}</span>
+      <div class="mono" style="font-size:28px; font-weight:600; margin:8px 0 6px; line-height:1;">{{ p.clauses }}</div>
+      <div style="font-size:11.5px; color:#5C6B72;"><b style="color:#1E7A43;">{{ p.included }} {{ t('common.included_word') }}</b> · {{ p.excluded }} {{ t('common.excluded_word') }}</div>
+    </div>
+    <a href="/projeler/{{ p.id }}/baseline" style="display:block; background:#fff; border:1px solid #E6E2D9; border-radius:13px; padding:17px; box-shadow:0 1px 2px rgba(16,40,28,.03); text-decoration:none; color:inherit;" onmouseover="this.style.borderColor='#0E7C7B'" onmouseout="this.style.borderColor='#E6E2D9'">
+      <span style="font-size:12.5px; color:#5C6B72;">{{ t('pd.stat_baseline') }}</span>
+      <div class="mono" style="font-size:28px; font-weight:600; margin:8px 0 6px; line-height:1;">v{{ p.baseline_version }}</div>
+      <div style="font-size:11.5px; color:#5C6B72;">{{ t('pd.stat_baseline_sub') }} →</div>
+    </a>
+    <div style="background:#fff; border:1px solid #E6E2D9; border-radius:13px; padding:17px; box-shadow:0 1px 2px rgba(16,40,28,.03);">
+      <span style="font-size:12.5px; color:#5C6B72;">{{ t('pd.stat_documents') }}</span>
+      <div class="mono" style="font-size:28px; font-weight:600; margin:8px 0 6px; line-height:1;">{{ documents|length }}</div>
+      <div style="font-size:11.5px; color:#5C6B72;">{{ t('pd.documents_linked_repos', r=repos|length) }}</div>
+    </div>
+  </div>
+
+  {# ===== Reports / KPI panel (merged from the old Raporlar screen; /raporlar redirects here) ===== #}
+  {% if k %}
+  <div style="background:#FAF9F5; border:1px solid #E6E2D9; border-radius:13px; padding:20px 22px; margin-bottom:18px;">
+    <div style="display:flex; align-items:baseline; gap:10px; margin-bottom:14px;">
+      <h2 style="margin:0; font-size:16.5px; font-weight:800; letter-spacing:-.01em;">{{ t('nav.reports') }}</h2>
+      <span style="font-size:12.5px; color:#5C6B72;">{{ t('rep.subtitle') }}</span>
+    </div>
+
+    {# Each tile links to the list that answers "which ones?" #}
+    <div class="grid" style="margin-bottom:16px;">
+      <a class="kpi kpi-link" href="/projeler/{{ p.id }}/gecmis"><span class="meta">{{ t('rep.total_cases') }}</span><b>{{ k.total_cases }}</b></a>
+      <a class="kpi kpi-link" href="/projeler/{{ p.id }}/hafiza"><span class="meta">{{ t('rep.override_rate') }}</span><b>{{ '%.0f'|format(k.override_rate * 100) }}%</b><span class="meta">{{ t('rep.corrections', n=k.override_count) }}</span></a>
+      <a class="kpi kpi-link" href="/projeler/{{ p.id }}/gecmis?filtre=bekleyen"><span class="meta">{{ t('rep.reconciliation') }}</span><b>{{ k.reconciliation_pct }}%</b></a>
+      <a class="kpi kpi-link" href="/projeler/{{ p.id }}/gecmis?filtre=analiz"><span class="meta">{{ t('rep.avg_cr_hours') }}</span><b>{{ k.avg_cr_approval_hours|fmt_hours }}</b></a>
+      <a class="kpi kpi-link" href="/projeler/{{ p.id }}/hafiza"><span class="meta">{{ t('rep.precedents') }}</span><b>{{ k.precedent_count }}</b></a>
+      <a class="kpi kpi-link" href="/projeler/{{ p.id }}/hafiza"><span class="meta">{{ t('rep.disputed') }}</span><b{% if k.disputed_count %} style="color:#A84E12;"{% endif %}>{{ k.disputed_count }}</b></a>
+    </div>
+
+    <div style="display:grid; grid-template-columns:1.4fr 1fr; gap:16px;">
+      <div style="background:#fff; border:1px solid #E6E2D9; border-radius:13px; padding:16px 18px;">
+        <h3 style="margin:0 0 12px; font-size:14.5px; font-weight:700;">{{ t('rep.decisions_dist') }}</h3>
+        {% if k.by_decision %}
+        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+          {% for name, count in k.by_decision.items() %}
+          <a class="badge d-{{ name }}" href="/projeler/{{ p.id }}/gecmis?karar={{ name }}" style="text-decoration:none;">{{ name|tr_decision }}: {{ count }}</a>
+          {% endfor %}
+        </div>
+        {% else %}<p class="meta" style="margin:0;">{{ t('rep.no_decisions') }}</p>{% endif %}
+      </div>
+      <div style="background:#fff; border:1px solid #E6E2D9; border-radius:13px; padding:16px 18px;">
+        <h3 style="margin:0 0 12px; font-size:14.5px; font-weight:700;">{{ t('rep.effort_pool') }}</h3>
+        <div style="display:flex; flex-direction:column; gap:12px;">
+          {% for category, pool in k.effort_pools.items() %}
+          <div>
+            <div style="display:flex; justify-content:space-between; align-items:center; font-size:12.5px; margin-bottom:5px;">
+              <span style="color:#33424A;">{{ category }}
+                <a href="#" hx-get="/projeler/{{ p.id }}/havuz/{{ category|urlencode }}" hx-target="#pool-items-{{ loop.index }}" hx-swap="innerHTML"
+                   onclick="return false;" class="mono" style="font-size:11px; color:#9A5F23; text-decoration:none; margin-left:6px;">{{ t('pool.breakdown') }}</a>
+              </span>
+              <span class="mono" style="color:#5C6B72;">{{ pool.consumed|round(0)|int }}/{{ pool.pool|round(0)|int }} {{ t('common.hours_short') }}</span>
+            </div>
+            {% set ratio = (pool.ratio * 100)|round(0)|int %}
+            <div style="height:7px; background:#EEEBE4; border-radius:4px; overflow:hidden;"><div style="width:{{ [ratio,100]|min }}%; height:100%; background:{{ '#C6413A' if ratio >= 85 else '#D98E04' if ratio >= 60 else '#2E9E5B' }}; border-radius:4px;"></div></div>
+            <div id="pool-items-{{ loop.index }}"></div>
+          </div>
+          {% else %}<p class="meta" style="margin:0;">{{ t('rep.no_effort_pool') }}</p>{% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <details class="acc info" style="margin-bottom:0;">
+      <summary>{{ t('rep.kpi_defs') }}</summary>
+      <dl class="kv">
+        <dt>{{ t('rep.def_override_t') }}</dt><dd>{{ t('rep.def_override_d') }}</dd>
+        <dt>{{ t('rep.def_recon_t') }}</dt><dd>{{ t('rep.def_recon_d') }}</dd>
+        <dt>{{ t('rep.def_cr_t') }}</dt><dd>{{ t('rep.def_cr_d') }}</dd>
+        <dt>{{ t('rep.def_baseline_t') }}</dt><dd>{{ t('rep.def_baseline_d') }}</dd>
+        <dt>{{ t('rep.def_pool_t') }}</dt><dd>{{ t('rep.def_pool_d')|safe }}</dd>
+      </dl>
+    </details>
+
+    <details class="acc" style="margin-bottom:0;">
+      <summary>{{ t('rep.calibration_summary', n=k.calibration|length) }}</summary>
+      <ul class="meta" style="margin:6px 0; padding-left:20px;">
+        {% for s in k.calibration %}<li>{{ s }}</li>{% else %}<li>{{ t('rep.no_override_suggestions') }}</li>{% endfor %}
+      </ul>
+      <p class="meta">{{ t('rep.calibration_note') }}</p>
+    </details>
+  </div>
+  {% endif %}
+
+  <!-- two columns -->
+  <div style="display:grid; grid-template-columns:1.5fr 1fr; gap:16px;">
+    <div style="display:flex; flex-direction:column; gap:16px;">
+      <!-- scope items -->
+      <div style="background:#fff; border:1px solid #E6E2D9; border-radius:13px; padding:20px 22px; box-shadow:0 1px 2px rgba(16,40,28,.03);">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;"><h3 style="margin:0; font-size:15.5px; font-weight:700;">{{ t('pd.scope_items') }}</h3><span class="mono" style="font-size:12px; color:#5C6B72;">{{ scope_items|length }}</span></div>
+        <div style="display:flex; flex-direction:column; gap:11px;">
+          {% for s in scope_items %}
+          <a href="/projeler/{{ p.id }}/madde/{{ s.id|urlencode }}" style="display:flex; align-items:flex-start; gap:11px; text-decoration:none; color:inherit; border-radius:8px; margin:0 -6px; padding:2px 6px;" onmouseover="this.style.background='#FAF9F5'" onmouseout="this.style.background=''">
+            {% if s.polarity.value == 'EXCLUDED' %}
+            <span style="font-size:10px; font-weight:700; color:#A83228; background:#FBEAE8; padding:2px 8px; border-radius:12px; flex:0 0 auto; margin-top:1px;">{{ t('badge.excluded') }}</span>
+            {% else %}
+            <span style="font-size:10px; font-weight:700; color:#1E7A43; background:#E6F4EC; padding:2px 8px; border-radius:12px; flex:0 0 auto; margin-top:1px;">{{ t('badge.included') }}</span>
+            {% endif %}
+            <div style="flex:1; min-width:0;">
+              <div style="font-size:13px; color:#33424A; line-height:1.45;">{{ s.description }}</div>
+              <div class="mono" style="font-size:11px; color:var(--pmo-muted); margin-top:2px;">{{ s.id }}{% if s.category and s.category != 'genel' %} · {{ s.category }}{% endif %}</div>
+            </div>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#B4ADA0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto; margin-top:3px;"><path d="M9 6 l6 6 -6 6"/></svg>
+          </a>
+          {% else %}
+          <p style="font-size:13px; color:var(--pmo-muted); margin:0;">{{ t('pd.scope_empty') }}</p>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- recent cases for this project -->
+      <div style="background:#fff; border:1px solid #E6E2D9; border-radius:13px; padding:20px 22px; box-shadow:0 1px 2px rgba(16,40,28,.03);">
+        <h3 style="margin:0 0 14px; font-size:15.5px; font-weight:700;">{{ t('pd.recent_requests') }}</h3>
+        <div style="display:flex; flex-direction:column; gap:12px;">
+          {% for c in cases %}
+          <div style="display:flex; align-items:center; gap:11px;">
+            <div style="flex:1; min-width:0;"><div style="font-size:13px; font-weight:500; color:#33424A; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ c.request }}</div></div>
+            {% for d in c.decisions %}<span style="font-size:10.5px; font-weight:600; color:{{ d.color }}; background:{{ d.bg }}; padding:2px 8px; border-radius:12px;">{{ d.label }}</span>{% endfor %}
+            <span style="font-size:10.5px; font-weight:600; color:{{ c.status.color }}; background:{{ c.status.bg }}; padding:2px 8px; border-radius:12px;">{{ c.status.label }}</span>
+          </div>
+          {% else %}
+          <p style="font-size:13px; color:var(--pmo-muted); margin:0;">{{ t('pd.recent_empty') }}</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- right column -->
+    <div style="display:flex; flex-direction:column; gap:16px;">
+      <!-- repos -->
+      <div style="background:#fff; border:1px solid #E6E2D9; border-radius:13px; padding:18px 20px; box-shadow:0 1px 2px rgba(16,40,28,.03);">
+        <h3 style="margin:0 0 14px; font-size:15.5px; font-weight:700;">{{ t('pd.repos') }}</h3>
+        <div style="display:flex; flex-direction:column; gap:12px;">
+          {% for r in repos %}
+          <a href="/projeler/{{ p.id }}/moduller{% if repos|length > 1 %}?repo={{ r.name|urlencode }}{% endif %}" style="display:flex; align-items:flex-start; gap:11px; text-decoration:none; color:inherit; border-radius:8px; margin:0 -6px; padding:2px 6px;" onmouseover="this.style.background='#FAF9F5'" onmouseout="this.style.background=''">
+            <span style="width:32px; height:32px; border-radius:8px; background:#EAF1FB; color:#3563B0; display:flex; align-items:center; justify-content:center; flex:0 0 32px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3 v12 a3 3 0 0 0 3 3 h9"/><circle cx="6" cy="18" r="2.4"/><circle cx="18" cy="6" r="2.4"/><path d="M18 8.4 V12 a3 3 0 0 1-3 3 H9"/></svg></span>
+            <div style="flex:1; min-width:0;"><div style="font-size:13px; font-weight:600;">{{ r.name }} <span class="mono" style="font-size:10px; font-weight:600; color:#5C6B72; background:#F1EFE9; padding:1px 6px; border-radius:10px;">{{ r.engine }}</span></div><div class="mono" style="font-size:11px; color:var(--pmo-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ r.source }}</div></div>
+          </a>
+          {% else %}
+          <p style="font-size:13px; color:var(--pmo-muted); margin:0;">{{ t('pd.repos_empty') }}</p>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- dependencies (manifest declarations + usage surface) -->
+      <div style="background:#fff; border:1px solid #E6E2D9; border-radius:13px; padding:18px 20px; box-shadow:0 1px 2px rgba(16,40,28,.03);">
+        <h3 style="margin:0 0 14px; font-size:15.5px; font-weight:700;">{{ t('deps.card_title') }} {% if dependencies %}<span class="meta" style="font-weight:500;">({{ dependencies|length }})</span>{% endif %}</h3>
+        {% if dependencies %}
+        <div class="mono" style="display:grid; grid-template-columns:1.6fr 1fr .7fr .9fr; gap:8px 12px; font-size:11px; color:var(--pmo-muted); font-weight:600; text-transform:uppercase; letter-spacing:.03em; margin-bottom:6px;">
+          <span>{{ t('deps.package') }}</span><span>{{ t('deps.spec') }}</span><span>{{ t('deps.ecosystem') }}</span><span>{{ t('deps.used_by') }}</span>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:6px; max-height:260px; overflow-y:auto;">
+          {% for d in dependencies %}
+          <div style="display:grid; grid-template-columns:1.6fr 1fr .7fr .9fr; gap:8px 12px; font-size:12.5px; align-items:center;">
+            <span class="mono" style="font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ d.name }}{% if d.dev %} <span style="font-size:9.5px; color:var(--pmo-muted); background:#F1EFE9; padding:0 5px; border-radius:8px;">dev</span>{% endif %}</span>
+            <span class="mono" style="color:#5C6B72; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ d.spec }}</span>
+            <span class="meta" style="font-size:11px;">{{ d.ecosystem }}</span>
+            <span class="meta" style="font-size:11px;">{% if d.used_by %}{{ d.used_by|join(', ') }}{% else %}—{% endif %}</span>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <p style="font-size:13px; color:var(--pmo-muted); margin:0;">{{ t('deps.none') }}</p>
+        {% endif %}
+        {% if dependencies and deps_online %}
+        <div style="margin-top:10px;">
+          <button class="btn ghost" style="font-size:12px;"
+                  hx-get="/projeler/{{ project.id }}/bagimliliklar/guncel"
+                  hx-target="#deps-online" hx-swap="innerHTML">{{ t('deps.fetch_latest') }}</button>
+          <div id="deps-online"></div>
+        </div>
+        <form style="margin-top:10px; display:flex; gap:6px; flex-wrap:wrap; align-items:center;"
+              hx-get="/projeler/{{ project.id }}/bagimliliklar/karsilastir"
+              hx-target="#deps-diff" hx-swap="innerHTML" hx-indicator="#deps-diff-ind">
+          <select name="package" class="mono" style="padding:7px 9px; border:1px solid #DCD7CC; border-radius:9px; font-size:12px;">
+            {% for d in dependencies %}{% if d.ecosystem == 'pypi' %}<option value="{{ d.name }}">{{ d.name }}</option>{% endif %}{% endfor %}
+          </select>
+          <input name="old" placeholder="{{ t('vd.old_ph') }}" required class="mono"
+                 style="width:90px; padding:7px 9px; border:1px solid #DCD7CC; border-radius:9px; font-size:12px;">
+          <input name="new" placeholder="{{ t('vd.new_ph') }}" required class="mono"
+                 style="width:90px; padding:7px 9px; border:1px solid #DCD7CC; border-radius:9px; font-size:12px;">
+          <button class="btn ghost" type="submit" style="font-size:12px;">{{ t('vd.compare') }}</button>
+          <span id="deps-diff-ind" class="htmx-indicator meta" style="font-size:11.5px;">{{ t('vd.loading') }}</span>
+        </form>
+        <div id="deps-diff"></div>
+        {% endif %}
+      </div>
+
+      <!-- documents -->
+      <div style="background:#fff; border:1px solid #E6E2D9; border-radius:13px; padding:18px 20px; box-shadow:0 1px 2px rgba(16,40,28,.03);">
+        <h3 style="margin:0 0 14px; font-size:15.5px; font-weight:700;">{{ t('pd.documents') }}</h3>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          {% for doc in documents %}
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span style="width:28px; height:28px; border-radius:7px; background:#F1EFE9; color:#55666D; display:flex; align-items:center; justify-content:center; flex:0 0 28px;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3 H14 L18 7 V21 H6 Z"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="16.5" x2="15" y2="16.5"/></svg></span>
+            <span style="flex:1 1 auto; min-width:0; font-size:12.5px; color:#33424A; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ doc.name }}</span>
+            {% if doc.id is defined %}
+            <a href="#" onclick="return false;" hx-get="/projeler/{{ p.id }}/dosyalar/onizle?doc={{ doc.id|urlencode }}"
+               hx-target="#doc-preview-inline" hx-swap="innerHTML"
+               class="mono" style="flex:0 0 auto; font-size:11px; color:#9A5F23; text-decoration:none;">{{ t('pf.preview') }}</a>
+            {% endif %}
+          </div>
+          {% else %}
+          <p style="font-size:13px; color:var(--pmo-muted); margin:0;">{{ t('pd.documents_empty') }}</p>
+          {% endfor %}
+          <div id="doc-preview-inline"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+{% endblock %}

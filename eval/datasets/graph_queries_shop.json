@@ -1,0 +1,93 @@
+[
+  {
+    "id": "GQS-01",
+    "lang": "tr",
+    "query": "kripto para ile ödeme alalım",
+    "expected": ["scope:SCOPE-004", "workitem:SH-202", "module:payment"],
+    "note": "kripto açıkça hariç (SCOPE-004, payment'a eşli); SH-202 birebir emsal"
+  },
+  {
+    "id": "GQS-02",
+    "lang": "tr",
+    "query": "bitcoin ödeme desteği eklensin",
+    "expected": ["scope:SCOPE-004", "module:payment"],
+    "note": "Bitcoin madde metninde geçiyor"
+  },
+  {
+    "id": "GQS-03",
+    "lang": "tr",
+    "query": "kredi kartı ile ödeme entegrasyonu",
+    "expected": ["scope:SCOPE-002", "workitem:SH-201", "module:payment"],
+    "note": "SCOPE-002 kredi/banka kartı maddesi + SH-201 emsali"
+  },
+  {
+    "id": "GQS-04",
+    "lang": "tr",
+    "query": "sepete ürün ekleme akışında hata var",
+    "expected": ["scope:SCOPE-001", "workitem:SH-101", "module:cart"],
+    "note": "sepet/sipariş maddesi + birebir emsal iş kaydı"
+  },
+  {
+    "id": "GQS-05",
+    "lang": "tr",
+    "query": "sipariş durumu takibi eklensin",
+    "expected": ["scope:SCOPE-001", "workitem:SH-102", "module:cart"],
+    "note": "SH-102 birebir aynı iş"
+  },
+  {
+    "id": "GQS-06",
+    "lang": "tr",
+    "query": "ürün arama ve filtreleme geliştirilsin",
+    "expected": ["scope:SCOPE-003", "workitem:SH-301", "module:catalog"],
+    "note": "katalog maddesi + SH-301 emsali"
+  },
+  {
+    "id": "GQS-07",
+    "lang": "tr",
+    "query": "kategori filtreleme çalışmıyor",
+    "expected": ["scope:SCOPE-003", "module:catalog"],
+    "note": "kategori filtreleme SCOPE-003 metninde"
+  },
+  {
+    "id": "GQS-08",
+    "lang": "tr",
+    "query": "pazaryeri satıcı entegrasyonu yapılsın",
+    "expected": ["scope:SCOPE-005"],
+    "note": "marketplace açıkça hariç"
+  },
+  {
+    "id": "GQS-09",
+    "lang": "tr",
+    "query": "dördüncü ödeme sağlayıcısı eklensin",
+    "expected": ["scope:SCOPE-002", "module:payment"],
+    "note": "≤3 sağlayıcı limit maddesi (SCOPE-002)"
+  },
+  {
+    "id": "GQS-10",
+    "lang": "tr",
+    "query": "üretimdeki hata düzeltilsin",
+    "expected": ["scope:SCOPE-006"],
+    "note": "bakım maddesi"
+  },
+  {
+    "id": "GQS-11",
+    "lang": "tr",
+    "query": "ödeme modülünün bağımlılıkları neler",
+    "expected": ["module:payment", "module:cart", "module:db"],
+    "note": "graf sorusu: payment depends_on cart+db (expand yolu)"
+  },
+  {
+    "id": "GQS-12",
+    "lang": "tr",
+    "query": "sepet modülünü hangi modüller kullanıyor",
+    "expected": ["module:cart", "module:payment"],
+    "note": "graf sorusu: cart depended_by payment (expand yolu)"
+  },
+  {
+    "id": "GQS-13",
+    "lang": "tr",
+    "query": "katalog hangi modüllere dokunuyor",
+    "expected": ["module:catalog", "module:db"],
+    "note": "graf sorusu: catalog depends_on db (expand yolu)"
+  }
+]

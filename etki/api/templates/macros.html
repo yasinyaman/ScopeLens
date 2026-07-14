@@ -1,0 +1,159 @@
+{# One-sentence plain summary for a non-technical user (decision + clause); numbers live in the meta line below. #}
+{% macro plain_summary(d) %}
+<p class="summary sum-{{ d.decision.value }}">{{ t('ps.' ~ d.decision.value) }}{% if d.evidence.contract_clauses_cited %} ·
+  <b>{{ d.evidence.contract_clauses_cited|join(', ') }}</b>{% endif %}{% if d.risk.escalation %} · <span class="esc">{{ t('ev.escalation_24') }}</span>{% endif %}</p>
+{% endmacro %}
+
+{# AI-assistant (LLM) status chip: green=on (provider · model), gray=off with a how-to tooltip. #}
+{% macro llm_chip(llm) %}
+{% if llm and llm.enabled %}
+<span title="{{ llm.provider }} · {{ llm.model }}"
+      style="display:inline-flex; align-items:center; gap:6px; font-size:11.5px; font-weight:600; color:#1E7A43; background:#E6F4EC; padding:3px 10px; border-radius:20px; vertical-align:middle;">
+  <span style="width:7px; height:7px; border-radius:50%; background:#12938F;"></span>
+  {{ t('llm.on') }} <span class="mono" style="font-weight:500; color:#3E6B70;">{{ llm.model }}</span>
+</span>
+{% else %}
+<span title="{{ t('llm.off_hint') }}"
+      style="display:inline-flex; align-items:center; gap:6px; font-size:11.5px; font-weight:600; color:#55666D; background:#EEEBE4; padding:3px 10px; border-radius:20px; vertical-align:middle; cursor:help;">
+  <span style="width:7px; height:7px; border-radius:50%; background:#93A0A4;"></span>
+  {{ t('llm.off') }}
+</span>
+{% endif %}
+{% endmacro %}
+
+{# Short glossary (technical terms) for a PMO/manager. #}
+{% macro glossary() %}
+<details class="acc info">
+  <summary>{{ t('gl.title') }}</summary>
+  <dl class="kv">
+    <dt>{{ t('gl.cr_t') }}</dt><dd>{{ t('gl.cr_d') }}</dd>
+    <dt>{{ t('gl.baseline_t') }}</dt><dd>{{ t('gl.baseline_d') }}</dd>
+    <dt>{{ t('gl.scope_item_t') }}</dt><dd>{{ t('gl.scope_item_d') }}</dd>
+    <dt>{{ t('gl.excluded_t') }}</dt><dd>{{ t('gl.excluded_d') }}</dd>
+    <dt>{{ t('gl.impact_t') }}</dt><dd>{{ t('gl.impact_d') }}</dd>
+    <dt>{{ t('gl.churn_t') }}</dt><dd>{{ t('gl.churn_d') }}</dd>
+    <dt>{{ t('gl.pert_t') }}</dt><dd>{{ t('gl.pert_d') }}</dd>
+    <dt>{{ t('gl.gray_t') }}</dt><dd>{{ t('gl.gray_d') }}</dd>
+  </dl>
+</details>
+{% endmacro %}
+
+{# One-click version comparison for a dependency-change decision (case + triage screens).
+   dep = {package, old, new} prefill; the diff loads on demand via HTMX. #}
+{% macro dep_compare_block(case, dep, i, deps_online) %}
+<div class="dep-compare" style="margin:10px 0 4px; padding:10px 13px; background:#F4F8FE; border:1px solid #D8E4F5; border-radius:10px;">
+  <div style="font-size:12.5px; font-weight:700; color:#2B4C7E; margin-bottom:7px;">📦 {{ t('vd.case_title', package=dep.package) }}</div>
+  {% if deps_online %}
+  <form style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;"
+        hx-get="/projeler/{{ case.project_id }}/bagimliliklar/karsilastir"
+        hx-target="#dep-diff-{{ i }}" hx-swap="innerHTML" hx-indicator="#dep-ind-{{ i }}">
+    <input type="hidden" name="package" value="{{ dep.package }}">
+    <input name="old" value="{{ dep.old }}" placeholder="{{ t('vd.old_ph') }}" required class="mono"
+           style="width:90px; padding:6px 9px; border:1px solid #C9D8EC; border-radius:9px; font-size:12px;">
+    <span class="meta">→</span>
+    <input name="new" value="{{ dep.new }}" placeholder="{{ t('vd.new_ph') }}" required class="mono"
+           style="width:90px; padding:6px 9px; border:1px solid #C9D8EC; border-radius:9px; font-size:12px;">
+    <button class="btn ghost" type="submit" style="font-size:12px;">{{ t('vd.compare') }}</button>
+    <span id="dep-ind-{{ i }}" class="htmx-indicator meta" style="font-size:11.5px;">{{ t('vd.loading') }}</span>
+  </form>
+  <div id="dep-diff-{{ i }}"></div>
+  {% else %}
+  <p class="meta" style="font-size:12px; margin:0;">{{ t('deps.online_off') }}</p>
+  {% endif %}
+</div>
+{% endmacro %}
+
+{# Shows a triage decision's full evidence chain in a collapsible accordion (reused). #}
+{% macro evidence_details(d) %}
+<details class="acc">
+  <summary>{{ t('ev.title') }}</summary>
+  <dl class="kv">
+    <dt>{{ t('ev.decision') }}</dt>
+    <dd><span class="badge d-{{ d.decision.value }}">{{ d.decision.value|tr_decision }}</span>
+        · {{ t('ev.confidence') }} %{{ '%.0f'|format(d.confidence * 100) }}</dd>
+
+    <dt>{{ t('ev.reasoning') }}</dt><dd>{{ d.evidence.reasoning }}</dd>
+
+    <dt>{{ t('ev.best_match') }}</dt>
+    <dd>{{ d.evidence.best_match.item or '—' }}
+        <span class="meta">({{ t('ev.similarity') }} {{ d.evidence.best_match.similarity }})</span></dd>
+
+    <dt>{{ t('ev.cited_clause') }}</dt>
+    <dd>{{ d.evidence.contract_clauses_cited|join(', ') or '—' }}</dd>
+
+    {% if d.evidence.source_coverage %}
+    <dt>{{ t('ev.source_coverage') }}</dt>
+    <dd>{% for s in d.evidence.source_coverage %}
+        <span class="chip">{{ "✓" if s.covered else "✗" }} {{ s.source }}
+        <span class="meta">({{ s.detail }})</span></span>
+        {% endfor %}</dd>
+    {% endif %}
+
+    {% if d.evidence.assumptions %}
+    <dt>{{ t('ev.assumptions') }}</dt>
+    <dd><ul style="margin:4px 0; padding-left:20px">
+        {% for a in d.evidence.assumptions %}<li class="meta">{{ a }}</li>{% endfor %}
+        </ul></dd>
+    {% endif %}
+
+    <dt>{{ t('ev.checked') }}</dt>
+    <dd>{{ t('ev.checked_n', n=d.evidence.checked_against|length) }}
+        {% for c in d.evidence.checked_against %}<span class="chip">{{ c }}</span>{% endfor %}</dd>
+
+    <dt>{{ t('ev.impacted_modules') }}</dt>
+    <dd>
+      {% if d.evidence.impacted_signals %}
+      <table class="md" style="margin:0"><thead><tr>
+        <th>{{ t('ev.col_module') }}</th><th>LOC</th><th>{{ t('ev.col_complexity') }}<br><span class="meta">(cyclomatic)</span></th>
+        <th>churn<br><span class="meta">{{ t('ev.col_churn_sub') }}</span></th></tr></thead><tbody>
+      {% for s in d.evidence.impacted_signals %}
+        <tr><td><b>{{ s.id }}</b></td><td>{{ s.loc }}</td><td>{{ s.cyclomatic }}</td>
+            <td>{{ s.churn if s.churn > 1 else "—" }}</td></tr>
+      {% endfor %}
+      </tbody></table>
+      {% else %}—{% endif %}
+    </dd>
+
+    <dt>{{ t('ev.effort_est') }}</dt>
+    <dd><b>{{ d.effort_estimate.low }}–{{ d.effort_estimate.high }} {{ d.effort_estimate.unit|tr_unit }}</b>
+        <span class="meta">· {{ d.effort_estimate.basis }}</span></dd>
+
+    <dt>{{ t('ev.risk') }}</dt>
+    <dd><span class="risk-{{ d.risk.level.value }}">{{ d.risk.level.value|tr_risk }}</span>
+        {{ t('ev.risk_formula', p=t('risk.word.' + d.risk.probability), i=t('risk.word.' + d.risk.impact))|safe }}
+        {% if d.risk.escalation %}· <span class="esc">{{ t('ev.escalation_24') }}</span>{% endif %}
+        {% if d.risk.basis %}<br><span class="meta">{{ t('ev.risk_basis') }}: {{ d.risk.basis }}</span>{% endif %}</dd>
+
+    {% if d.risk.signals %}
+    <dt>{{ t('ev.risk_signals') }}</dt>
+    <dd>{% for s in d.risk.signals %}<span class="chip">{{ s }}</span>{% endfor %}</dd>
+    {% endif %}
+
+    {% if d.cr_draft %}
+    <dt>{{ t('ev.cr_draft') }}</dt>
+    <dd>{{ d.cr_draft.impact_analysis }}<br><span class="meta">{{ t('ev.cr_effort') }}: {{ d.cr_draft.cost }}</span></dd>
+    {% endif %}
+
+    <dt>{{ t('ev.auditability') }}</dt>
+    <dd class="meta">{{ t('ev.audit_line', m=d.model_version, f=d.index_freshness, d=d.human_decision.value|tr_status) }}</dd>
+  </dl>
+
+  {% if d.evidence.cited_clauses %}
+  <p class="meta"><b>{{ t('ev.cited_header') }}</b></p>
+  {% for c in d.evidence.cited_clauses %}
+  <div class="card">
+    <span class="badge {{ 'd-OUT_OF_SCOPE' if c.polarity.value == 'EXCLUDED' else 'd-IN_SCOPE' }}">{{ t('badge.excluded') if c.polarity.value == 'EXCLUDED' else t('badge.included') }}</span>
+    <b>{{ c.source_clause or c.id }}</b>
+    <span class="meta">· {{ c.category }} · {{ c.id }}</span>
+    <p>{{ c.description }}</p>
+    <p class="meta">
+      {% if c.limits.quantity %}{{ t('ev.limit') }} {{ c.limits.quantity }}{% if c.limits.period %}/{{ c.limits.period }}{% endif %} ·
+      {% endif %}
+      {% if c.effort_pool_hours %}{{ t('ev.effort_pool') }}: {{ c.effort_pool_hours|int }} {{ t('common.hours_short') }} ·{% endif %}
+      {{ t('ev.mapped_modules') }}: {{ c.mapped_modules|join(', ') or '—' }}
+    </p>
+  </div>
+  {% endfor %}
+  {% endif %}
+</details>
+{% endmacro %}

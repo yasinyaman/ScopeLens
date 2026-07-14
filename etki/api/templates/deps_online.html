@@ -1,0 +1,13 @@
+<div style="margin-top:10px; padding-top:10px; border-top:1px solid #ECE9E2;">
+  <div class="mono" style="display:grid; grid-template-columns:1.6fr 1fr 1fr .9fr; gap:8px 12px; font-size:11px; color:var(--pmo-muted); font-weight:600; text-transform:uppercase; letter-spacing:.03em; margin-bottom:6px;">
+    <span>{{ t('deps.package') }}</span><span>{{ t('deps.spec') }}</span><span>{{ t('deps.latest') }}</span><span>{{ t('deps.released') }}</span>
+  </div>
+  {% for r in rows %}
+  <div style="display:grid; grid-template-columns:1.6fr 1fr 1fr .9fr; gap:8px 12px; font-size:12.5px; align-items:center; padding:3px 0;">
+    <span class="mono" style="font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ r.name }}</span>
+    <span class="mono" style="color:#5C6B72;">{{ r.spec }}</span>
+    <span class="mono" style="color:#1E7A43; font-weight:600;">{{ r.latest or '—' }}</span>
+    <span class="meta" style="font-size:11px;">{{ r.released_at or '—' }}</span>
+  </div>
+  {% endfor %}
+</div>

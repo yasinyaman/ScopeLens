@@ -1,0 +1,10 @@
+{# The AI half of an ask turn — labeled with its source model. #}
+<div style="display:flex; margin:0 0 8px;">
+  <div style="max-width:92%; min-width:60%; background:#fff; border:1px solid #E6E2D9; border-left:3px solid #0E7C7B; border-radius:14px 14px 14px 3px; padding:12px 14px;">
+    <p class="meta" style="margin:0 0 8px;">
+      <span class="mono" style="font-size:10px; font-weight:700; color:#1E7A43; background:#E6F4EC; padding:2px 8px; border-radius:10px; letter-spacing:.03em;">{{ t('ask.src_llm') }}{% if model %} · {{ model }}{% endif %}</span>
+      {% if grounded %}<span style="font-size:11px; color:var(--pmo-muted);">{{ t('ask.grounded') }}</span>{% endif %}
+    </p>
+    <div class="md sg-answer">{{ answer_html|safe }}</div>
+  </div>
+</div>

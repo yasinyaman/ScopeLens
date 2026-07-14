@@ -1,0 +1,14 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "etki-preview",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "ETKI_SESSION_SECRET=preview-secret-0123456789abcdef ETKI_DEMO_MODE=true ETKI_DEPS_ONLINE=true ETKI_ADMIN_USER=pmo ETKI_ADMIN_PASSWORD=pmo12345 uv run uvicorn etki.api.app:app --host 127.0.0.1 --port 8001"
+      ],
+      "port": 8001
+    }
+  ]
+}

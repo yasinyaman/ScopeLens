@@ -1,0 +1,14 @@
+[
+  {"id": "N1-01", "stratum": "in_scope_direct", "request_text": "Track each order from placement to delivery", "expected_decision": "IN_SCOPE", "rationale": "Clause 2.1 includes order status tracking."},
+  {"id": "N1-02", "stratum": "in_scope_paraphrase", "request_text": "Let shoppers hunt for products by typing a few letters", "expected_decision": "IN_SCOPE", "rationale": "Hunting products by typed letters = product search, Clause 2.3."},
+  {"id": "N1-03", "stratum": "in_scope_paraphrase", "request_text": "A basket that remembers a shopper's picks between visits", "expected_decision": "IN_SCOPE", "rationale": "The remembering basket = shopping cart management, Clause 2.1."},
+  {"id": "N1-04", "stratum": "out_of_scope_direct", "request_text": "Take payments in Ethereum", "expected_decision": "OUT_OF_SCOPE", "rationale": "Cryptocurrency payment is excluded by Clause 6.1."},
+  {"id": "N1-05", "stratum": "out_of_scope_paraphrase", "request_text": "List our inventory on other companies' storefronts too", "expected_decision": "OUT_OF_SCOPE", "rationale": "Selling via other storefronts = third-party marketplace integration, excluded by Clause 6.1."},
+  {"id": "N1-06", "stratum": "out_of_scope_adversarial", "request_text": "A catalog section for marketplace partners' goods", "expected_decision": "OUT_OF_SCOPE", "rationale": "Catalog vocabulary (2.3), but requires marketplace seller integration — excluded by Clause 6.1."},
+  {"id": "N1-07", "stratum": "cr_new_capability", "request_text": "A wishlist that emails shoppers when prices drop", "expected_decision": "CR_CANDIDATE", "rationale": "No clause covers wishlists or email campaigns — change request."},
+  {"id": "N1-08", "stratum": "cr_new_capability", "request_text": "Same-day delivery scheduling at checkout", "expected_decision": "CR_CANDIDATE", "rationale": "No clause covers delivery scheduling — change request."},
+  {"id": "N1-09", "stratum": "cr_limit_quota", "request_text": "Wire up 6 payment providers", "expected_decision": "CR_CANDIDATE", "rationale": "Clause 2.2 caps payment provider integrations at 3 — change request."},
+  {"id": "N1-10", "stratum": "cr_effort_pool", "request_text": "Bring on one more card payment provider", "expected_decision": "CR_CANDIDATE", "rationale": "Within the 3-provider limit (2.2) but the 30h payment pool is exhausted (37h logged) — change request."},
+  {"id": "N1-11", "stratum": "maintenance", "request_text": "Checkout fails with a server error when the cart has a discount", "expected_decision": "MAINTENANCE", "rationale": "Defect in delivered cart/checkout — bug-fix maintenance under Clause 7.1."},
+  {"id": "N1-12", "stratum": "gray_vague", "request_text": "usability", "expected_decision": "GRAY_AREA", "rationale": "A single word names no deliverable — the PMO must clarify."}
+]

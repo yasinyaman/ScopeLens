@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # freeze guard diffs against the PR base / push range
+
+      # Answer-key freeze guard: engine/matching changes and eval dataset edits must
+      # not land in the same change set (see CONTRIBUTING.md). PRs check the whole
+      # range; pushes check each commit individually.
+      - name: Freeze guard
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            python scripts/freeze_guard.py "origin/${{ github.base_ref }}...HEAD"
+          else
+            BEFORE="${{ github.event.before }}"
+            if [ -z "$BEFORE" ] || ! git cat-file -e "$BEFORE" 2>/dev/null; then
+              # Force-push or fresh history: fall back to the parent when it
+              # exists, else check all commits (the guard skips root commits).
+              BEFORE=$(git rev-parse --verify --quiet HEAD^ || true)
+            fi
+            if [ -n "$BEFORE" ]; then
+              python scripts/freeze_guard.py --per-commit "$BEFORE..HEAD"
+            else
+              python scripts/freeze_guard.py --per-commit "HEAD"
+            fi
+          fi
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+          enable-cache: true              # cache dependency downloads
+
+      - name: Sync dependencies
+        run: uv sync --frozen --dev       # match the lockfile exactly (no version drift)
+
+      - name: Lint (ruff)
+        run: uv run ruff check .
+
+      - name: Type check (mypy)
+        run: uv run mypy etki
+
+      - name: Tests (pytest + coverage)
+        run: uv run pytest --cov=etki --cov-report=term-missing --cov-fail-under=70
+
+      - name: Gate / back-test (eval)
+        run: uv run python -m eval.runner

@@ -1,0 +1,56 @@
+site_name: Etki
+site_description: >-
+  Evidence-backed scope triage — contract clauses + code knowledge graph +
+  historical effort, fused into auditable decisions.
+site_url: https://yaman.dev/etki/
+repo_url: https://github.com/yasinyaman/etki
+repo_name: yasinyaman/etki
+edit_uri: edit/master/docs/
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: teal
+      accent: teal
+      toggle:
+        icon: material/weather-night
+        name: Dark mode
+    - scheme: slate
+      primary: teal
+      accent: teal
+      toggle:
+        icon: material/weather-sunny
+        name: Light mode
+  features:
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+    - content.action.edit
+
+markdown_extensions:
+  - admonition
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.highlight
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+
+nav:
+  - Home: index.md
+  - Getting started: getting-started.md
+  - Concepts: concepts.md
+  - Decision memory (wiki & graph query): memory.md
+  - MCP (use from Claude): MCP.md
+  - Adapter reference: adapters.md
+  - Writing an adapter: writing-an-adapter.md
+  - Operations (RUNBOOK): RUNBOOK.md
+  - Compliance & traceability: compliance.md
+  - Compliance (KVKK, Turkish): KVKK.md
+
+exclude_docs: |
+  DEMO_TALEPLER.md

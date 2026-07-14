@@ -1,0 +1,25 @@
+# Etki connector configuration (example).
+# The core never knows which vendor is in use; the active adapter is selected here.
+# Phase 1: the demo corpus (samples/demo_project) is indexed with real adapters.
+#   - documents: filesystem  (contract .md)
+#   - code_repo: joern        (live CPG indexing; "ast" is the dependency-free alternative)
+#   - work_items: file        (JSON ticket export)
+# At another organization only e.g. code_repo.adapter changes — CORE CODE NEVER DOES.
+connectors:
+  documents:
+    adapter: filesystem
+    options:
+      root: samples/demo_project
+      globs: ["*.md"]
+  code_repo:
+    adapter: joern
+    # adapter: graphify   (tree-sitter, 165+ languages, no JVM; install: uv sync --extra graphify;
+    #                      options: src_root, export_dir [default: <src_root>/../graphify-out], refresh)
+    options:
+      src_root: samples/demo_project/src
+      export_path: .etki/code_index.json
+      refresh: true
+  work_items:
+    adapter: file
+    options:
+      path: samples/demo_project/work_items.json

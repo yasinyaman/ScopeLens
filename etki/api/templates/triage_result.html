@@ -1,0 +1,62 @@
+{% from "macros.html" import llm_chip %}
+{% include "cards.html" %}
+
+{% include "case_flow.html" %}
+
+{% if pre_analysis_html %}
+<div class="card" style="border-left:3px solid #0E7C7B; background:linear-gradient(180deg,#F2FAF6,#fff 60%);">
+  <div style="display:flex; align-items:center; gap:8px; font-weight:700; font-size:14px; margin-bottom:6px;">
+    {{ t('tr.auto_pre') }} <span class="meta" style="font-weight:500;">{{ t('tr.auto_pre_sub') }}</span>
+    {% if pre_analysis_source %}
+    <span class="mono" style="font-size:10px; font-weight:700; padding:2px 8px; border-radius:10px; letter-spacing:.03em;
+          {% if pre_analysis_source == 'llm' %}color:#1E7A43; background:#E6F4EC;{% else %}color:#55666D; background:#EEEBE4;{% endif %}">
+      {{ t('llm.source_llm') if pre_analysis_source == 'llm' else t('llm.source_det') }}</span>
+    {% endif %}
+  </div>
+  <div class="md">{{ pre_analysis_html|safe }}</div>
+</div>
+{% endif %}
+
+<!-- Pre-analysis: auto-generated; can be enriched via chat and re-saved after editing -->
+<div class="card" style="border-left:3px solid #3563B0;">
+  <div style="font-weight:700; font-size:14px; margin-bottom:4px;">{{ t('tr.edit_pre') }} {{ llm_chip(llm) }}</div>
+  <p class="meta" style="margin:0 0 10px;">{{ t('tr.edit_pre_desc')|safe }}</p>
+  <div id="chat-thread"></div>
+  <form hx-post="/ui/case-chat" hx-target="#chat-thread" hx-swap="beforeend"
+        hx-indicator="#chat-sp" hx-on--after-request="this.querySelector('[name=question]').value=''">
+    <input type="hidden" name="project_id" value="{{ case.project_id }}">
+    <input type="hidden" name="case_id" value="{{ case.request_id }}">
+    <input type="hidden" name="context" value="{{ case_summary }}">
+    <div style="display:flex; gap:8px; align-items:center;">
+      <input type="text" name="question" required placeholder="{{ t('tr.chat_ph') }}" style="flex:1;">
+      <button class="btn" type="submit">{{ t('tr.ask') }}</button>
+      <span id="chat-sp" class="htmx-indicator meta">{{ t('tr.answering') }}</span>
+    </div>
+  </form>
+
+  <!-- save the pre-analysis to the case -->
+  <form hx-post="/projeler/{{ case.project_id }}/triyaj/{{ case.request_id }}/on-analiz"
+        hx-target="#pre-analysis-status" hx-swap="innerHTML" style="margin-top:14px;">
+    <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:6px;">
+      <label style="font-size:13px; font-weight:600; color:#33424A;">{{ t('tr.draft_label') }}</label>
+      <button type="button" class="btn ghost" style="font-size:12px; padding:4px 10px;"
+              onclick="sgUseLastAnswer(this)">{{ t('tr.use_last') }}</button>
+    </div>
+    <textarea name="pre_analysis" rows="8" required
+      placeholder="{{ t('tr.pre_ph') }}">{{ pre_analysis_text or '' }}</textarea>
+    <div style="display:flex; align-items:center; gap:10px; margin-top:10px;">
+      <button class="btn" type="submit">{{ t('tr.save_to_case') }}</button>
+      <span id="pre-analysis-status" class="meta"></span>
+    </div>
+  </form>
+</div>
+<script>
+  function sgUseLastAnswer(btn) {
+    var answers = document.querySelectorAll('#chat-thread .sg-answer');
+    if (!answers.length) return;
+    var ta = btn.closest('form').querySelector('[name=pre_analysis]');
+    var last = answers[answers.length - 1].innerText.trim();
+    ta.value = ta.value ? (ta.value + '\n\n' + last) : last;
+    ta.focus();
+  }
+</script>
