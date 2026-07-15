@@ -11,6 +11,9 @@ ENV UV_COMPILE_BYTECODE=1 UV_LINK_MODE=copy
 # Dependencies (building the package needs the sources + readme)
 COPY pyproject.toml uv.lock README.md CLAUDE.md ./
 COPY etki ./etki
+# uv workspace members (etki-api is a runtime dep; the lockfile references
+# packages/* so the members must exist for `uv sync --frozen` to resolve).
+COPY packages ./packages
 COPY config ./config
 COPY samples ./samples
 COPY alembic ./alembic
