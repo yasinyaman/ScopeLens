@@ -15,6 +15,16 @@ from pydantic import BaseModel, Field, model_validator
 
 from etki.core.enums import Decision, PmoDecision, Polarity, RequestType, RiskLevel
 
+# Externally-normalized models moved to the frozen plugin API (etki-api).
+# Re-exported here (redundant-alias form = explicit re-export) so existing
+# `from etki.core.models import WorkItem` imports and isinstance checks keep
+# working — SAME class objects, zero engine churn.
+from etki_api.models import Churn as Churn
+from etki_api.models import CodeModule as CodeModule
+from etki_api.models import Complexity as Complexity
+from etki_api.models import DocumentRef as DocumentRef
+from etki_api.models import WorkItem as WorkItem
+
 # --- Scope & contract --------------------------------------------------------
 
 
@@ -48,59 +58,9 @@ class Baseline(BaseModel):
     locked_at: datetime | None = None
 
 
-# --- Work item (normalized) --------------------------------------------------
-
-
-class WorkItem(BaseModel):
-    """Vendor-agnostic, normalized work item. ``effort_seconds`` is the single
-    source of truth for effort (GLPI actiontime, Jira worklog... converted in
-    the adapter)."""
-
-    id: str
-    title: str
-    description: str = ""
-    category: str | None = None
-    status: str | None = None
-    effort_seconds: int = 0
-    assignee: str | None = None
-    created_at: datetime | None = None
-    closed_at: datetime | None = None
-
-
-# --- Code knowledge graph -----------------------------------------------------
-
-
-class Complexity(BaseModel):
-    loc: int = 0
-    cyclomatic: int = 0
-    files: int = 0
-
-
-class Churn(BaseModel):
-    commits_last_6mo: int = 0
-
-
-class CodeModule(BaseModel):
-    """A module in the code knowledge graph (dependencies + metrics)."""
-
-    id: str
-    path: str
-    responsibilities: list[str] = Field(default_factory=list)
-    depends_on: list[str] = Field(default_factory=list)
-    depended_by: list[str] = Field(default_factory=list)
-    mapped_scope_items: list[str] = Field(default_factory=list)
-    # External (third-party) package names this module imports — the usage
-    # surface for dependency-impact analysis. Internal modules stay in
-    # depends_on; stdlib/builtins are filtered as noise.
-    packages: list[str] = Field(default_factory=list)
-    # Per-package API symbols this module touches ("requests" → ["get"]) — the
-    # call sites to audit on a version change. ast producer only; defaulted.
-    package_apis: dict[str, list[str]] = Field(default_factory=dict)
-    # Qualified counterparts ("faker" → ["faker.providers.x.CreditCard"]) — the
-    # your_code version-diff audit uses these; catches non-exported imports.
-    package_api_paths: dict[str, list[str]] = Field(default_factory=dict)
-    complexity: Complexity = Field(default_factory=Complexity)
-    churn: Churn = Field(default_factory=Churn)
+# --- Work item / code graph / document ref ------------------------------------
+# WorkItem, Complexity, Churn, CodeModule and DocumentRef now live in
+# etki_api.models (see the re-export imports above).
 
 
 class DeclaredDependency(BaseModel):
@@ -117,18 +77,6 @@ class DeclaredDependency(BaseModel):
     ecosystem: str  # pypi | npm | maven | go | cargo
     manifest: str  # provenance, e.g. "requirements.txt" or "repo:pom.xml"
     dev: bool = False  # devDependencies / optional-dependencies / test scope
-
-
-# --- Document source -----------------------------------------------------
-
-
-class DocumentRef(BaseModel):
-    id: str
-    name: str
-    path: str
-    mime: str = "text/plain"
-    modified_at: datetime | None = None
-    source: str = "fake"
 
 
 # --- Triage output -------------------------------------------------------

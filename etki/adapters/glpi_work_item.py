@@ -12,8 +12,7 @@ from typing import Any
 
 import httpx
 
-from etki.core.models import WorkItem
-from etki.core.ports import Capabilities
+from etki_api import Capabilities, WorkItem
 
 
 class GlpiWorkItemProvider:

@@ -4,9 +4,11 @@
 #   3. build the sdist/wheel and publish to PyPI (trusted publishing),
 #   4. create a GitHub Release with the matching CHANGELOG section.
 #
-# One-time setup required for PyPI: add a "trusted publisher" on pypi.org for this
-# repository (project: etki, workflow: release.yml, environment: pypi).
-# Until that is configured the pypi job will fail; the other jobs are independent.
+# One-time setup required for PyPI: TWO trusted publishers on pypi.org for this
+# repository (both workflow: release.yml) — project `etki` with environment `pypi`,
+# project `etki-api` with environment `pypi-etki-api`. PyPI refuses two pending
+# publishers with the identical repo+workflow+environment config, hence the split.
+# Until configured the publish jobs fail; the other jobs are independent.
 name: Release
 
 on:
@@ -30,8 +32,8 @@ jobs:
           enable-cache: true
       - run: uv sync --frozen --dev
       - run: uv run ruff check .
-      - run: uv run mypy etki
-      - run: uv run pytest --cov=etki --cov-fail-under=70
+      - run: uv run mypy etki packages/etki-api/src/etki_api packages/etki-plugin-linear/src/etki_plugin_linear
+      - run: uv run pytest --cov=etki --cov=etki_api --cov-fail-under=70
       - run: uv run python -m eval.runner
 
   docker:
@@ -63,6 +65,13 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+  # PyPI rejects two pending trusted publishers with the IDENTICAL config
+  # (repo + workflow + environment) — the environment name is the disambiguator.
+  # So each package publishes from its OWN job/environment:
+  #   project `etki`     ← environment `pypi`
+  #   project `etki-api` ← environment `pypi-etki-api`
+  # skip-existing lets a tag re-run without failing on versions already uploaded
+  # (etki-api only uploads when its version was actually bumped).
   pypi:
     needs: checks
     runs-on: ubuntu-latest
@@ -72,8 +81,24 @@ jobs:
       - uses: astral-sh/setup-uv@v5
         with:
           python-version: "3.12"
-      - run: uv build
+      - run: uv build # root member only = etki
       - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          skip-existing: true
+
+  pypi-etki-api:
+    needs: checks
+    runs-on: ubuntu-latest
+    environment: pypi-etki-api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+      - run: uv build --package etki-api
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          skip-existing: true
 
   github-release:
     # NOT dependent on PyPI: the image + GitHub Release still go out even if the

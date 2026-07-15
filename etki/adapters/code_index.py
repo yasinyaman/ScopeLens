@@ -10,8 +10,8 @@ from pathlib import PurePosixPath
 from pydantic import BaseModel, Field
 
 from etki.adapters.manifests import NOISE_IMPORTS
-from etki.core.models import Churn, CodeModule, Complexity, DeclaredDependency
-from etki.core.ports import Capabilities, CodeRepositoryProvider
+from etki.core.models import DeclaredDependency
+from etki_api import Capabilities, Churn, CodeModule, CodeRepositoryProvider, Complexity
 
 
 class FileNode(BaseModel):

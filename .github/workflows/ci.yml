@@ -46,10 +46,13 @@ jobs:
         run: uv run ruff check .
 
       - name: Type check (mypy)
-        run: uv run mypy etki
+        run: uv run mypy etki packages/etki-api/src/etki_api packages/etki-plugin-linear/src/etki_plugin_linear
 
       - name: Tests (pytest + coverage)
-        run: uv run pytest --cov=etki --cov-report=term-missing --cov-fail-under=70
+        run: uv run pytest --cov=etki --cov=etki_api --cov=etki_plugin_linear --cov-report=term-missing --cov-fail-under=70
+
+      - name: Build workspace packages (etki-api gate)
+        run: uv build --all-packages
 
       - name: Gate / back-test (eval)
         run: uv run python -m eval.runner

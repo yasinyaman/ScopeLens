@@ -9,6 +9,13 @@ resolution-markers = [
     "python_full_version < '3.14' and sys_platform != 'win32'",
 ]
 
+[manifest]
+members = [
+    "etki",
+    "etki-api",
+    "etki-plugin-linear",
+]
+
 [[package]]
 name = "alembic"
 version = "1.18.5"
@@ -452,11 +459,12 @@ wheels = [
 
 [[package]]
 name = "etki"
-version = "0.1.0a1"
+version = "0.1.0a2"
 source = { editable = "." }
 dependencies = [
     { name = "alembic" },
     { name = "anthropic" },
+    { name = "etki-api" },
     { name = "fastapi" },
     { name = "itsdangerous" },
     { name = "jinja2" },
@@ -481,6 +489,7 @@ graphify = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "etki-plugin-linear" },
     { name = "httpx" },
     { name = "mypy" },
     { name = "pytest" },
@@ -497,6 +506,7 @@ docs = [
 requires-dist = [
     { name = "alembic", specifier = ">=1.18.5" },
     { name = "anthropic", specifier = ">=0.69" },
+    { name = "etki-api", editable = "packages/etki-api" },
     { name = "fastapi", specifier = ">=0.115" },
     { name = "graphifyy", marker = "extra == 'graphify'", specifier = ">=0.9.8,<1.0" },
     { name = "itsdangerous", specifier = ">=2.2.0" },
@@ -518,6 +528,7 @@ provides-extras = ["graphify"]
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "etki-plugin-linear", editable = "packages/etki-plugin-linear" },
     { name = "httpx", specifier = ">=0.27" },
     { name = "mypy", specifier = ">=1.11" },
     { name = "pytest", specifier = ">=8.2" },
@@ -527,6 +538,43 @@ dev = [
     { name = "types-pyyaml", specifier = ">=6.0" },
 ]
 docs = [{ name = "mkdocs-material", specifier = ">=9.5" }]
+
+[[package]]
+name = "etki-api"
+version = "0.1.0"
+source = { editable = "packages/etki-api" }
+dependencies = [
+    { name = "pydantic" },
+]
+
+[package.optional-dependencies]
+conformance = [
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "pydantic", specifier = ">=2.7" },
+    { name = "pytest", marker = "extra == 'conformance'", specifier = ">=8.2" },
+    { name = "pytest-asyncio", marker = "extra == 'conformance'", specifier = ">=0.23" },
+]
+provides-extras = ["conformance"]
+
+[[package]]
+name = "etki-plugin-linear"
+version = "0.1.0"
+source = { editable = "packages/etki-plugin-linear" }
+dependencies = [
+    { name = "etki-api" },
+    { name = "httpx" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "etki-api", editable = "packages/etki-api" },
+    { name = "httpx", specifier = ">=0.27" },
+]
 
 [[package]]
 name = "fastapi"

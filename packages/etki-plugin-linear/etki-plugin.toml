@@ -1,0 +1,19 @@
+# Static twin of etki_plugin_linear.PLUGIN — readable without executing plugin
+# code (install prompt + marketplace index read this). `etki plugin verify`
+# cross-checks it against the PluginSpec and fails on drift.
+
+[plugin]
+name = "etki-plugin-linear"
+type = "adapter"
+api_compat = ">=0.1,<0.2"
+
+[plugin.capabilities]
+network = true
+filesystem = "none"
+endpoints = ["api.linear.app"]
+notes = "GraphQL read-only: issue lookup + similarity search. No native time tracking; effort comes from the declared hours_per_point convention."
+
+[[plugin.adapters]]
+port = "work_items"
+name = "linear"
+options_model = "etki_plugin_linear:LinearOptions"

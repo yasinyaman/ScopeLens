@@ -1,4 +1,4 @@
-"""Linear WorkItemProvider (GraphQL) — honest about the missing time tracking.
+"""Linear WorkItemProvider plugin — honest about the missing time tracking.
 
 Linear has no native time tracking: issues carry an `estimate` in POINTS, not
 hours. Two consequences, both deliberate:
@@ -12,14 +12,10 @@ hours. Two consequences, both deliberate:
 
 Auth: a personal API key goes into the `Authorization` header as-is (no
 "Bearer" prefix). Requires a live workspace → integration is CI-skipped; pure
-mapping is unit-tested. Config example:
+mapping is unit-tested.
 
-    connectors:
-      work_items:
-        adapter: linear
-        options:
-          api_key: env:LINEAR_API_KEY
-          hours_per_point: 4        # optional; omit to keep effort at 0
+This package depends ONLY on etki-api (+ httpx) — it is the first-party
+reference plugin dogfooding the contract.
 """
 
 from __future__ import annotations
@@ -27,8 +23,15 @@ from __future__ import annotations
 from typing import Any
 
 import httpx
+from pydantic import BaseModel
 
-from etki_api import Capabilities, WorkItem
+from etki_api import (
+    AdapterFactory,
+    Capabilities,
+    PluginSpec,
+    SecurityCapabilities,
+    WorkItem,
+)
 
 _ENDPOINT = "https://api.linear.app/graphql"
 
@@ -46,6 +49,14 @@ _SEARCH_QUERY = (
     "query($term: String!, $first: Int!) { searchIssues(term: $term, first: $first) "
     f"{{ nodes {{ {_ISSUE_FIELDS} }} }} }}"
 )
+
+
+class LinearOptions(BaseModel):
+    """Config options for the `linear` adapter (secrets arrive pre-resolved)."""
+
+    api_key: str
+    hours_per_point: float = 0.0
+    timeout: float = 30.0
 
 
 class LinearWorkItemProvider:
@@ -106,3 +117,33 @@ class LinearWorkItemProvider:
             supports_effort_tracking=self._hours_per_point > 0,
             supports_incremental_diff=False,
         )
+
+
+def _build(options: BaseModel) -> LinearWorkItemProvider:
+    opts = LinearOptions.model_validate(options.model_dump())
+    return LinearWorkItemProvider(
+        opts.api_key, hours_per_point=opts.hours_per_point, timeout=opts.timeout
+    )
+
+
+PLUGIN = PluginSpec(
+    name="etki-plugin-linear",
+    api_compat=">=0.1,<0.2",
+    capabilities=SecurityCapabilities(
+        network=True,
+        filesystem="none",
+        endpoints=["api.linear.app"],
+        notes=(
+            "GraphQL read-only: issue lookup + similarity search. No native time "
+            "tracking; effort comes from the declared hours_per_point convention."
+        ),
+    ),
+    adapters=(
+        AdapterFactory(
+            port="work_items",
+            name="linear",
+            options_model=LinearOptions,
+            build=_build,
+        ),
+    ),
+)

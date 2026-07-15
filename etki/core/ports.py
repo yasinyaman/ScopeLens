@@ -1,6 +1,15 @@
 """Abstract ports (hexagonal architecture). The core talks ONLY to these; it
 knows no vendor name (GLPI/GitHub/SharePoint). Adapters implement these
 Protocols and normalize away the vendor differences.
+
+The EXTERNAL-integration ports (WorkItemProvider, CodeRepositoryProvider,
+DocumentSourceProvider, LLMClient, EmbeddingProvider, RerankProvider,
+RegistryMetadataProvider) + Capabilities/PackageMetadata now live in the
+frozen plugin API package ``etki_api`` and are re-exported here (redundant-
+alias form = explicit re-export): SAME class objects, so every existing
+import and isinstance check keeps working. The INTERNAL ports below
+(persistence, wiki, graph query, HITL ingest) are deliberately NOT part of
+the plugin API and may change freely.
 """
 
 from __future__ import annotations
@@ -15,92 +24,18 @@ from etki.core.models import (
     AuditEvent,
     Baseline,
     CaseFile,
-    CodeModule,
-    DocumentRef,
     FeedbackEvent,
     Override,
-    WorkItem,
 )
-
-
-class Capabilities(BaseModel):
-    """Capability declaration. The system degrades gracefully based on this:
-    falls back to polling when there's no webhook, to a full re-index when
-    there's no incremental diff.
-    """
-
-    supports_webhooks: bool = False
-    supports_realtime: bool = False
-    supports_effort_tracking: bool = False
-    supports_incremental_diff: bool = False
-
-
-@runtime_checkable
-class WorkItemProvider(Protocol):
-    """Abstracts the work-tracking tool (GLPI/Jira/ADO...). Effort arrives normalized."""
-
-    async def get_work_item(self, item_id: str) -> WorkItem: ...
-
-    async def find_similar(self, description: str, *, limit: int = 5) -> list[WorkItem]: ...
-
-    def capabilities(self) -> Capabilities: ...
-
-
-@runtime_checkable
-class CodeRepositoryProvider(Protocol):
-    """Abstracts the code repository (GitHub/GitLab/git...) and the indexed
-    module graph."""
-
-    async def list_modules(self) -> list[CodeModule]: ...
-
-    async def get_impacted(self, module_hint: str | None) -> list[CodeModule]: ...
-
-    def capabilities(self) -> Capabilities: ...
-
-
-@runtime_checkable
-class DocumentSourceProvider(Protocol):
-    """Abstracts the document source (FileSystem/SharePoint/Confluence...)."""
-
-    async def list_documents(self) -> list[DocumentRef]: ...
-
-    async def fetch_content(self, document_id: str) -> bytes: ...
-
-    def capabilities(self) -> Capabilities: ...
-
-
-@runtime_checkable
-class LLMClient(Protocol):
-    """Abstracts the LLM serving layer (vLLM / OpenAI-compatible). Falls back
-    to heuristics when there's no endpoint."""
-
-    async def complete_json(self, *, system: str, user: str) -> dict: ...
-
-
-@runtime_checkable
-class RerankProvider(Protocol):
-    """Abstracts a cross-encoder reranker endpoint (TEI-compatible `/rerank`).
-    Reads (query, document) pairs JOINTLY — measured on EtkiBench as the first
-    non-LLM mechanism that separates "paraphrase of a clause" from "new
-    capability near a clause" (AUC 0.975). Deterministic for a given model.
-    No endpoint configured → the engine runs without this evidence layer."""
-
-    async def rerank(self, query: str, documents: list[str]) -> list[float]:
-        """Returns one raw-logit score per document, aligned with the input order."""
-        ...
-
-
-@runtime_checkable
-class EmbeddingProvider(Protocol):
-    """Abstracts the embedding serving layer (Ollama / vLLM / any OpenAI-compatible
-    endpoint). Unlike the LLM, embeddings are DETERMINISTIC for a given model —
-    semantic matching through this port stays reproducible and auditable. No
-    endpoint configured → the engine runs pure lexical matching, unchanged."""
-
-    async def embed(self, texts: list[str], *, kind: str = "document") -> list[list[float]]:
-        """kind: "document" (clause texts) or "query" (the incoming request) —
-        retrieval embedding models require distinct task prefixes per side."""
-        ...
+from etki_api.models import PackageMetadata as PackageMetadata
+from etki_api.ports import Capabilities as Capabilities
+from etki_api.ports import CodeRepositoryProvider as CodeRepositoryProvider
+from etki_api.ports import DocumentSourceProvider as DocumentSourceProvider
+from etki_api.ports import EmbeddingProvider as EmbeddingProvider
+from etki_api.ports import LLMClient as LLMClient
+from etki_api.ports import RegistryMetadataProvider as RegistryMetadataProvider
+from etki_api.ports import RerankProvider as RerankProvider
+from etki_api.ports import WorkItemProvider as WorkItemProvider
 
 
 class GraphNode(BaseModel):
@@ -245,27 +180,6 @@ class IngestPort(Protocol):
     def ingest(self, event: FeedbackEvent) -> bool:
         """Returns True when the event was applied (False = unknown case)."""
         ...
-
-
-class PackageMetadata(BaseModel):
-    """Registry metadata for one package — DISPLAY data next to the raw spec.
-    Never compared/resolved against the declared spec (no "outdated" boolean:
-    PEP 440, semver and maven ranges are different languages)."""
-
-    name: str
-    ecosystem: str
-    latest_version: str | None = None
-    released_at: str | None = None  # ISO date string when the registry provides it
-    homepage: str | None = None
-
-
-@runtime_checkable
-class RegistryMetadataProvider(Protocol):
-    """Abstracts the public package registries (PyPI / npm / Maven Central…).
-    OPTIONAL and off by default (ETKI_DEPS_ONLINE) — CI and air-gapped
-    deployments never call out; any failure degrades to None."""
-
-    async def latest(self, ecosystem: str, name: str) -> PackageMetadata | None: ...
 
 
 @runtime_checkable

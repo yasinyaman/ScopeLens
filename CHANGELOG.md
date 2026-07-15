@@ -10,6 +10,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Nothing yet.
 
+## [0.1.0a2] - 2026-07-15
+
+### Added
+
+- **Plugin API (Faz 1)** — the repo is now a **uv workspace**. New PyPI package
+  **`etki-api`** (import `etki_api`, depends only on pydantic) carries the frozen
+  plugin surface: the seven external-integration ports (`WorkItemProvider`,
+  `CodeRepositoryProvider`, `DocumentSourceProvider`, `LLMClient`,
+  `EmbeddingProvider`, `RerankProvider`, `RegistryMetadataProvider`) +
+  `Capabilities`, the normalized models (`WorkItem`, `CodeModule`, `DocumentRef`,
+  `PackageMetadata`, …), the plugin contract (`PluginSpec`, `AdapterFactory`,
+  `SecurityCapabilities`; entry-point group `etki.adapters`) and the
+  `etki-plugin.toml` manifest loader. `etki.core.ports`/`etki.core.models`
+  re-export the moved symbols (same class objects — no behavior change).
+- **`etki-plugin-linear`** — the Linear adapter extracted as the first-party
+  reference plugin (depends only on `etki-api` + httpx); the built-in adapter
+  remains until runtime plugin discovery lands (Faz 2).
+- The API surface is contract-tested (`tests/unit/test_api_surface.py`);
+  `docs/writing-an-adapter.md` gained plugin packaging + semver policy sections;
+  `etki-api` keeps its own CHANGELOG under `packages/etki-api/`.
+
+### Changed
+
+- Release workflow publishes `etki` and `etki-api` from separate jobs/environments
+  (`pypi` / `pypi-etki-api`) via PyPI trusted publishing.
+
 ## [0.1.0a1] - 2026-07-14
 
 First public release.
