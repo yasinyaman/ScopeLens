@@ -233,6 +233,18 @@ Three channels, gated by the operator-side `ETKI_PLUGIN_POLICY`
      capability declaration, and per-version `api_compat` +
      `artifact.sha256` + `conformance_report` + `released_at`.
 
+  All three pieces are built in one command (in-tree tooling — wheel, green
+  conformance report, and a **schema-validated** `index.json` entry, assembled
+  under `dist/submission/<plugin>/`):
+
+  ```bash
+  uv run python scripts/build_plugin_submission.py etki-plugin-acme
+  ```
+
+  Or run the **Plugin submission bundle** GitHub Action (`workflow_dispatch`,
+  pick the plugin) and download the bundle as an artifact. Either way you then
+  open the PR against `etki-plugins` with the produced files.
+
   On merge, CI re-validates the schema and every hash, re-signs the index
   (sigstore keyless, identity pinned to that repo's release workflow) and
   republishes the Pages site — no further action on your side.

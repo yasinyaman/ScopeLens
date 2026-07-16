@@ -1,0 +1,38 @@
+# Build a verified-marketplace submission bundle for a plugin, on demand.
+#
+# Plugins ship on GitHub only (signed index / git), never PyPI. This workflow
+# assembles the three pieces a marketplace PR needs — wheel + green conformance
+# report + schema-validated index.json entry — and uploads them as a downloadable
+# artifact. The maintainer then opens the PR against `yasinyaman/etki-plugins`
+# (that repo's CI re-validates hashes + re-signs the index on merge).
+#
+# Cross-repo PR automation is intentionally NOT wired here: pushing to
+# etki-plugins needs a PAT for that repo. Grab the artifact and open the PR (or
+# add a token + a `gh pr create --repo yasinyaman/etki-plugins` step later).
+name: Plugin submission bundle
+
+on:
+  workflow_dispatch:
+    inputs:
+      plugin:
+        description: "Plugin dist name (e.g. etki-plugin-jira)"
+        required: true
+        default: etki-plugin-jira
+
+jobs:
+  bundle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+          enable-cache: true
+      - run: uv sync --frozen --dev
+      - name: Build submission bundle (wheel + conformance report + index entry)
+        run: uv run python scripts/build_plugin_submission.py "${{ inputs.plugin }}" --out submission
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.plugin }}-submission
+          path: submission/
+          if-no-files-found: error
