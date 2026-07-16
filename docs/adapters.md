@@ -99,7 +99,14 @@ references, resolved only at adapter-build time.
 - **Note:** WIQL matches the **title only** (not description); `CompletedWork` is
   usually maintained on task-level items.
 
-### `linear` — Linear (GraphQL)
+### `linear` — Linear (GraphQL) — ships as a plugin
+
+Since the plugin runtime (2026-07) Linear is **no longer builtin**: it is the
+first-party plugin package
+[`etki-plugin-linear`](https://github.com/yasinyaman/etki/tree/master/packages/etki-plugin-linear)
+(depends only on `etki-api` + httpx). Config is unchanged — `adapter: linear`
+resolves through the installed plugin; without it the name is rejected with the
+list of available adapters.
 
 - **Auth:** API key. **Similar-work search:** `searchIssues(term, first)`.
 - **Fields pulled:** `identifier`→`id`, `title`, `description`, `labels[0].name`→`category`,

@@ -47,7 +47,7 @@ nav:
   - Decision memory (wiki & graph query): memory.md
   - MCP (use from Claude): MCP.md
   - Adapter reference: adapters.md
-  - Writing an adapter: writing-an-adapter.md
+  - Writing an adapter / plugin: writing-an-adapter.md
   - Operations (RUNBOOK): RUNBOOK.md
   - Compliance & traceability: compliance.md
   - Compliance (KVKK, Turkish): KVKK.md

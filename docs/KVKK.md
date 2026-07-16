@@ -29,6 +29,13 @@
   incelenmeli, beyan edilen dış uçların veri ikametgâhı kurallarına uygunluğu
   doğrulanmalıdır. (Beyanın teknik olarak zorlanması — sandbox — plan Faz 6'dadır;
   bugünkü kontrol kurulum onayı + envanterdir.)
+- **Tedarik zinciri:** varsayılan politika `verified_only` — yalnızca imzalı
+  marketplace index'inden doğrulanan plugin'ler kurulur/yüklenir (uzak index'te
+  sigstore imzası zorunlu, artifact SHA-256 kurulumdan ÖNCE doğrulanır; lockfile
+  girdisi `verified = true` işaretlenir). Hava-boşluklu ortamda imza çevrimiçi
+  tarafta mirror anında doğrulanır, içeride karma doğrulaması zorunlu kalır
+  (`docs/RUNBOOK.md` §Plugins). Git/wheel kurulumu bilinçli operatör kararıdır
+  (`ETKI_PLUGIN_POLICY` env — UI'dan değiştirilemez).
 - **Süreç günlüğü** (`.etki/process-log.jsonl`, gitignore'da): Sor ekranı soruları
   (soru → strateji → eşleşen düğümler → asistan yanıtı) ve indeksleme koşuları buraya
   eklenir. Sorular serbest metin olduğundan **kişisel veri içerebilir** — dosya

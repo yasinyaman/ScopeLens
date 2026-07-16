@@ -31,8 +31,11 @@ autopilot:** the system recommends, a human makes the final call.
 - **[Decision memory](memory.md)** — the git-versionable decision wiki (a pure DB
   projection), precedents from human overrides, disputed clauses, and graph retrieval.
 - **[MCP](MCP.md)** — ask Claude *"is this in scope?"* and get the real Etki answer.
-- **[Writing an adapter](writing-an-adapter.md)** — connect your tracker, repo host or
-  document source without touching core code.
-- **[Operations](RUNBOOK.md)** — deployment, backup, index refresh.
+- **[Writing an adapter / plugin](writing-an-adapter.md)** — connect your tracker, repo
+  host or document source without touching core code: as an in-tree PR, or as a
+  standalone **plugin package** against [`etki-api`](https://pypi.org/project/etki-api/)
+  (entry-point discovery, conformance suite, capability manifest).
+- **[Operations](RUNBOOK.md)** — deployment, backup, index refresh, plugin
+  install/lockfile/policy.
 
 Source, issues and discussions: [github.com/yasinyaman/etki](https://github.com/yasinyaman/etki) · License: Apache-2.0

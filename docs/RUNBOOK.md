@@ -11,7 +11,7 @@ docker compose down                   # stop (data persists in the pgdata volume
 
 - The container ships no JVM → the code graph uses the **`ast`** adapter (`config/connectors.docker.yaml`). The index is built automatically on first request.
 - **Fill in `.env` first** (`cp .env.example .env`): `POSTGRES_PASSWORD`, `ETKI_SESSION_SECRET` (long random), `ETKI_ADMIN_USER`/`ETKI_ADMIN_PASSWORD` (first PMO user). compose won't start without these.
-- Env vars (all `ETKI_`-prefixed): `DB_URL`, `CONNECTORS_PATH`, `SESSION_SECRET`, `ADMIN_USER`/`ADMIN_PASSWORD`, `MAX_UPLOAD_MB`, `DEMO_MODE`, `IN_SCOPE_THRESHOLD`, `GRAY_THRESHOLD`, `DEFAULT_LANGUAGE` (default UI language tr|en|de), `FORCE_CODE_ENGINE` (`ast` | `joern` | `graphify`), `LLM_PROVIDER` (`anthropic`), `ANTHROPIC_API_KEY`/`ANTHROPIC_MODEL`.
+- Env vars (all `ETKI_`-prefixed): `DB_URL`, `CONNECTORS_PATH`, `SESSION_SECRET`, `ADMIN_USER`/`ADMIN_PASSWORD`, `MAX_UPLOAD_MB`, `DEMO_MODE`, `IN_SCOPE_THRESHOLD`, `GRAY_THRESHOLD`, `DEFAULT_LANGUAGE` (default UI language tr|en|de), `FORCE_CODE_ENGINE` (`ast` | `joern` | `graphify`), `LLM_PROVIDER` (`anthropic`), `ANTHROPIC_API_KEY`/`ANTHROPIC_MODEL`, `COOKIE_SECURE` (set `true` on any TLS deployment — Secure session cookie + HSTS).
 - **Health probes:** `/health` (liveness) and `/ready` (is the DB + engine ready; the compose healthcheck polls this). The Postgres port is not published to the host.
 - **`workers=1` is MANDATORY.** The per-project triage engines (and their living baselines) are process-local; running uvicorn/gunicorn with more than one worker forks divergent baseline copies (a CR approved in worker A is invisible in worker B). The app **fails hard at startup** if `WEB_CONCURRENCY`/`UVICORN_WORKERS` > 1. Scale by giving the single worker more CPU, not by adding workers. (Since baselines are now rehydrated from the DB at startup, making the engine stateless and lifting this limit is a known future work item.)
 
@@ -133,6 +133,19 @@ Each adapter declares its capabilities (`supports_webhooks/realtime/effort_track
 - no webhooks → periodic polling; no incremental diff → full re-index.
 - For a composite document source, a capability is supported only if **all children** support it (most conservative).
 
+### Adapter health (degraded-adapter visibility)
+
+A work-items or documents adapter that fails to **build** (bad options, a plugin
+that failed to load, unreachable config) never takes the project down: the context
+falls back to an empty fake and records an `AdapterHealth` entry. Degraded adapters
+surface as **red badges** on the project's Özet screen and the Dosyalar work-items
+card (tooltip = the recorded error), and the Raporlar effort-pool figures carry a
+"pool may be stale" note when the provider failed at refresh time. There is **no
+auto-heal**: fix the config/plugin, then re-save the work-items settings or trigger
+a reindex — the context rebuild clears the badge. A project deliberately
+*configured* with the `fake` adapter is not "degraded"; the badge only appears when
+a real adapter fell back.
+
 ## Pluggability (vendor swap)
 
 Moving to a new organization = a **config change** (`connectors.*.yaml`); core code does not change:
@@ -164,11 +177,41 @@ group `etki.adapters`). Operational rules:
   capabilities per plugin. `python -m etki.plugin sync` reproduces the exact
   state on a new machine (local wheels re-hash-verified); `remove <dist>`
   uninstalls + drops the entry; `list [--json]` is the KVKK inventory feed.
+- **Verified marketplace** (signed index): under the default `verified_only`
+  policy the ONLY install path is an index-verified one:
+  ```bash
+  uv run python -m etki.plugin search acme --index https://…/index.json
+  uv run python -m etki.plugin install etki-plugin-acme --index https://…/index.json
+  ```
+  A REMOTE index requires a valid **sigstore** signature (keyless, GitHub OIDC;
+  the verification tooling ships behind the optional extra `etki[plugins]` — the
+  base/air-gapped install never pulls it). The signer identity is pinned to the
+  index repo's release workflow, overridable for forks/self-hosted marketplaces
+  via `ETKI_PLUGIN_INDEX_IDENTITY`/`ETKI_PLUGIN_INDEX_ISSUER` (env-only, like the
+  policy). The artifact's SHA-256 must match the index BEFORE any install
+  subprocess; success writes `verified = true` to the lockfile — which is also
+  what lets the plugin load at runtime under `verified_only`.
+- **Air-gapped flow:** mirror on the ONLINE side —
+  `python -m etki.plugin mirror <index-url> <dir>` (the signature is verified at
+  mirror time, every artifact hash-checked, recorded in `mirror-manifest.json`) —
+  carry the directory inside, then `install <name> --index <dir>` offline.
+  Inside the mirror SHA-256 stays mandatory and the signature is optional
+  (a missing sigstore toolchain degrades to a warning; a FAILED verification is
+  always fatal).
+- **UI — Settings → Plugins** (`/ayarlar/eklentiler`, pmo-only): every installed
+  plugin with status (`active/failed/incompatible/blocked/disabled` + error
+  text), install source (from the lockfile), `api_compat` and a verified badge;
+  the policy is displayed **read-only**. The single UI mutation is
+  enable/disable (persisted to `.etki/plugins.json`; the toggle rebuilds the
+  registry/context) — install/remove/policy have **no HTTP endpoint by design**.
 - **Containers install plugins at IMAGE BUILD TIME** from the lockfile — see
   `Dockerfile.plugins`. Runtime `sync` inside a container does not survive a
   restart (immutable images); it is for bare-metal/venv deployments.
 - Private git hosts: authenticate via a git **credential helper** — never embed
   tokens in the URL (it would be recorded in the lockfile).
+- The public `etki-plugins` index repo is not bootstrapped yet — until it lands,
+  the marketplace path runs against mirrors/fixture indexes; git-tag and wheel
+  installs are the current distribution channels.
 
 ## Pilot (shadow mode) & calibration
 
@@ -186,6 +229,23 @@ Report: decision agreement, effort-in-range hit rate, per-decision-type P/R, **c
 Authentication is a **real login** (pbkdf2 + signed session cookie); the old self-asserted `X-Role` header was removed. Roles (RBAC v3): `pmo` approves and administers, `engineer` runs triage/analysis, **`viewer` is read-only** (all mutating endpoints reject it with 403). **Project access is isolated** (RBAC v2): a user only sees projects granted in the `user_projects` table (managed in **Settings → Users**, or `create-user <name> <role> --projects p1,p2`); case/evidence endpoints derive the project from the case itself (no IDOR); the top-bar portfolio count is shown to `pmo` only. The `pmo` role bypasses grants while `ETKI_PMO_GLOBAL=true` (single-customer default) — set it to `false` for multi-customer pilots.
 
 **Session hardening:** login is rate-limited in-process (5 failures per IP+username within 15 min → 15 min lock; single-worker enforcement makes the in-memory counter authoritative; a restart resets it). The post-login redirect only accepts site-relative paths (open-redirect guard). CSRF is covered twice: `same_site=lax` cookies plus a middleware that rejects mutating requests browsers stamp `Sec-Fetch-Site: cross-site`. Sessions are **token-bound to the password hash**: a password reset or user deletion invalidates live sessions on their next request, and role changes apply immediately (the role is re-read from the DB per request). "Remember me" is enforced server-side — 30 days checked, 8 hours unchecked. For production hardening (reverse proxy + OAuth/SSO + internal network) and KVKK/VERBİS/DPIA, see `docs/KVKK.md`.
+
+**Hardening pass (2026-07 security audit):**
+- Markdown from LLM output / user text (pre-analysis, chat) renders with **raw HTML
+  disabled** — `<script>`/`<img onerror=…>` in a saved analysis is escaped, not
+  executed (stored-XSS fix).
+- Responses carry `X-Content-Type-Options: nosniff` and `X-Frame-Options: DENY`;
+  with `ETKI_COOKIE_SECURE=true` (any TLS deployment) the session cookie gains
+  `Secure` and HSTS is sent. Keep it `false` only for local HTTP dev.
+- Uploads are size-capped (`ETKI_MAX_UPLOAD_MB`, default 20) and docx/xlsx archives
+  declaring an unsafe expansion are rejected **before parsing** (zip-bomb guard:
+  512 MB expanded / 200× ratio ceilings; PDFs get page and extracted-text caps).
+- User/config-supplied LLM, embedding and rerank endpoints are refused when they
+  point at the cloud instance-metadata range (`169.254.0.0/16` — SSRF guard,
+  `etki/net_guard.py`). Localhost/RFC1918 stay allowed on purpose: local
+  Ollama/vLLM is the primary use case.
+- `.etki/llm.json` is created 0600 atomically (no window where an API key sits
+  world-readable).
 
 ## Productization (notes)
 - **Multi-project:** each contract gets its own baseline + index; separated by `contract_id`/`project_id`.

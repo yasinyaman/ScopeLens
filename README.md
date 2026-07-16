@@ -199,7 +199,7 @@ config/ (connectors + domains/*.md) · samples/ · docs/ · tests/ · eval/ · D
 The two design documents are the source of truth for the full vision:
 [`Etki_Mimari_Dokuman.md`](Etki_Mimari_Dokuman.md) (architecture) and
 [`Etki_Gelistirme_Plani.md`](Etki_Gelistirme_Plani.md) (development plan).
-Operations/compliance: [`docs/RUNBOOK.md`](docs/RUNBOOK.md) · [`docs/KVKK.md`](docs/KVKK.md) (Turkish — KDPL/KVKK compliance notes) · [`docs/MCP.md`](docs/MCP.md) (use Etki from Claude via MCP) · [`docs/writing-an-adapter.md`](docs/writing-an-adapter.md) (add your tracker/repo/doc source).
+Operations/compliance: [`docs/RUNBOOK.md`](docs/RUNBOOK.md) · [`docs/KVKK.md`](docs/KVKK.md) (Turkish — KDPL/KVKK compliance notes) · [`docs/MCP.md`](docs/MCP.md) (use Etki from Claude via MCP) · [`docs/writing-an-adapter.md`](docs/writing-an-adapter.md) (add your tracker/repo/doc source — in-tree, or as a standalone plugin package against [`etki-api`](https://pypi.org/project/etki-api/)).
 
 ## Status
 

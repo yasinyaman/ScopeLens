@@ -201,6 +201,28 @@ options_model = "etki_plugin_acme:AcmeOptions"
 Once installed next to Etki, `adapter: acme` in `connectors.yaml` resolves to your
 plugin — no registry branch needed.
 
+### Distributing your plugin
+
+Three channels, gated by the operator-side `ETKI_PLUGIN_POLICY`
+(operational details: [RUNBOOK §Plugins](RUNBOOK.md#plugins-install-lockfile-policy)):
+
+- **Git tag** — `python -m etki.plugin install git+https://…@v1.0.0` (needs
+  `allow_git`). Branch refs are rejected; the tag resolves to a full commit SHA,
+  which is what installs and gets pinned in the operator's `etki-plugins.lock`.
+- **Wheel** — `install ./etki_plugin_acme-1.0.0-py3-none-any.whl --sha256 <hash>`
+  (needs `allow_local`; the hash is verified before anything runs).
+- **Verified marketplace** — an entry in the signed `etki-plugins` index makes
+  your plugin installable under the DEFAULT policy (`verified_only`). Listing
+  requires a green conformance report — its `version`/`api_compat`/
+  `etki_api_version` fields feed the index's compatibility matrix. The public
+  index repo is still being bootstrapped; open an issue to get listed once it
+  lands — until then, ship via git tags or wheels.
+
+In every channel the install confirmation prompt shows your `etki-plugin.toml`
+capability declaration (network / filesystem / endpoints) to the operator
+**without executing your code** — keep it honest and minimal; it is also what
+KVKK/compliance reviews inspect.
+
 ### Your plugin in the UI
 
 A plugin never ships its own screens — the web UI is always a projection of what
