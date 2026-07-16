@@ -40,8 +40,10 @@ jobs:
         with:
           python-version: ${{ inputs.python-version }}
       - name: Install plugin + conformance suite
+        # setup-uv already creates and activates .venv when python-version is
+        # set; recent uv errors on a plain `uv venv` over it, hence --clear.
         run: |
-          uv venv
+          uv venv --clear
           uv pip install "${{ inputs.package-path }}" "etki-api[conformance]"
       - name: Run conformance
         run: uv run python -m etki_api.conformance "${{ inputs.plugin-dist }}" --report conformance-report.json
