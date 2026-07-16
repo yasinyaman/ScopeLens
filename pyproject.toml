@@ -42,7 +42,9 @@ dependencies = [
 graphify = ["graphifyy>=0.9.8,<1.0"]
 # Marketplace signature verification (sigstore keyless). Base/air-gapped
 # installs never need it — offline installs are hash-mandatory instead.
-plugins = ["sigstore>=3,<4"]
+# Floor 4.3: first release that both fixes CVE-2026-24408 (OIDC CSRF, fixed
+# in 4.2.0) and allows tuf>=7 (GHSA-qp9x-wp8f-qgjj delegation-path fix).
+plugins = ["sigstore>=4.3,<5"]
 
 [dependency-groups]
 dev = [
