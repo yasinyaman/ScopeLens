@@ -4,13 +4,17 @@
 #   3. build the sdist/wheel and publish to PyPI (trusted publishing),
 #   4. create a GitHub Release with the matching CHANGELOG section.
 #
-# One-time setup required for PyPI: a trusted publisher on pypi.org PER PACKAGE
-# (all workflow: release.yml) — project `etki` env `pypi`, project `etki-api` env
-# `pypi-etki-api`, project `etki-plugin-jira` env `pypi-etki-plugin-jira`. PyPI
-# refuses two pending publishers with the identical repo+workflow+environment
-# config, so the environment name is the disambiguator (one job each). Until a
-# package's publisher is configured its publish job fails; the others are
-# independent. (etki-plugin-linear stays workspace-only — no PyPI job yet.)
+# One-time setup required for PyPI: TWO trusted publishers on pypi.org for this
+# repository (both workflow: release.yml) — project `etki` with environment `pypi`,
+# project `etki-api` with environment `pypi-etki-api`. PyPI refuses two pending
+# publishers with the identical repo+workflow+environment config, hence the split.
+# Until configured the publish jobs fail; the other jobs are independent.
+#
+# PLUGINS are NOT published to PyPI: they ship through the verified marketplace
+# (signed index → hash-verified wheel under artifacts/), and their `etki-api`
+# dependency is already satisfied in the host env — so no PyPI is involved at
+# install time. Only `etki-api` itself needs PyPI (that's what plugin wheels and
+# third-party consumers resolve against).
 name: Release
 
 on:
@@ -98,24 +102,6 @@ jobs:
         with:
           python-version: "3.12"
       - run: uv build --package etki-api
-      - uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          skip-existing: true
-
-  # The first WRITING plugin — published so a verified-marketplace install can
-  # resolve its `etki-api>=0.1.2,<0.2` dependency from PyPI. Its wheel carries no
-  # workspace source (uv.sources is a dev-only override), so it resolves etki-api
-  # from PyPI like any third-party consumer.
-  pypi-etki-plugin-jira:
-    needs: checks
-    runs-on: ubuntu-latest
-    environment: pypi-etki-plugin-jira
-    steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v5
-        with:
-          python-version: "3.12"
-      - run: uv build --package etki-plugin-jira
       - uses: pypa/gh-action-pypi-publish@release/v1
         with:
           skip-existing: true
