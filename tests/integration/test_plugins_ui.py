@@ -34,10 +34,14 @@ def test_screen_renders_statuses_and_readonly_policy(
 
 def test_no_route_can_mutate_the_policy(client: TestClient, plugins_sandbox):
     assert client.post("/ayarlar/eklentiler").status_code == 405  # screen: GET-only
+    # /{name} exists only as a GET (plugin detail) → POST is 405; and "policy"
+    # is not an installed plugin, so even the GET is a 404. Either way the
+    # invariant holds: NO route can write the policy.
     assert (
         client.post("/ayarlar/eklentiler/policy", data={"policy": "allow_local"}).status_code
-        == 404
+        == 405
     )
+    assert client.get("/ayarlar/eklentiler/policy").status_code == 404
 
 
 def test_toggle_roundtrip_disable_then_enable(client: TestClient, plugins_sandbox):

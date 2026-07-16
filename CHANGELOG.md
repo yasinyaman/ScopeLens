@@ -8,7 +8,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-Nothing yet.
+### Added
+
+- **Marketplace browse UI** — the Settings → Plugins screen gained a lazy-loaded
+  card projecting the SIGNED index: search, per-plugin summary/ports/capability
+  declaration, highest compatible version vs the installed etki-api,
+  installed/update badges and a copyable operator-CLI install command. Index
+  source is env-only (`ETKI_PLUGIN_INDEX_URL`, default = the official index; a
+  mirror directory works air-gapped); responses cached in-process for 15 min.
+- **UI install (opt-in)** — with env-only `ETKI_PLUGIN_UI_INSTALL=true`
+  (default OFF) the market card offers Install/Update to pmo users, using ONLY
+  the verified path: env-pinned source, capability confirmation, the same
+  signature + SHA-256 + lockfile chain as the CLI; git/wheel targets still have
+  no UI route. Installs are audited as `plugin_install` process-log events.
+- **Plugin detail & adapter defaults page** (`/ayarlar/eklentiler/<plugin>`) —
+  status/manifest info plus a default-options form per adapter rendered from
+  its `options_model` (e.g. the Linear `api_key`). Stored 0600/atomic in
+  `.etki/plugin-options.json`; secret-named fields are masked, never echoed
+  back, kept on empty submit, and clearable via Reset. Defaults merge UNDER
+  project options at build time — the project value always wins.
+
+### Changed
+
+- `python -m etki.plugin search|install` no longer require `--index`: both
+  resolve the same trust root as the UI (`ETKI_PLUGIN_INDEX_URL` env, else the
+  official index) and print the resolved source.
 
 ## [0.1.0a3] - 2026-07-16
 

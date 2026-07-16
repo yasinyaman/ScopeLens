@@ -1,0 +1,94 @@
+<!-- Marketplace browse fragment: a projection of the SIGNED index. Install
+     exists ONLY for the verified path and ONLY when the operator enabled
+     ETKI_PLUGIN_UI_INSTALL (ui_install flag) — git/wheel stay CLI-only. -->
+{% if flash %}
+  <div style="background:#EAF3F3; border:1px solid #0E7C7B; border-radius:10px; padding:12px 14px; font-size:13px; color:#0E7C7B; margin-bottom:10px;">
+    ✓ {{ flash }}
+  </div>
+{% endif %}
+{% if install_error %}
+  <div style="background:#FBEDE9; border:1px solid #D9A08E; border-radius:10px; padding:12px 14px; font-size:13px; color:#8A3A24; margin-bottom:10px;">
+    {{ t('plugins.market_install_error') }}: {{ install_error }}
+  </div>
+{% endif %}
+<div style="display:flex; gap:8px; align-items:center; margin-bottom:10px;">
+  <form hx-get="/ayarlar/eklentiler/pazar" hx-target="#market" hx-swap="innerHTML"
+        style="display:flex; gap:8px; flex:1; margin:0;">
+    <input type="text" name="q" value="{{ q }}" placeholder="{{ t('plugins.market_search') }}"
+           style="flex:1; padding:7px 10px; border:1px solid #D8D3C8; border-radius:9px; font-size:13.5px;">
+    <button type="submit" class="btn-sm">{{ t('plugins.market_search_btn') }}</button>
+  </form>
+  <a href="#" onclick="return false;" class="btn-sm"
+     hx-get="/ayarlar/eklentiler/pazar?yenile=1" hx-target="#market" hx-swap="innerHTML">⟳ {{ t('plugins.market_refresh') }}</a>
+</div>
+
+<p style="margin:0 0 14px; font-size:12px; color:var(--pmo-muted);">
+  {{ t('plugins.market_source_label') }}: <span style="font-family:var(--pmo-mono);">{{ source }}</span>
+  — {% if source_is_dir %}{{ t('plugins.market_mirror_note') }}{% else %}<span title="{{ identity }}">{{ t('plugins.market_signed_note') }}</span>{% endif %}
+  {% if generated_at %} · {{ t('plugins.market_generated') }}: <span style="font-family:var(--pmo-mono);">{{ generated_at }}</span>{% endif %}
+</p>
+
+{% if error %}
+  <div style="background:#FBF3E9; border:1px solid #E7C89B; border-radius:10px; padding:12px 14px; font-size:13px; color:#7A4B12;">
+    {{ t('plugins.market_error') }}: {{ error }}
+  </div>
+{% elif not rows %}
+  <p style="font-size:13.5px; color:var(--pmo-muted);">{{ t('plugins.market_empty') }}</p>
+{% else %}
+  {% for r in rows %}
+  <div style="border:1px solid #EFEBE2; border-radius:11px; padding:14px 16px; margin-bottom:10px;">
+    <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+      <span style="font-weight:700;">{{ r.name }}</span>
+      {% if r.installed %}
+        <span style="background:#EAF3F3; color:#0E7C7B; border-radius:9px; padding:1px 8px; font-size:11px;">✓ {{ t('plugins.market_installed_badge') }} {{ r.installed }}</span>
+      {% endif %}
+      {% if r.update_available %}
+        <span style="background:#B3630B; color:#fff; border-radius:9px; padding:1px 8px; font-size:11px;">↑ {{ t('plugins.market_update_badge', v=r.version) }}</span>
+      {% endif %}
+      <span style="margin-left:auto; font-size:12px; color:var(--pmo-muted);">{{ t('plugins.col_ports') }}: {{ r.ports|join(', ') or '—' }}</span>
+    </div>
+    {% if r.summary %}<p style="margin:6px 0 0; font-size:13.5px;">{{ r.summary }}</p>{% endif %}
+    <p style="margin:8px 0 0; font-size:12px; color:var(--pmo-muted);">
+      {% if r.version %}
+        {{ t('plugins.market_latest') }}: <span style="font-family:var(--pmo-mono);">{{ r.version }}</span>
+        · etki-api: <span style="font-family:var(--pmo-mono);">{{ r.api_compat }}</span>
+        {% if r.released_at %} · {{ t('plugins.market_released') }}: {{ r.released_at }}{% endif %}
+      {% else %}
+        <span style="color:#B3402A;">{{ t('plugins.market_no_compat', api=api_version, ranges=r.ranges) }}</span>
+      {% endif %}
+    </p>
+    <p style="margin:6px 0 0; font-size:12px; color:var(--pmo-muted);">
+      {{ t('plugins.market_caps') }}:
+      {% if r.caps.network %}{{ t('plugins.market_caps_network') }} · {% endif %}{{ t('plugins.market_caps_fs') }}: {{ r.caps.filesystem }}
+      {% if r.caps.endpoints %} · {{ t('plugins.market_caps_endpoints') }}: <span style="font-family:var(--pmo-mono);">{{ r.caps.endpoints|join(', ') }}</span>{% endif %}
+      {% if r.caps.notes %} · {{ r.caps.notes }}{% endif %}
+    </p>
+    {% if r.repo or r.report %}
+    <p style="margin:6px 0 0; font-size:12px;">
+      {% if r.repo %}<a href="{{ r.repo }}" target="_blank" rel="noopener noreferrer" style="color:#0E7C7B;">{{ t('plugins.market_repo') }} ↗</a>{% endif %}
+      {% if r.report %}<a href="{{ r.report }}" target="_blank" rel="noopener noreferrer" style="color:#0E7C7B; margin-left:10px;">{{ t('plugins.market_report') }} ↗</a>{% endif %}
+    </p>
+    {% endif %}
+    {% if r.version %}
+    <div style="display:flex; gap:8px; align-items:center; margin-top:10px;">
+      <code style="flex:1; background:#F6F4EE; border:1px solid #EFEBE2; border-radius:8px; padding:7px 10px; font-size:12px; font-family:var(--pmo-mono); overflow-x:auto; white-space:nowrap;">{{ r.cmd }}</code>
+      <button type="button" class="btn-sm" data-cmd="{{ r.cmd }}"
+              onclick="navigator.clipboard.writeText(this.dataset.cmd); this.textContent='{{ t('plugins.market_copied') }}';">{{ t('plugins.market_copy') }}</button>
+      {% if ui_install and (not r.installed or r.update_available) %}
+      <form hx-post="/ayarlar/eklentiler/pazar/kur" hx-target="#market" hx-swap="innerHTML"
+            hx-confirm="{{ r.confirm }}" style="display:inline; margin:0;">
+        <input type="hidden" name="name" value="{{ r.name }}">
+        <button type="submit" class="btn-sm" style="background:#0E7C7B; color:#fff; border-color:#0E7C7B;">
+          {{ t('plugins.market_update_btn') if r.update_available else t('plugins.market_install_btn') }}
+        </button>
+      </form>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+  {% endfor %}
+{% endif %}
+
+<p style="margin:12px 0 0; font-size:12px; color:var(--pmo-muted);">
+  {{ t('plugins.market_ui_note') if ui_install else t('plugins.market_cli_note') }}
+</p>

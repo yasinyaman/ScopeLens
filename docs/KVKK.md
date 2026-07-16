@@ -35,7 +35,11 @@
   girdisi `verified = true` işaretlenir). Hava-boşluklu ortamda imza çevrimiçi
   tarafta mirror anında doğrulanır, içeride karma doğrulaması zorunlu kalır
   (`docs/RUNBOOK.md` §Plugins). Git/wheel kurulumu bilinçli operatör kararıdır
-  (`ETKI_PLUGIN_POLICY` env — UI'dan değiştirilemez).
+  (`ETKI_PLUGIN_POLICY` env — UI'dan değiştirilemez). Arayüzden kurulum varsayılan
+  kapalıdır; operatör `ETKI_PLUGIN_UI_INSTALL=true` (yalnızca ortam değişkeni) ile
+  açarsa pmo kullanıcısı SADECE imzalı index yolundan kurabilir — kaynak env-pinli,
+  her kurulum süreç günlüğüne `plugin_install` olayı olarak (kullanıcı + plugin +
+  SHA-256) yazılır.
 - **Süreç günlüğü** (`.etki/process-log.jsonl`, gitignore'da): Sor ekranı soruları
   (soru → strateji → eşleşen düğümler → asistan yanıtı) ve indeksleme koşuları buraya
   eklenir. Sorular serbest metin olduğundan **kişisel veri içerebilir** — dosya
@@ -53,6 +57,7 @@
 - **Proje izolasyonu:** kullanıcı yalnız grant verilen projeleri görür (`user_projects` tablosu); erişimsiz proje 404 döner (projenin varlığı sızdırılmaz); portföy sayacı yalnız `pmo`'ya görünür. Kullanıcı/grant yönetimi arayüzden yapılır (**Ayarlar → Kullanıcılar**, pmo; kendini silme ve son PMO'yu silme/düşürme engellidir).
 - **Oturum güvenliği:** login denemesi sınırlı (IP+kullanıcı başına 15 dk'da 5 hata → 15 dk kilit); login sonrası yönlendirme yalnız site-içi yollara izinli (open-redirect koruması); oturumlar parola hash'ine **token ile bağlıdır** — parola sıfırlama/kullanıcı silme açık oturumları bir sonraki istekte düşürür, rol değişikliği anında etkir; "beni hatırla" sunucu tarafında zorlanır (işaretli 30 gün / işaretsiz 8 saat).
 - **LLM anahtarları:** arayüzden (Ayarlar → Yapay Zekâ Asistanı) kaydedilirse `.etki/llm.json` dosyasında tutulur (yalnız dosya sahibi okur, git dışıdır) ve forma asla geri yazılmaz; üretimde önerilen yol ortam değişkenidir.
+- **Plugin adaptör anahtarları:** eklenti detay sayfasından (Ayarlar → Eklentiler → eklenti) girilen varsayılan seçenekler `.etki/plugin-options.json` dosyasında tutulur (0600, git dışı); api_key/token gibi gizli alanlar forma **asla geri yazılmaz** ve boş bırakılan gizli alan kayıtlı değeri korur. Değerler `env:DEĞİŞKEN` referansı olarak da girilebilir — üretimde önerilen yol budur.
 - **Üretim sertleştirmesi (yapılacak)**: uygulama önüne kimlik-doğrulamalı reverse-proxy + iç ağ izolasyonu + merkezi kimlik (OAuth/SSO). Uygulama-katmanı RBAC bunun sınırıdır.
 
 ## Aşırı-güven (over-reliance) kontrolü

@@ -142,14 +142,12 @@ def _cmd_install(args: argparse.Namespace) -> int:
         print(f"kuruldu: {entry.name} (sha256 doğrulandı) → {args.lockfile}")
         return 0
     # Verified marketplace path — allowed under verified_only (that's its point).
-    source = args.index
-    if not source:
-        print(
-            "marketplace kurulumu için --index gerekli (index URL'i ya da mirror dizini) "
-            "— veya hedefi git+URL@TAG / ./dosya.whl olarak verin."
-        )
-        return 2
     from etki.plugin import marketplace
+
+    # --index overrides; otherwise the trust root: ETKI_PLUGIN_INDEX_URL env,
+    # falling back to the official index URL (same resolution as the UI).
+    source = args.index or marketplace.index_source()
+    print(f"İndeks kaynağı: {source}")
 
     def _confirm_verified(plugin: IndexPlugin, version: IndexVersion) -> bool:
         caps = plugin.capabilities
@@ -203,7 +201,10 @@ def main(argv: list[str] | None = None) -> int:
     p_install.add_argument("target")
     p_install.add_argument("--sha256", default=None, help="wheel kurulumunda ZORUNLU")
     p_install.add_argument(
-        "--index", default=None, help="verified kurulum: index URL'i ya da mirror dizini"
+        "--index",
+        default=None,
+        help="verified kurulum: index URL'i ya da mirror dizini "
+        "(varsayılan: ETKI_PLUGIN_INDEX_URL ortam değişkeni, o da yoksa resmi index)",
     )
     p_install.add_argument("--yes", action="store_true", help="onay ekranını geç")
     p_install.add_argument("--python", default=None, help="hedef venv (test/CI)")
@@ -211,7 +212,12 @@ def main(argv: list[str] | None = None) -> int:
 
     p_search = sub.add_parser("search", help="marketplace index'inde ara")
     p_search.add_argument("term")
-    p_search.add_argument("--index", required=True, help="index URL'i ya da mirror dizini")
+    p_search.add_argument(
+        "--index",
+        default=None,
+        help="index URL'i ya da mirror dizini "
+        "(varsayılan: ETKI_PLUGIN_INDEX_URL ortam değişkeni, o da yoksa resmi index)",
+    )
 
     p_mirror = sub.add_parser(
         "mirror", help="index + artifact'leri offline mirror'a indir (imza BURADA doğrulanır)"
@@ -242,8 +248,10 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "search":
         from etki.plugin import marketplace
 
+        source = args.index or marketplace.index_source()
+        print(f"İndeks kaynağı: {source}")
         try:
-            index, _ = marketplace.load_index(args.index)
+            index, _ = marketplace.load_index(source)
         except Exception as exc:  # noqa: BLE001 — CLI boundary
             print(f"index okunamadı: {exc}")
             return 1

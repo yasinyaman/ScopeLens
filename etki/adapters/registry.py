@@ -206,13 +206,18 @@ def _resolve_secret_refs(value: object) -> object:
 
 def _try_plugin(port: str, cfg: ConnectorConfig) -> object | None:
     """Plugin fall-through: consulted only AFTER the builtin if/elif chains, so
-    a plugin can never shadow a builtin adapter name. Options are validated
-    through the plugin's declared Pydantic model — a missing key is a proper
-    validation message, not a bare KeyError."""
+    a plugin can never shadow a builtin adapter name. UI-managed adapter
+    DEFAULTS (Ayarlar → Eklentiler → detail) merge under the project's options
+    — the project value always wins. Options are validated through the
+    plugin's declared Pydantic model — a missing key is a proper validation
+    message, not a bare KeyError."""
+    from etki.plugin.options_store import defaults_for
+
     factory = get_plugin_registry().find(port, cfg.adapter)
     if factory is None:
         return None
-    options = factory.options_model.model_validate(_resolve_secret_refs(cfg.options))
+    merged = {**defaults_for(cfg.adapter), **cfg.options}
+    options = factory.options_model.model_validate(_resolve_secret_refs(merged))
     return factory.build(options)
 
 

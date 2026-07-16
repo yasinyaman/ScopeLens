@@ -18,6 +18,10 @@
 2. **Air-gapped birinci sınıf vatandaş** — her dağıtım yolu offline bundle ile de çalışmalı.
 3. **Kanıt zinciri delinemez** — hangi plugin'in hangi versiyonunun (commit hash) hangi kararda kullanıldığı audit chain'e yazılır.
 4. **UI'dan asla pip install yok** — kod kurulumu daima operatör/CLI seviyesinde, açık onayla.
+   *(2026-07-16 revizyonu: TEK istisna, imzalı marketplace yolu — operatör env-only
+   `ETKI_PLUGIN_UI_INSTALL=true` ile açarsa pmo kullanıcısı DOĞRULANMIŞ index'ten
+   kurabilir; kaynak env-pinli, imza+SHA-256 zinciri aynen, git/wheel UI'dan asla.
+   Varsayılan kapalı — sevkiyat duruşu değişmedi.)*
 5. **Wiki gibi: marketplace index'i de bir projeksiyondur** — tek doğruluk kaynağı imzalı `index.json`, UI onun görünümü.
 6. **Plugin yükleme kodu `adapters/` altında kalır, `engine/`'e sızmaz** — aksi halde her plugin PR'ı freeze guard'la çakışır. (Ön analiz eki.)
 

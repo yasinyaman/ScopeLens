@@ -14,6 +14,7 @@ Trust chain, in order and pinned by tests:
 
 from __future__ import annotations
 
+import os
 import tempfile
 from collections.abc import Callable
 from pathlib import Path
@@ -37,6 +38,28 @@ from etki.plugin.lockfile import LockedPlugin, now_iso
 from etki_api import __version__ as _api_version
 
 _DOWNLOAD_TIMEOUT = 120.0
+
+# The live signed index (GitHub Pages of yasinyaman/etki-plugins).
+DEFAULT_INDEX_URL = "https://yasinyaman.github.io/etki-plugins/index.json"
+ENV_INDEX_SOURCE = "ETKI_PLUGIN_INDEX_URL"
+
+
+def index_source() -> str:
+    """Marketplace index source (URL or mirror dir). Env-only ON PURPOSE — like
+    ETKI_PLUGIN_POLICY this is a trust root, so the UI-writable settings file
+    (.etki/llm.json → Settings) must never be able to redirect it."""
+    return os.environ.get(ENV_INDEX_SOURCE, DEFAULT_INDEX_URL)
+
+
+ENV_UI_INSTALL = "ETKI_PLUGIN_UI_INSTALL"
+
+
+def ui_install_enabled() -> bool:
+    """Opt-in switch for installing VERIFIED marketplace plugins from the UI
+    (2026-07-16 revision of plan rule 4 — only the signed-index path, never
+    git/wheel). Env-only and default OFF: the operator explicitly delegates
+    code acquisition to pmo UI users; the shipped posture stays CLI-only."""
+    return os.environ.get(ENV_UI_INSTALL, "").strip().lower() in ("1", "true", "yes")
 
 
 def _http_get(url: str) -> bytes:

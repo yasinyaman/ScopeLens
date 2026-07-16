@@ -183,9 +183,13 @@ group `etki.adapters`). Operational rules:
   acceptance process in its `PROCESS.md`). Under the default `verified_only`
   policy the ONLY install path is an index-verified one:
   ```bash
-  uv run python -m etki.plugin search acme --index https://yasinyaman.github.io/etki-plugins/index.json
-  uv run python -m etki.plugin install etki-plugin-acme --index https://yasinyaman.github.io/etki-plugins/index.json
+  uv run python -m etki.plugin search acme
+  uv run python -m etki.plugin install etki-plugin-acme
   ```
+  `--index <url|dir>` is optional: both commands resolve the same trust root
+  as the UI — `ETKI_PLUGIN_INDEX_URL` if set, else the official index — and
+  print the source they used. Pass it explicitly to target a mirror directory
+  or a non-default index.
   A weekly scheduled workflow (`marketplace-live-verify.yml`) mirrors the live
   index with REAL signature verification and does a verified install — the
   end-to-end canary for the whole chain.
@@ -210,14 +214,41 @@ group `etki.adapters`). Operational rules:
   the policy is displayed **read-only**. The single UI mutation is
   enable/disable (persisted to `.etki/plugins.json`; the toggle rebuilds the
   registry/context) — install/remove/policy have **no HTTP endpoint by design**.
+- **UI — marketplace browse** (same screen, lazy-loaded card): a **projection
+  of the signed index** — search, per-plugin summary/ports/capability
+  declaration, the highest version compatible with the installed etki-api,
+  installed/update badges, and a **copyable operator-CLI install command**. The
+  index source is **`ETKI_PLUGIN_INDEX_URL`** (env-only, like the policy — the
+  UI-writable settings file can never redirect the trust root; default = the
+  official index URL; a mirror **directory** also works for air-gapped setups).
+  Remote fetches verify the sigstore signature; without the `etki[plugins]`
+  extra the card degrades to a friendly error and the rest of the screen keeps
+  working. Responses are cached in-process for 15 min; Refresh re-fetches.
+- **UI install (optional, default OFF):** setting **`ETKI_PLUGIN_UI_INSTALL=true`**
+  (env-only) puts an Install/Update button on the marketplace card for pmo
+  users. It uses ONLY the verified path — the source stays env-pinned, the
+  capability declaration is confirmed before the POST, signature + SHA-256 +
+  lockfile `verified=true` are exactly the CLI chain — and git/wheel targets
+  still have **no UI route**. Each install is recorded in the process log as a
+  `plugin_install` event (user, plugin, sha256). Bare-metal/venv only: inside a
+  container the image is immutable — keep installing at build time.
+- **UI — plugin detail & adapter defaults** (`/ayarlar/eklentiler/{name}`,
+  pmo-only): status/manifest info plus a **default-options form per adapter**,
+  rendered from the plugin's `options_model` (e.g. the Linear `api_key`).
+  Values are stored in `.etki/plugin-options.json` (0600, atomic — the llm.json
+  posture): secret-named fields are never echoed back and an empty submit keeps
+  the stored value; `env:VAR` references are stored unresolved. At build time
+  the defaults merge **under** each project's connector options — the project
+  value always wins — so a key is entered once and reused across projects.
 - **Containers install plugins at IMAGE BUILD TIME** from the lockfile — see
   `Dockerfile.plugins`. Runtime `sync` inside a container does not survive a
   restart (immutable images); it is for bare-metal/venv deployments.
 - Private git hosts: authenticate via a git **credential helper** — never embed
   tokens in the URL (it would be recorded in the lockfile).
-- The public `etki-plugins` index repo is not bootstrapped yet — until it lands,
-  the marketplace path runs against mirrors/fixture indexes; git-tag and wheel
-  installs are the current distribution channels.
+- The public `etki-plugins` index repo is **live** (since 2026-07-16): signed
+  index on GitHub Pages, wheels under `artifacts/`, conformance reports under
+  `reports/`, acceptance process in its `PROCESS.md`. Git-tag and wheel installs
+  remain the channels for plugins not (yet) in the index.
 
 ## Pilot (shadow mode) & calibration
 

@@ -332,9 +332,12 @@ MESSAGES: dict[str, dict[str, str]] = {
     },
     "plugins.title": {"tr": "Eklentiler", "en": "Plugins", "de": "Plugins"},
     "plugins.desc": {
-        "tr": "Kurulu adaptör eklentileri — salt görünürlük. Kurulum ve policy yalnızca operatör/CLI tarafındadır.",
-        "en": "Installed adapter plugins — visibility only. Installation and policy live on the operator/CLI side.",
-        "de": "Installierte Adapter-Plugins — nur Sichtbarkeit. Installation und Policy liegen auf der Operator-/CLI-Seite.",
+        "tr": "Kurulu adaptör eklentileri ve doğrulanmış eklenti pazarı. Policy yalnızca "
+              "ortam değişkeniyle yönetilir; git/wheel kurulumu operatör CLI'ında kalır.",
+        "en": "Installed adapter plugins and the verified marketplace. The policy is "
+              "environment-only; git/wheel installs stay in the operator CLI.",
+        "de": "Installierte Adapter-Plugins und der verifizierte Marktplatz. Die Policy ist "
+              "nur per Umgebungsvariable steuerbar; Git-/Wheel-Installationen bleiben in der Operator-CLI.",
     },
     "plugins.policy_label": {
         "tr": "Kurulum politikası (ETKI_PLUGIN_POLICY — yalnızca ortam değişkeni)",
@@ -376,9 +379,213 @@ MESSAGES: dict[str, dict[str, str]] = {
     },
     "plugins.stamp_label": {"tr": "Audit damgası", "en": "Audit stamp", "de": "Audit-Stempel"},
     "plugins.install_note": {
-        "tr": "Kurulum/kaldırma: python -m etki.plugin install|remove (operatör CLI). Bu ekran kod kurulumu yapamaz.",
-        "en": "Install/remove: python -m etki.plugin install|remove (operator CLI). This screen cannot acquire code.",
-        "de": "Installieren/Entfernen: python -m etki.plugin install|remove (Operator-CLI). Diese Ansicht kann keinen Code beziehen.",
+        "tr": "Kaldırma ve git/wheel kurulumu: python -m etki.plugin install|remove "
+              "(operatör CLI). Doğrulanmış kurulum yolu için aşağıdaki pazara bakın.",
+        "en": "Removal and git/wheel installs: python -m etki.plugin install|remove "
+              "(operator CLI). For the verified install path see the marketplace below.",
+        "de": "Entfernen und Git-/Wheel-Installationen: python -m etki.plugin "
+              "install|remove (Operator-CLI). Für den verifizierten Installationsweg "
+              "siehe den Marktplatz unten.",
+    },
+    "plugins.market_title": {
+        "tr": "Eklenti pazarı", "en": "Plugin marketplace", "de": "Plugin-Marktplatz",
+    },
+    "plugins.market_desc": {
+        "tr": "İmzalı marketplace index'inin projeksiyonu: arama, uyumluluk, yetenek beyanı "
+              "ve doğrulanmış kurulum yolu (kopyalanabilir CLI komutu; operatör açtıysa "
+              "Kur butonu).",
+        "en": "A projection of the signed marketplace index: search, compatibility, "
+              "capability declarations and the verified install path (copyable CLI "
+              "command; an Install button when the operator enabled it).",
+        "de": "Eine Projektion des signierten Marketplace-Index: Suche, Kompatibilität, "
+              "Fähigkeitserklärungen und der verifizierte Installationsweg (kopierbarer "
+              "CLI-Befehl; Install-Button, wenn vom Operator aktiviert).",
+    },
+    "plugins.market_loading": {
+        "tr": "İndeks yükleniyor…", "en": "Loading index…", "de": "Index wird geladen…",
+    },
+    "plugins.market_source_label": {
+        "tr": "İndeks kaynağı (ETKI_PLUGIN_INDEX_URL — yalnızca ortam değişkeni)",
+        "en": "Index source (ETKI_PLUGIN_INDEX_URL — environment-only)",
+        "de": "Indexquelle (ETKI_PLUGIN_INDEX_URL — nur Umgebungsvariable)",
+    },
+    "plugins.market_signed_note": {
+        "tr": "uzak indeks: sigstore imza doğrulaması zorunlu",
+        "en": "remote index: sigstore signature verification is mandatory",
+        "de": "Remote-Index: Sigstore-Signaturprüfung ist verpflichtend",
+    },
+    "plugins.market_mirror_note": {
+        "tr": "yerel mirror: SHA-256 doğrulaması (air-gapped kuralı)",
+        "en": "local mirror: SHA-256 verification (air-gapped rule)",
+        "de": "lokaler Mirror: SHA-256-Prüfung (Air-Gap-Regel)",
+    },
+    "plugins.market_generated": {
+        "tr": "indeks tarihi", "en": "index date", "de": "Indexdatum",
+    },
+    "plugins.market_search": {
+        "tr": "Ada, özete ya da porta göre ara…",
+        "en": "Search by name, summary or port…",
+        "de": "Nach Name, Beschreibung oder Port suchen…",
+    },
+    "plugins.market_search_btn": {"tr": "Ara", "en": "Search", "de": "Suchen"},
+    "plugins.market_refresh": {"tr": "Yenile", "en": "Refresh", "de": "Aktualisieren"},
+    "plugins.market_error": {
+        "tr": "İndeks okunamadı",
+        "en": "Could not read the index",
+        "de": "Index konnte nicht gelesen werden",
+    },
+    "plugins.market_empty": {
+        "tr": "Eşleşen eklenti yok.",
+        "en": "No matching plugins.",
+        "de": "Keine passenden Plugins.",
+    },
+    "plugins.market_installed_badge": {"tr": "kurulu", "en": "installed", "de": "installiert"},
+    "plugins.market_update_badge": {
+        "tr": "güncelleme: {v}", "en": "update: {v}", "de": "Update: {v}",
+    },
+    "plugins.market_latest": {
+        "tr": "uyumlu son sürüm", "en": "latest compatible version",
+        "de": "neueste kompatible Version",
+    },
+    "plugins.market_released": {"tr": "yayın", "en": "released", "de": "veröffentlicht"},
+    "plugins.market_no_compat": {
+        "tr": "Kurulu etki-api {api} ile uyumlu sürüm yok (indekstekiler: {ranges}).",
+        "en": "No version compatible with the installed etki-api {api} (index has: {ranges}).",
+        "de": "Keine Version kompatibel mit dem installierten etki-api {api} (im Index: {ranges}).",
+    },
+    "plugins.market_caps": {
+        "tr": "Yetenek beyanı", "en": "Capability declaration", "de": "Fähigkeitserklärung",
+    },
+    "plugins.market_caps_network": {
+        "tr": "ağ erişimi", "en": "network access", "de": "Netzwerkzugriff",
+    },
+    "plugins.market_caps_fs": {"tr": "dosya sistemi", "en": "filesystem", "de": "Dateisystem"},
+    "plugins.market_caps_endpoints": {
+        "tr": "dış uçlar", "en": "external endpoints", "de": "externe Endpunkte",
+    },
+    "plugins.market_repo": {"tr": "Kaynak repo", "en": "Source repo", "de": "Quell-Repo"},
+    "plugins.market_report": {
+        "tr": "Uygunluk raporu", "en": "Conformance report", "de": "Konformitätsbericht",
+    },
+    "plugins.market_copy": {"tr": "Kopyala", "en": "Copy", "de": "Kopieren"},
+    "plugins.market_copied": {"tr": "Kopyalandı ✓", "en": "Copied ✓", "de": "Kopiert ✓"},
+    "plugins.market_install_btn": {"tr": "Kur", "en": "Install", "de": "Installieren"},
+    "plugins.market_update_btn": {"tr": "Güncelle", "en": "Update", "de": "Aktualisieren"},
+    "plugins.market_confirm_install": {
+        "tr": "{name} {version} DOĞRULANMIŞ marketplace index'inden kurulacak (imza + "
+              "SHA-256 zinciri). Bildirdiği yetenekler: {caps}. Eklenti, adaptör olarak "
+              "sözleşme/talep verinize erişebilir. Devam edilsin mi?",
+        "en": "{name} {version} will be installed from the VERIFIED marketplace index "
+              "(signature + SHA-256 chain). Declared capabilities: {caps}. As an adapter "
+              "the plugin can access your contract/request data. Continue?",
+        "de": "{name} {version} wird aus dem VERIFIZIERTEN Marketplace-Index installiert "
+              "(Signatur- + SHA-256-Kette). Erklärte Fähigkeiten: {caps}. Als Adapter kann "
+              "das Plugin auf Ihre Vertrags-/Anforderungsdaten zugreifen. Fortfahren?",
+    },
+    "plugins.market_installed_flash": {
+        "tr": "{name} kuruldu (doğrulanmış). Adaptörü proje ayarlarından seçebilir, "
+              "varsayılan seçenekleri eklenti sayfasından girebilirsiniz.",
+        "en": "{name} installed (verified). Pick the adapter in project settings; enter "
+              "default options on the plugin page.",
+        "de": "{name} installiert (verifiziert). Wählen Sie den Adapter in den "
+              "Projekteinstellungen; Standardoptionen auf der Plugin-Seite.",
+    },
+    "plugins.market_install_error": {
+        "tr": "Kurulum başarısız", "en": "Install failed", "de": "Installation fehlgeschlagen",
+    },
+    "plugins.detail_desc": {
+        "tr": "Eklenti durumu ve adaptör varsayılanları. Buradaki değerler proje "
+              "ayarlarının ALTINA varsayılan olarak girer; proje değeri her zaman kazanır.",
+        "en": "Plugin status and adapter defaults. Values here merge UNDER project "
+              "settings as defaults; the project value always wins.",
+        "de": "Plugin-Status und Adapter-Standardwerte. Diese Werte gelten als "
+              "Standard UNTER den Projekteinstellungen; der Projektwert gewinnt immer.",
+    },
+    "plugins.detail_info": {"tr": "Durum", "en": "Status", "de": "Status"},
+    "plugins.detail_installed_at": {
+        "tr": "Kurulum tarihi", "en": "Installed at", "de": "Installiert am",
+    },
+    "plugins.detail_defaults_title": {
+        "tr": "Varsayılan seçenekler — {adapter}",
+        "en": "Default options — {adapter}",
+        "de": "Standardoptionen — {adapter}",
+    },
+    "plugins.detail_defaults_desc": {
+        "tr": "API anahtarı gibi tanımlar burada BİR KEZ girilir (.etki/plugin-options.json, "
+              "0600). Değer doğrudan yazılabilir ya da env:DEĞİŞKEN referansı verilebilir.",
+        "en": "Definitions like an API key are entered ONCE here (.etki/plugin-options.json, "
+              "0600). Enter the value directly or as an env:VARIABLE reference.",
+        "de": "Definitionen wie ein API-Schlüssel werden hier EINMAL erfasst "
+              "(.etki/plugin-options.json, 0600). Wert direkt oder als env:VARIABLE-Referenz.",
+    },
+    "plugins.detail_secret_note": {
+        "tr": "Gizli alanlar (api_key, token…) asla geri gösterilmez; boş bırakılan gizli "
+              "alan kayıtlı değeri korur.",
+        "en": "Secret fields (api_key, token…) are never echoed back; leaving a secret "
+              "field empty keeps the stored value.",
+        "de": "Geheime Felder (api_key, token…) werden nie zurückgegeben; ein leeres "
+              "geheimes Feld behält den gespeicherten Wert.",
+    },
+    "plugins.detail_secret_stored": {
+        "tr": "•••• (kayıtlı — boş bırakmak korur)",
+        "en": "•••• (stored — leave empty to keep)",
+        "de": "•••• (gespeichert — leer lassen behält)",
+    },
+    "plugins.detail_save": {"tr": "Kaydet", "en": "Save", "de": "Speichern"},
+    "plugins.detail_saved": {
+        "tr": "Varsayılan seçenekler kaydedildi. Projeler bir sonraki kullanımda yeni "
+              "değerlerle bağlanır.",
+        "en": "Default options saved. Projects pick up the new values on next use.",
+        "de": "Standardoptionen gespeichert. Projekte übernehmen die neuen Werte bei "
+              "der nächsten Verwendung.",
+    },
+    "plugins.detail_has_defaults": {
+        "tr": "kayıtlı varsayılanlar var", "en": "stored defaults exist",
+        "de": "gespeicherte Standardwerte vorhanden",
+    },
+    "plugins.detail_reset": {
+        "tr": "Varsayılanları sıfırla", "en": "Reset defaults",
+        "de": "Standardwerte zurücksetzen",
+    },
+    "plugins.detail_reset_confirm": {
+        "tr": "Bu adaptörün kayıtlı TÜM varsayılanları (gizli anahtar dahil) silinecek. "
+              "Devam edilsin mi?",
+        "en": "ALL stored defaults of this adapter (including the secret) will be "
+              "deleted. Continue?",
+        "de": "ALLE gespeicherten Standardwerte dieses Adapters (inkl. Geheimnis) "
+              "werden gelöscht. Fortfahren?",
+    },
+    "plugins.detail_no_adapters": {
+        "tr": "Bu eklenti adaptör bildirmiyor (spec yüklenemedi ya da boş).",
+        "en": "This plugin declares no adapters (spec failed to load or is empty).",
+        "de": "Dieses Plugin deklariert keine Adapter (Spec nicht ladbar oder leer).",
+    },
+    "plugins.market_cli_note": {
+        "tr": "Kurulum yalnızca operatör CLI'ındadır; doğrulanmış kurulum verified_only "
+              "policy'si altında da çalışır (imza + SHA-256 zinciri). Arayüzden kurulumu "
+              "operatör ETKI_PLUGIN_UI_INSTALL=true ile açabilir. Air-gapped ortam için: "
+              "python -m etki.plugin mirror <url> <dizin>.",
+        "en": "Installation lives in the operator CLI only; verified installs also work under "
+              "the verified_only policy (signature + SHA-256 chain). The operator can enable "
+              "UI installs with ETKI_PLUGIN_UI_INSTALL=true. For air-gapped environments: "
+              "python -m etki.plugin mirror <url> <dir>.",
+        "de": "Die Installation erfolgt ausschließlich über die Operator-CLI; verifizierte "
+              "Installationen funktionieren auch unter der verified_only-Policy (Signatur- + "
+              "SHA-256-Kette). Der Operator kann UI-Installationen mit "
+              "ETKI_PLUGIN_UI_INSTALL=true aktivieren. Für Air-Gap-Umgebungen: "
+              "python -m etki.plugin mirror <url> <verzeichnis>.",
+    },
+    "plugins.market_ui_note": {
+        "tr": "Kur butonu YALNIZCA doğrulanmış index yolunu kullanır (imza + SHA-256 "
+              "zinciri, kaynak ortam değişkeniyle sabit); git/wheel kurulumu operatör "
+              "CLI'ında kalır. Air-gapped ortam için: python -m etki.plugin mirror <url> <dizin>.",
+        "en": "The install button uses ONLY the verified index path (signature + SHA-256 "
+              "chain, source pinned by the environment); git/wheel installs stay in the "
+              "operator CLI. For air-gapped environments: python -m etki.plugin mirror <url> <dir>.",
+        "de": "Der Installations-Button nutzt NUR den verifizierten Index-Pfad (Signatur- + "
+              "SHA-256-Kette, Quelle per Umgebungsvariable fixiert); Git-/Wheel-Installationen "
+              "bleiben in der Operator-CLI. Für Air-Gap-Umgebungen: python -m etki.plugin "
+              "mirror <url> <verzeichnis>.",
     },
     "set.llm_desc": {
         "tr": "Sohbet, ön analiz zenginleştirme ve zayıf eşleşmelerde anlamsal destek için "

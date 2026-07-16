@@ -1,0 +1,104 @@
+{% extends "pmo_base.html" %}
+{% block title %}{{ status.name }} — {{ t('plugins.title') }} — Etki{% endblock %}
+{% block screen %}
+<main style="padding:26px 28px 40px; max-width:860px;">
+  <p style="margin:0 0 10px; font-size:13px;">
+    <a href="/ayarlar/eklentiler" style="color:#0E7C7B;">← {{ t('plugins.title') }}</a>
+  </p>
+  <div style="margin-bottom:18px;">
+    <h1 style="margin:0; font-size:24px; font-weight:800; letter-spacing:-.02em;">{{ status.name }}</h1>
+    <p style="margin:6px 0 0; font-size:13.5px; color:#5C6B72;">{{ t('plugins.detail_desc') }}</p>
+  </div>
+
+  {% if saved %}
+  <div style="background:#EAF3F3; border:1px solid #0E7C7B; border-radius:10px; padding:12px 14px; font-size:13px; color:#0E7C7B; margin-bottom:14px;">
+    ✓ {{ t('plugins.detail_saved') }}
+  </div>
+  {% endif %}
+  {% if error %}
+  <div style="background:#FBEDE9; border:1px solid #D9A08E; border-radius:10px; padding:12px 14px; font-size:13px; color:#8A3A24; margin-bottom:14px;">
+    {{ error }}
+  </div>
+  {% endif %}
+
+  <!-- Status / manifest projection (read-only) -->
+  <div style="background:#fff; border:1px solid #E6E2D9; border-radius:13px; padding:18px 20px; margin-bottom:16px;">
+    <h3 style="margin:0 0 10px; font-size:15px; font-weight:700;">{{ t('plugins.detail_info') }}</h3>
+    <table style="font-size:13.5px; border-collapse:collapse;">
+      <tr><td style="padding:3px 14px 3px 0; color:var(--pmo-muted);">{{ t('plugins.col_state') }}</td>
+          <td style="padding:3px 0;">
+            {% if status.state == 'active' %}<span style="color:#0E7C7B; font-weight:600;">● {{ t('plugins.state_active') }}</span>
+            {% elif status.state == 'disabled' %}<span style="color:#8A8577;">○ {{ t('plugins.state_disabled') }}</span>
+            {% else %}<span style="color:#B3402A; font-weight:600;">✗ {{ t('plugins.state_' + status.state) }}</span>{% endif %}
+          </td></tr>
+      <tr><td style="padding:3px 14px 3px 0; color:var(--pmo-muted);">{{ t('plugins.col_version') }}</td>
+          <td style="padding:3px 0; font-family:var(--pmo-mono);">{{ status.version }}{% if status.commit %}+g{{ status.commit[:7] }}{% endif %}</td></tr>
+      <tr><td style="padding:3px 14px 3px 0; color:var(--pmo-muted);">{{ t('plugins.col_source') }}</td>
+          <td style="padding:3px 0;">{{ lock.source if lock else '—' }}
+            {% if lock and lock.verified %}<span style="background:#0E7C7B; color:#fff; border-radius:9px; padding:1px 8px; font-size:11px; margin-left:6px;">✓ {{ t('plugins.verified_badge') }}</span>{% endif %}
+          </td></tr>
+      <tr><td style="padding:3px 14px 3px 0; color:var(--pmo-muted);">{{ t('plugins.col_compat') }}</td>
+          <td style="padding:3px 0; font-family:var(--pmo-mono); font-size:12.5px;">{{ status.api_compat or '—' }}</td></tr>
+      <tr><td style="padding:3px 14px 3px 0; color:var(--pmo-muted);">{{ t('plugins.col_ports') }}</td>
+          <td style="padding:3px 0;">{{ status.ports|join(', ') or '—' }}</td></tr>
+      {% if lock and lock.installed_at %}
+      <tr><td style="padding:3px 14px 3px 0; color:var(--pmo-muted);">{{ t('plugins.detail_installed_at') }}</td>
+          <td style="padding:3px 0; font-family:var(--pmo-mono); font-size:12.5px;">{{ lock.installed_at }}</td></tr>
+      {% endif %}
+      {% if caps_line %}
+      <tr><td style="padding:3px 14px 3px 0; color:var(--pmo-muted);">{{ t('plugins.market_caps') }}</td>
+          <td style="padding:3px 0;">{{ caps_line }}{% if caps and caps.notes %} · {{ caps.notes }}{% endif %}</td></tr>
+      {% endif %}
+    </table>
+    {% if status.error %}
+    <p style="margin:10px 0 0; font-size:12.5px; color:var(--pmo-muted);">{{ status.error }}</p>
+    {% endif %}
+  </div>
+
+  <!-- UI-managed DEFAULT options per adapter: merged UNDER project options at
+       build time (project wins). Secrets: masked, empty submit keeps stored. -->
+  {% for a in adapters %}
+  <div style="background:#fff; border:1px solid #E6E2D9; border-radius:13px; padding:18px 20px; margin-bottom:16px;">
+    <h3 style="margin:0 0 4px; font-size:15px; font-weight:700;">
+      {{ t('plugins.detail_defaults_title', adapter=a.name) }}
+      <span style="font-weight:400; font-size:12px; color:var(--pmo-muted);">({{ a.port }})</span>
+    </h3>
+    <p style="margin:0 0 14px; font-size:12.5px; color:var(--pmo-muted);">{{ t('plugins.detail_defaults_desc') }}</p>
+    <form method="post" action="/ayarlar/eklentiler/{{ status.name }}/secenekler" style="margin:0;">
+      <input type="hidden" name="adapter" value="{{ a.name }}">
+      {% for f in a.fields %}
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+        <label style="width:200px; font-size:13px; font-family:var(--pmo-mono);" for="opt-{{ a.name }}-{{ f.name }}">
+          {{ f.name }}{% if f.required %} <span style="color:#B3402A;">*</span>{% endif %}
+        </label>
+        {% if f.input_type == 'checkbox' %}
+          <input type="checkbox" id="opt-{{ a.name }}-{{ f.name }}" name="opt_{{ f.name }}" value="1" {% if f.checked %}checked{% endif %}>
+        {% else %}
+          <input type="{{ f.input_type }}" id="opt-{{ a.name }}-{{ f.name }}" name="opt_{{ f.name }}"
+                 value="{{ f.value }}" {% if f.input_type == 'number' %}step="any"{% endif %}
+                 placeholder="{{ t('plugins.detail_secret_stored') if f.has_stored else '' }}"
+                 autocomplete="off"
+                 style="flex:1; padding:7px 10px; border:1px solid #D8D3C8; border-radius:9px; font-size:13px; font-family:var(--pmo-mono);">
+        {% endif %}
+      </div>
+      {% endfor %}
+      <p style="margin:4px 0 12px; font-size:12px; color:var(--pmo-muted);">{{ t('plugins.detail_secret_note') }}</p>
+      <button type="submit" class="btn-sm" style="background:#0E7C7B; color:#fff; border-color:#0E7C7B;">{{ t('plugins.detail_save') }}</button>
+      {% if a.has_defaults %}
+      <span style="margin-left:10px; font-size:12px; color:var(--pmo-muted);">{{ t('plugins.detail_has_defaults') }}</span>
+      {% endif %}
+    </form>
+    {% if a.has_defaults %}
+    <form method="post" action="/ayarlar/eklentiler/{{ status.name }}/secenekler" style="margin:10px 0 0;"
+          onsubmit="return confirm('{{ t('plugins.detail_reset_confirm') }}');">
+      <input type="hidden" name="adapter" value="{{ a.name }}">
+      <input type="hidden" name="reset" value="1">
+      <button type="submit" class="btn-sm">{{ t('plugins.detail_reset') }}</button>
+    </form>
+    {% endif %}
+  </div>
+  {% else %}
+  <p style="font-size:13px; color:var(--pmo-muted);">{{ t('plugins.detail_no_adapters') }}</p>
+  {% endfor %}
+</main>
+{% endblock %}

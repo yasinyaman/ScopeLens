@@ -118,6 +118,10 @@ class PluginRegistry:
     def __init__(self) -> None:
         self._factories: dict[tuple[str, str], AdapterFactory] = {}
         self._statuses: list[PluginStatus] = []
+        # Loaded specs by plugin name — feeds the detail page (capabilities +
+        # adapter list). Kept for EVERY parsed spec incl. disabled/blocked ones:
+        # ep.load() already imported the module, holding the object adds nothing.
+        self._specs: dict[str, PluginSpec] = {}
 
     def load(self) -> None:
         for ep in metadata.entry_points(group=GROUP):
@@ -138,6 +142,7 @@ class PluginRegistry:
             status.name = spec.name
             status.api_compat = spec.api_compat
             status.ports = [f.port for f in spec.adapters]
+            self._specs[spec.name] = spec
             dist = ep.dist
             status.version = dist.version if dist is not None else "?"
             status.commit = _git_commit(dist)
@@ -188,6 +193,13 @@ class PluginRegistry:
 
     def find(self, port: str, name: str) -> AdapterFactory | None:
         return self._factories.get((port, name))
+
+    def spec(self, name: str) -> PluginSpec | None:
+        """The parsed PluginSpec for a plugin name (any state), or None."""
+        return self._specs.get(name)
+
+    def status(self, name: str) -> PluginStatus | None:
+        return next((s for s in self._statuses if s.name == name), None)
 
     def names(self, port: str) -> list[str]:
         """Adapter names a given port can resolve via plugins (error messages, docs)."""

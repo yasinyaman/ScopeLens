@@ -38,7 +38,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from markdown_it import MarkdownIt
 from markupsafe import escape
-from pydantic import ValidationError
+from pydantic import BaseModel, ValidationError
 from starlette.concurrency import run_in_threadpool
 
 from etki import llm_settings as llm_settings_store
@@ -1849,15 +1849,18 @@ def _parse_options(text: str) -> dict[str, str]:
     return opts
 
 
-def _wi_form_fields(adapter: str, current: dict) -> list[dict] | None:
-    """Structured form fields from the adapter's options-model JSON schema (U4).
+def _schema_fields(
+    model: type[BaseModel], current: dict, *, mask_secrets: bool = False
+) -> list[dict]:
+    """Structured form fields from an options-model JSON schema.
 
-    None → no model for this adapter → the template falls back to the free-form
-    textarea. Values render AS STORED: an `env:VAR` secret reference stays a
-    reference — resolved values never reach a form field."""
-    model = options_model_for("work_items", adapter)
-    if model is None:
-        return None
+    Values render AS STORED: an `env:VAR` secret reference stays a reference —
+    resolved values never reach a form field. With `mask_secrets` (the plugin
+    defaults page), credential-named fields render as EMPTY password inputs
+    (`has_stored` drives the "kayıtlı" placeholder; empty submit keeps the
+    stored value — the llm.json idiom)."""
+    from etki.plugin.options_store import is_secret_field
+
     schema = model.model_json_schema()
     required = set(schema.get("required", []))
     fields: list[dict] = []
@@ -1869,17 +1872,28 @@ def _wi_form_fields(adapter: str, current: dict) -> list[dict] | None:
             input_type = "number"
         else:  # strings, unions (anyOf), anything exotic → plain text
             input_type = "text"
+        secret = mask_secrets and input_type == "text" and is_secret_field(name)
         value = current.get(name, prop.get("default", ""))
         fields.append(
             {
                 "name": name,
-                "input_type": input_type,
+                "input_type": "password" if secret else input_type,
                 "required": name in required,
-                "value": "" if value is None else str(value),
+                "value": "" if (secret or value is None) else str(value),
                 "checked": bool(value) if input_type == "checkbox" else False,
+                "secret": secret,
+                "has_stored": secret and bool(current.get(name)),
             }
         )
     return fields
+
+
+def _wi_form_fields(adapter: str, current: dict) -> list[dict] | None:
+    """U4 work-items form: None → no model → free-form textarea fallback."""
+    model = options_model_for("work_items", adapter)
+    if model is None:
+        return None
+    return _schema_fields(model, current)
 
 
 def _wi_form_context(
@@ -2357,9 +2371,11 @@ def _ayarlar_error(request: Request, ctx: AppContext, message: str) -> HTMLRespo
     "/ayarlar/eklentiler", response_class=HTMLResponse, dependencies=[Depends(require_pmo)]
 )
 async def plugins_screen(request: Request) -> HTMLResponse:
-    """READ-ONLY plugin visibility (+ the one safe mutation: enable/disable an
-    installed plugin). No install/policy endpoint exists here BY DESIGN — code
-    acquisition is operator/CLI-only, the policy is env-only."""
+    """Plugin visibility + enable/disable + the marketplace card. The policy
+    stays env-only with NO mutating route; installing exists ONLY for the
+    verified marketplace path and ONLY behind the env-only
+    `ETKI_PLUGIN_UI_INSTALL` gate (2026-07-16 revision of plan rule 4 —
+    git/wheel acquisition remains operator/CLI-only)."""
     from etki.adapters.plugins import get_plugin_registry
     from etki.plugin.lockfile import load_lockfile
     from etki.plugin.policy import current_policy
@@ -2402,6 +2418,321 @@ async def plugin_toggle(name: str, request: Request) -> RedirectResponse:
     get_plugin_registry.cache_clear()
     get_context.cache_clear()
     return RedirectResponse("/ayarlar/eklentiler", status_code=303)
+
+
+# Marketplace browse cache — module-level is valid because workers=1 is
+# enforced at startup (same reasoning as auth.LoginRateLimiter). Errors get a
+# short TTL so a transient network failure doesn't stick to the screen.
+_MARKET_TTL = 900.0
+_MARKET_ERROR_TTL = 60.0
+_market_cache: dict[str, tuple[float, Any, str | None]] = {}
+
+
+def _market_index(source: str, *, force: bool = False) -> tuple[Any, str | None]:
+    """(IndexFile | None, error | None) for the marketplace fragment. Remote
+    sources verify the sigstore signature (mandatory inside
+    marketplace.load_index); a mirror directory follows the air-gapped
+    hash-only rule. Failures degrade to a message — the settings screen must
+    never 500 because the index is unreachable."""
+    from etki.plugin import marketplace
+
+    now = time.monotonic()
+    cached = _market_cache.get(source)
+    if cached and not force:
+        ttl = _MARKET_TTL if cached[1] is not None else _MARKET_ERROR_TTL
+        if now - cached[0] < ttl:
+            return cached[1], cached[2]
+    try:
+        index, _raw = marketplace.load_index(source)
+        entry: tuple[float, Any, str | None] = (now, index, None)
+    except Exception as exc:  # noqa: BLE001 — UI boundary: degrade, never crash
+        entry = (now, None, str(exc))
+    _market_cache.clear()  # one source at a time — no unbounded growth
+    _market_cache[source] = entry
+    return entry[1], entry[2]
+
+
+def _safe_http_url(url: str) -> str | None:
+    """Only http(s) links from the index render as <a>. Defense-in-depth: the
+    index is signature-pinned, but a link never gets to be a javascript: URI."""
+    return url if url.startswith(("http://", "https://")) else None
+
+
+def _market_is_newer(candidate: str | None, current: str | None) -> bool:
+    if not candidate or not current:
+        return False
+    try:
+        from packaging.version import Version
+
+        return Version(candidate) > Version(current)
+    except Exception:  # noqa: BLE001 — exotic version strings never break the view
+        return False
+
+
+def _caps_summary(caps: Any) -> str:
+    """One-line, localized capability declaration (install confirm + cards)."""
+    parts: list[str] = []
+    if caps.network:
+        parts.append(t("plugins.market_caps_network"))
+    parts.append(f"{t('plugins.market_caps_fs')}: {caps.filesystem}")
+    if caps.endpoints:
+        parts.append(f"{t('plugins.market_caps_endpoints')}: {', '.join(caps.endpoints)}")
+    return " · ".join(parts)
+
+
+def _market_context(q: str, *, force: bool = False) -> dict[str, Any]:
+    """Template context for market_fragment.html — shared by the browse GET
+    and the install POST (which re-renders the fragment with a banner)."""
+    from etki.adapters.plugins import get_plugin_registry
+    from etki.plugin import marketplace, signing
+    from etki_api import __version__ as api_version
+
+    source = marketplace.index_source()
+    index, error = _market_index(source, force=force)
+    installed = {s.name: s.version for s in get_plugin_registry().statuses()}
+    rows: list[dict[str, Any]] = []
+    if index is not None:
+        plugins = marketplace.search(index, q) if q.strip() else list(index.plugins)
+        for plugin in plugins:
+            try:
+                _plugin, best = marketplace.resolve(index, plugin.name)
+                version: str | None = best.version
+                api_compat: str | None = best.api_compat
+                released_at: str | None = best.released_at
+                report: str | None = best.conformance_report
+                ranges: str | None = None
+            except Exception:  # noqa: BLE001 — InstallError: no compatible version
+                version = api_compat = released_at = report = None
+                ranges = ", ".join(v.api_compat for v in plugin.versions) or "—"
+            current = installed.get(plugin.name)
+            rows.append(
+                {
+                    "name": plugin.name,
+                    "summary": plugin.summary,
+                    "ports": plugin.ports,
+                    "caps": plugin.capabilities,
+                    "repo": _safe_http_url(plugin.source_repo),
+                    "version": version,
+                    "api_compat": api_compat,
+                    "released_at": released_at,
+                    "report": _safe_http_url(report or ""),
+                    "ranges": ranges,
+                    "installed": current,
+                    # NOT named "update": Jinja resolves r.update to dict.update
+                    # (attribute-first lookup), which is always truthy.
+                    "update_available": _market_is_newer(version, current),
+                    # --index only when the operator overrode the trust root: the
+                    # CLI resolves the same default, and an env set on the SERVER
+                    # may be absent in the operator's shell.
+                    "cmd": f"python -m etki.plugin install {plugin.name}"
+                    + ("" if source == marketplace.DEFAULT_INDEX_URL else f" --index {source}"),
+                    "confirm": t(
+                        "plugins.market_confirm_install",
+                        name=plugin.name,
+                        version=version or "?",
+                        caps=_caps_summary(plugin.capabilities),
+                    ),
+                }
+            )
+    return {
+        "q": q,
+        "rows": rows,
+        "error": error,
+        "source": source,
+        "source_is_dir": Path(source).is_dir(),
+        "generated_at": index.generated_at if index is not None else "",
+        "identity": signing.expected_identity()[0],
+        "api_version": api_version,
+        "ui_install": marketplace.ui_install_enabled(),
+    }
+
+
+@router.get(
+    "/ayarlar/eklentiler/pazar",
+    response_class=HTMLResponse,
+    dependencies=[Depends(require_pmo)],
+)
+def market_fragment(request: Request, q: str = "", yenile: str | None = None) -> HTMLResponse:
+    """Marketplace browse — a READ-ONLY projection of the SIGNED index (plan
+    rule: the single source of truth is index.json). The index source is
+    env-only (`ETKI_PLUGIN_INDEX_URL`), never a form field. Sync `def` on
+    purpose: the fetch + signature verification runs in the threadpool
+    instead of blocking the event loop."""
+    return templates.TemplateResponse(
+        request, "market_fragment.html", _market_context(q, force=yenile == "1")
+    )
+
+
+@router.post(
+    "/ayarlar/eklentiler/pazar/kur",
+    response_class=HTMLResponse,
+)
+def market_install(
+    request: Request,
+    user: Annotated[dict[str, str], Depends(require_pmo)],
+    name: Annotated[str, Form()],
+) -> HTMLResponse:
+    """Verified-marketplace install from the UI — the 2026-07-16 revision of
+    plan rule 4, twice-gated: pmo role AND the env-only `ETKI_PLUGIN_UI_INSTALL`
+    switch (default OFF → 403). ONLY the signed-index path exists here: the
+    source is env-pinned (never a form field) and resolve/signature/SHA-256 all
+    run inside `marketplace.install_verified`; git/wheel targets have no UI
+    route. Sync def → threadpool (network + `uv pip` subprocess)."""
+    from etki import process_log
+    from etki.adapters.plugins import get_plugin_registry
+    from etki.plugin import marketplace
+
+    if not marketplace.ui_install_enabled():
+        raise HTTPException(
+            status_code=403,
+            detail="Arayüzden kurulum kapalı — operatör ETKI_PLUGIN_UI_INSTALL=true ile açar.",
+        )
+    source = marketplace.index_source()
+    plugin_name = name.strip()
+    try:
+        entry = marketplace.install_verified(plugin_name, source, yes=True)
+    except Exception as exc:  # noqa: BLE001 — UI boundary: banner, never a 500
+        context = _market_context("")
+        context["install_error"] = f"{plugin_name}: {exc}"
+        return templates.TemplateResponse(request, "market_fragment.html", context)
+    # New distribution in the venv: rebuild the entry-point registry + engines.
+    get_plugin_registry.cache_clear()
+    get_context.cache_clear()
+    process_log.log_event(
+        "plugin_install",
+        "-",
+        {
+            "user": user.get("username", "?"),
+            "plugin": entry.name,
+            "sha256": entry.sha256,
+            "source": source,
+        },
+    )
+    context = _market_context("")
+    context["flash"] = t("plugins.market_installed_flash", name=entry.name)
+    return templates.TemplateResponse(request, "market_fragment.html", context)
+
+
+def _plugin_detail_context(
+    name: str,
+    *,
+    saved: bool = False,
+    error: str | None = None,
+    attempted: tuple[str, dict[str, Any]] | None = None,
+) -> dict[str, Any]:
+    """Detail-page context: status/manifest projection + one defaults form per
+    adapter the plugin provides. `attempted` re-fills a rejected form (adapter
+    name, values) — secret fields are still never echoed back."""
+    from etki.adapters.plugins import get_plugin_registry
+    from etki.plugin import options_store
+    from etki.plugin.lockfile import load_lockfile
+
+    registry = get_plugin_registry()
+    status = registry.status(name)
+    if status is None:
+        raise HTTPException(status_code=404, detail="bilinmeyen plugin")
+    spec = registry.spec(name)
+    try:
+        lock = load_lockfile().get(name)
+    except Exception:  # noqa: BLE001 — a corrupt lockfile shows as no entry
+        lock = None
+    adapters: list[dict[str, Any]] = []
+    for factory in spec.adapters if spec is not None else ():
+        stored = options_store.defaults_for(factory.name)
+        values: dict[str, Any] = stored
+        if attempted is not None and attempted[0] == factory.name:
+            values = {**stored, **attempted[1]}
+        adapters.append(
+            {
+                "port": factory.port,
+                "name": factory.name,
+                "fields": _schema_fields(factory.options_model, values, mask_secrets=True),
+                "has_defaults": bool(stored),
+            }
+        )
+    return {
+        "status": status,
+        "caps": spec.capabilities if spec is not None else None,
+        "caps_line": _caps_summary(spec.capabilities) if spec is not None else "",
+        "lock": lock,
+        "adapters": adapters,
+        "saved": saved,
+        "error": error,
+    }
+
+
+@router.get(
+    "/ayarlar/eklentiler/{name}",
+    response_class=HTMLResponse,
+    dependencies=[Depends(require_pmo)],
+)
+async def plugin_detail(
+    request: Request, name: str, kaydedildi: str | None = None
+) -> HTMLResponse:
+    """Per-plugin page: status/manifest info + UI-managed DEFAULT options per
+    adapter (API keys etc. — stored 0600 in `.etki/plugin-options.json`, merged
+    UNDER project options at build time, project value wins). Registered AFTER
+    /pazar, so the static segment keeps winning."""
+    return templates.TemplateResponse(
+        request,
+        "plugin_detail.html",
+        _plugin_detail_context(name, saved=kaydedildi == "1"),
+    )
+
+
+@router.post(
+    "/ayarlar/eklentiler/{name}/secenekler",
+    response_class=HTMLResponse,
+    dependencies=[Depends(require_pmo)],
+)
+async def plugin_options_save(request: Request, name: str) -> Response:
+    """Saves UI-managed DEFAULT options for one adapter of the plugin. Secret
+    fields left empty KEEP the stored value (the llm.json idiom — they are
+    never echoed into the form either); `env:VAR` references are stored as
+    references and validation runs WITHOUT resolving them."""
+    from etki.adapters.plugins import get_plugin_registry
+    from etki.plugin import options_store
+
+    registry = get_plugin_registry()
+    spec = registry.spec(name)
+    if registry.status(name) is None or spec is None:
+        raise HTTPException(status_code=404, detail="bilinmeyen plugin")
+    form = await request.form()
+    adapter = str(form.get("adapter", ""))
+    factory = next((f for f in spec.adapters if f.name == adapter), None)
+    if factory is None:
+        raise HTTPException(status_code=400, detail="bilinmeyen adaptör")
+    if form.get("reset") == "1":
+        # The only way to CLEAR a stored secret — empty submits keep it by design.
+        options_store.save(adapter, {})
+        get_context.cache_clear()
+        return RedirectResponse(f"/ayarlar/eklentiler/{name}?kaydedildi=1", status_code=303)
+    submitted: dict[str, Any] = {
+        k[len("opt_") :]: str(v).strip()
+        for k, v in form.items()
+        if k.startswith("opt_") and str(v).strip() != ""
+    }
+    stored = options_store.defaults_for(adapter)
+    for key, value in stored.items():
+        if options_store.is_secret_field(key) and key not in submitted:
+            submitted[key] = value
+    try:
+        factory.options_model.model_validate(submitted)
+    except ValidationError as exc:
+        msgs = "; ".join(
+            f"{'.'.join(str(p) for p in e['loc'])}: {e['msg']}" for e in exc.errors()
+        )
+        context = _plugin_detail_context(
+            name,
+            error=t("pf.invalid_options", msgs=msgs),
+            attempted=(adapter, submitted),
+        )
+        return templates.TemplateResponse(
+            request, "plugin_detail.html", context, status_code=400
+        )
+    options_store.save(adapter, submitted)
+    get_context.cache_clear()  # engines rebuild with the new defaults
+    return RedirectResponse(f"/ayarlar/eklentiler/{name}?kaydedildi=1", status_code=303)
 
 
 @router.post("/ayarlar/kullanicilar", response_class=HTMLResponse)

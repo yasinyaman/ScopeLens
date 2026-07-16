@@ -248,6 +248,21 @@ the plugin declares:
   (`active/failed/incompatible/blocked/disabled`) with the error text, and a
   verified badge. The only mutation is a pmo-only enable/disable toggle;
   install/remove and `ETKI_PLUGIN_POLICY` stay on the operator/CLI side.
+- **Marketplace card** (same screen): once your plugin is accepted into the
+  signed index, its entry renders there automatically — `summary`, `ports`, the
+  `capabilities` declaration from your manifest, `source_repo`/conformance links
+  (http(s) only), and the highest version whose `api_compat` covers the
+  installed etki-api, next to a copyable `python -m etki.plugin install …`
+  command. The card is a projection of the index: good metadata in your index
+  entry IS your store listing. When the operator sets `ETKI_PLUGIN_UI_INSTALL=true`,
+  the card also offers a one-click **verified install** (env-pinned source,
+  capability confirm, the same signature + SHA-256 chain as the CLI).
+- **Plugin detail page** (`/ayarlar/eklentiler/<plugin>`): your `options_model`
+  powers a **default-options form** — field names containing key/token/secret/
+  password/pat render as masked password inputs that are never echoed back.
+  Defaults merge UNDER project options at build time (the project value wins),
+  so name your credential fields conventionally (`api_key`, `token`, …) and
+  keep non-secret knobs (timeouts, conventions) as plain typed fields.
 - **Work-item adapter dropdown** (project → Dosyalar) is fed by
   `registry.available_adapters("work_items")`: builtins first, then the adapter
   names of ACTIVE plugins — your `AdapterFactory.name` appears there
