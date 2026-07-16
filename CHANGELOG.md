@@ -8,8 +8,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0a4] - 2026-07-17
+
 ### Added
 
+- **Request intake + write-back** — Etki can now poll a tracker (e.g. Jira) for
+  new client requests, triage each through the existing pipeline into a PENDING
+  case, and write the decision back to the source. Write-back timing is
+  per-project (`on_decision` — after the PMO decides, the default and the
+  copilot invariant — / `on_triage` / `both`); it is best-effort and never
+  blocks an approval. Configure via *Dosyalar → Talep Kanalı*, or the in-app
+  `ETKI_INTAKE_POLL_MINUTES` loop / `python -m etki.intake` cron. This is the
+  first WRITING integration; the Jira connection ships as the `etki-plugin-jira`
+  plugin.
+- **etki-api 0.1.2** — two new ports `RequestIntakeProvider` +
+  `ResponseChannel` (the first writing port), models `IncomingRequest` /
+  `IntakeBatch` / `OutboundResponse`, `SecurityCapabilities.external_write`, two
+  conformance contracts, and a `py.typed` marker.
+- **Plugin submission tooling** — `scripts/build_plugin_submission.py` and a
+  `workflow_dispatch` GitHub Action build a plugin's verified-marketplace bundle
+  (wheel + green conformance report + schema-validated `index.json` entry) in one
+  step. Plugins are distributed on GitHub only (signed index / git), never PyPI.
 - **Marketplace browse UI** — the Settings → Plugins screen gained a lazy-loaded
   card projecting the SIGNED index: search, per-plugin summary/ports/capability
   declaration, highest compatible version vs the installed etki-api,

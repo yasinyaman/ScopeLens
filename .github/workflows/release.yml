@@ -9,6 +9,12 @@
 # project `etki-api` with environment `pypi-etki-api`. PyPI refuses two pending
 # publishers with the identical repo+workflow+environment config, hence the split.
 # Until configured the publish jobs fail; the other jobs are independent.
+#
+# PLUGINS are NOT published to PyPI: they ship through the verified marketplace
+# (signed index → hash-verified wheel under artifacts/), and their `etki-api`
+# dependency is already satisfied in the host env — so no PyPI is involved at
+# install time. Only `etki-api` itself needs PyPI (that's what plugin wheels and
+# third-party consumers resolve against).
 name: Release
 
 on:
@@ -32,7 +38,7 @@ jobs:
           enable-cache: true
       - run: uv sync --frozen --dev
       - run: uv run ruff check .
-      - run: uv run mypy etki packages/etki-api/src/etki_api packages/etki-plugin-linear/src/etki_plugin_linear
+      - run: uv run mypy etki packages/etki-api/src/etki_api packages/etki-plugin-linear/src/etki_plugin_linear packages/etki-plugin-jira/src/etki_plugin_jira
       - run: uv run pytest --cov=etki --cov=etki_api --cov-fail-under=70
       - run: uv run python -m eval.runner
 
