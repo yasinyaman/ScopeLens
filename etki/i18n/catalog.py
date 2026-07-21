@@ -2138,6 +2138,17 @@ MESSAGES: dict[str, dict[str, str]] = {
         "de": "Aufwandsquelle nicht erreichbar → ähnliche Arbeit konnte nicht abgefragt "
               "werden; Aufwand aus Codemetrik/Annahme. Die Entscheidung bleibt unberührt.",
     },
+    "engine.asm.period_mismatch": {
+        "tr": "Talepteki periyot ({req}) madde limitinin periyodundan ({clause}) farklı — "
+              "adet karşılaştırması periyot uzlaştırması yapmadan uygulandı; PMO "
+              "değerlendirmesinde dikkate alınmalı.",
+        "en": "The request's period ({req}) differs from the clause limit's period "
+              "({clause}) — the quantity check ran without reconciling the periods; "
+              "factor this into the PMO review.",
+        "de": "Der Zeitraum der Anfrage ({req}) weicht vom Zeitraum des Klausel-Limits "
+              "({clause}) ab — der Mengenvergleich lief ohne Zeitraumabgleich; bei der "
+              "PMO-Prüfung zu berücksichtigen.",
+    },
     "engine.asm.code_no_spec": {
         "tr": "Şartnamede açık madde yok, kod mevcut → bakım/iyileştirme varsayıldı.",
         "en": "No explicit clause in the specification, code exists → assumed "

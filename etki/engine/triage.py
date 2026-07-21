@@ -434,6 +434,23 @@ class TriageEngine:
             assumptions = [llm_note_rr, *assumptions]
         if llm_note_veto:
             assumptions = [llm_note_veto, *assumptions]
+        # PERIOD-MISMATCH NOTE (informational, no decision effect): the quota
+        # step compares quantities only; when the request names a different
+        # period than the clause limit ("10 yearly" vs a 5/monthly cap), say so
+        # in the evidence instead of silently pretending the periods agree.
+        if (
+            sub.period
+            and best_inc is not None
+            and best_inc.limits.period
+            and sub.period != best_inc.limits.period
+        ):
+            assumptions = [
+                t(
+                    "engine.asm.period_mismatch", self._language,
+                    req=sub.period, clause=best_inc.limits.period,
+                ),
+                *assumptions,
+            ]
         # DEPENDENCY NOTE (informational, no decision effect): if the request was
         # recognized as a library add / version migration, the manifest reality is
         # written into the evidence chain. Decision/confidence are already
