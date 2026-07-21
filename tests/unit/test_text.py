@@ -61,3 +61,11 @@ def test_saglan_boilerplate_is_stopped_but_saglayici_survives():
     # stopped; "sağlayıcı" (provider) is a real content word and must survive.
     assert tokenize("bildirim gönderimi sağlanır") == tokenize("bildirim gönderimi")
     assert "sağlayıcı" in tokenize("üçüncü taraf kimlik sağlayıcı entegrasyonu")
+
+
+def test_desteklen_verb_forms_are_stopped_but_destek_noun_bridges():
+    # "X desteklenir" is clause boilerplate (EN twin "supported" is stopped);
+    # the noun (veritabanı desteği = database support) is a deliverable and
+    # must keep bridging to the canonical "support".
+    assert "support" not in tokenize("PDF dışa aktarım desteklenir")
+    assert "support" in tokenize("veritabanı desteği")

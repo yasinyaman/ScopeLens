@@ -36,6 +36,11 @@ _STOP = {
     # producing false exclusion hits. Surface forms only; "sağlayıcı" itself
     # must stay a token.
     "sağlanır", "sağlanacak", "sağlanacaktır", "sağlanması", "sağlar", "sağlamak",
+    # TR mirror of the stopped EN "supported/supports": the inflected verb forms
+    # are clause boilerplate ("X desteklenir"), yet the ("deste","support")
+    # bridge promoted them to content tokens. Noun forms (destek/desteği =
+    # support as a deliverable) stay tokens and keep the bridge.
+    "desteklenir", "desteklenecek", "desteklenecektir", "desteklenmesi", "desteklenmektedir",
     # English function words — the symmetric score divides by |query|, so every
     # function word left in dilutes q_cov (the TR side already had this treatment;
     # this completes it for English requests/contracts).
