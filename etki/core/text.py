@@ -82,8 +82,11 @@ _SYNONYM_STEMS: list[tuple[str, str]] = [
     # ("integrate Okta" vs "third-party identity provider (IdP) ... out of scope").
     # Deliberately conservative — only brands whose category is unambiguous; broad
     # words ("live", "native", cloud vendors' non-identity products) stay out.
+    # "azure" was mapped to idp until 2026-07 and mistranslated every Azure
+    # product (a plausible Azure DevOps integration request became a two-hit
+    # exclusion match); the identity sense stays covered by ("entra","idp").
     ("okta", "idp"), ("auth0", "idp"), ("keycloak", "idp"),
-    ("onelogin", "idp"), ("entra", "idp"), ("azure", "idp"),
+    ("onelogin", "idp"), ("entra", "idp"),
     ("android", "mobile"), ("iphone", "mobile"), ("ipad", "mobile"),
     ("ios", "mobile"), ("phone", "mobile"), ("telefon", "mobile"),
     ("ethereum", "cryptocurrency"),

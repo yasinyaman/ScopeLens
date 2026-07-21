@@ -45,3 +45,11 @@ def test_symmetric_component_penalizes_long_targets():
         "dışa aktarma yetkilendirme loglama arşivleme bileşenleri"
     )
     assert score(query, short_target) > score(query, long_target) > 0
+
+
+def test_azure_products_are_not_identity_providers():
+    # ("azure","idp") is gone: an Azure DevOps request must not canonicalize to
+    # the IdP concept, while the real identity brands still do.
+    assert "idp" not in tokenize("Azure DevOps pipeline integration")
+    assert "idp" in tokenize("Okta login")
+    assert "idp" in tokenize("Entra ID login")
