@@ -53,3 +53,11 @@ def test_azure_products_are_not_identity_providers():
     assert "idp" not in tokenize("Azure DevOps pipeline integration")
     assert "idp" in tokenize("Okta login")
     assert "idp" in tokenize("Entra ID login")
+
+
+def test_saglan_boilerplate_is_stopped_but_saglayici_survives():
+    # TR mirror of the stopped EN provide/provides/provided: inflected sağlamak
+    # forms are boilerplate (and prefix-collide with sağlayıcı), so they are
+    # stopped; "sağlayıcı" (provider) is a real content word and must survive.
+    assert tokenize("bildirim gönderimi sağlanır") == tokenize("bildirim gönderimi")
+    assert "sağlayıcı" in tokenize("üçüncü taraf kimlik sağlayıcı entegrasyonu")

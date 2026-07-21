@@ -30,6 +30,12 @@ _STOP = {
     "kapsam", "kapsamı", "dahilindedir", "dahildir", "dahil", "içindedir",
     "dışındadır", "dışıdır", "hariç", "tutulanlar", "tutulmuştur",
     "sözleşme", "sözleşmenin", "sözleşmeye", "madde", "fiyatlandırılır", "yüklenici",
+    # TR mirror of the stopped EN boilerplate "provide/provides/provided":
+    # inflected forms of sağlamak carry no scope signal AND prefix-4-collide
+    # with "sağlayıcı" (provider — a real content word in the IdP exclusion),
+    # producing false exclusion hits. Surface forms only; "sağlayıcı" itself
+    # must stay a token.
+    "sağlanır", "sağlanacak", "sağlanacaktır", "sağlanması", "sağlar", "sağlamak",
     # English function words — the symmetric score divides by |query|, so every
     # function word left in dilutes q_cov (the TR side already had this treatment;
     # this completes it for English requests/contracts).
