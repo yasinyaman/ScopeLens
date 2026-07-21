@@ -69,3 +69,14 @@ def test_desteklen_verb_forms_are_stopped_but_destek_noun_bridges():
     # must keep bridging to the canonical "support".
     assert "support" not in tokenize("PDF dışa aktarım desteklenir")
     assert "support" in tokenize("veritabanı desteği")
+
+
+def test_ascii_typed_turkish_stopwords_are_stopped_too():
+    # The same sentence must tokenize identically however it was typed:
+    # diacritic-proper and ASCII spellings fold to the same stop lookup.
+    assert tokenize("rapor filtresi lazim") == tokenize("rapor filtresi lazım")
+    assert tokenize("sozlesme kapsami dahilindedir rapor") == tokenize(
+        "sözleşme kapsamı dahilindedir rapor"
+    )
+    # Folding is lookup-only: ASCII content words still bridge via the lexicon.
+    assert "driver" in tokenize("yazici surucu guncellemesi")

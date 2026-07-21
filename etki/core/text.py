@@ -64,6 +64,21 @@ _STOP = {
 
 _PREFIX = 4  # a shared prefix of this length = a match (instead of proper stemming)
 
+# ASCII-typed Turkish ("lazim", "sozlesme") used to slip past the diacritic-only
+# _STOP entries and survive as noise tokens — the same sentence tokenized
+# differently depending on how it was typed. Stopword lookup therefore folds
+# diacritics on BOTH sides. Tokens themselves are NOT folded: the canonical
+# bridge below already carries dual-spelling entries (kullanıc/kullanic, …).
+# U+0307 handles Python's "İ".lower() → "i" + combining dot.
+_FOLD = str.maketrans({"ı": "i", "ş": "s", "ğ": "g", "ü": "u", "ö": "o", "ç": "c", "̇": ""})
+
+
+def _fold(word: str) -> str:
+    return word.translate(_FOLD)
+
+
+_STOP_FOLDED = frozenset(_fold(w) for w in _STOP)
+
 # Turkish↔English domain-term bridge: since both sides reduce to the same canonical
 # (English) form, Turkish-Turkish matches are preserved while cross-language matches
 # are unlocked (e.g. TR request "veritabanı desteği" ↔ EN spec/code "database support").
@@ -113,7 +128,7 @@ def _canon(word: str) -> str:
 
 def tokenize(text: str) -> set[str]:
     words = re.findall(r"\w+", text.lower())
-    return {_canon(w) for w in words if len(w) > 2 and w not in _STOP}
+    return {_canon(w) for w in words if len(w) > 2 and _fold(w) not in _STOP_FOLDED}
 
 
 def _match(a: str, b: str) -> bool:
