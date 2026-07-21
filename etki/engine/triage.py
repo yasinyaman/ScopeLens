@@ -568,7 +568,9 @@ class TriageEngine:
             model_version=self._model_version,
             plugin_set=self._plugin_set,
             human_decision=PmoDecision.PENDING,
-            decided_at=datetime.now(UTC),
+            # None until the PMO rules — ApprovalService.decide stamps the ruling
+            # time (the triage moment already lives in CaseFile.created_at).
+            decided_at=None,
         )
 
     @staticmethod

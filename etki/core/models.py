@@ -205,10 +205,10 @@ class TriageDecision(BaseModel):
     # frozen eval sets stay byte-identical.
     plugin_set: list[str] = Field(default_factory=list)
     human_decision: PmoDecision = PmoDecision.PENDING
-    # The engine stamps triage time at creation; ApprovalService.decide overwrites
-    # it with the PMO ruling time on terminal actions. Cases decided before that
-    # fix keep the triage-time value (frozen payloads — no backfill). Not to be
-    # confused with the case-level decided_at DB column (always the PMO time).
+    # None while PENDING; ApprovalService.decide stamps the PMO ruling time on
+    # terminal actions (triage time lives in CaseFile.created_at). Cases decided
+    # before the 2026-07 fix carry a triage-time value here (frozen payloads —
+    # no backfill). Matches the case-level decided_at DB column's meaning.
     decided_at: datetime | None = None
 
 
