@@ -9,6 +9,9 @@ Documented semantics under test:
 - ``capabilities()`` is sync, returns a ``Capabilities`` instance and is stable.
 - ``get_work_item`` round-trips a known id (exercised when the subclass
   declares ``known_item_id``).
+- A provider declaring ``supports_enumeration=True`` (0.1.3) must expose the
+  optional ``all_items()`` returning a list of normalized ``WorkItem``;
+  providers without the declaration are SKIPPED, not failed.
 """
 
 from __future__ import annotations
@@ -67,3 +70,20 @@ class WorkItemProviderContract(PortContract):
         item = await provider.get_work_item(self.known_item_id)
         assert isinstance(item, WorkItem)
         assert item.id
+
+    def test_declared_enumeration_exposes_all_items(self, provider: Any) -> None:
+        # CONDITIONAL (0.1.3): the flag promises the optional method. Providers
+        # without the declaration are skipped, never failed — pre-0.1.3
+        # adapters (including ones that HAVE all_items but don't declare it)
+        # stay green.
+        if not provider.capabilities().supports_enumeration:
+            pytest.skip("provider does not declare supports_enumeration")
+        assert hasattr(provider, "all_items"), (
+            "supports_enumeration=True promises an all_items() method"
+        )
+        items = provider.all_items()
+        assert isinstance(items, list)
+        for item in items:
+            assert isinstance(item, WorkItem)
+            assert item.id
+            assert isinstance(item.effort_seconds, int) and item.effort_seconds >= 0

@@ -62,4 +62,5 @@ class FileWorkItemProvider:
             supports_realtime=False,
             supports_effort_tracking=True,
             supports_incremental_diff=False,
+            supports_enumeration=True,  # a local JSON export enumerates for free
         )

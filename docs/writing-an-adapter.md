@@ -369,7 +369,10 @@ the host via `hasattr`/`getattr`:
   cheaply (the built-in `file` adapter does; a paged REST tracker usually
   should not). It is deliberately not part of the port: adding it to the
   `runtime_checkable` Protocol would make `isinstance` require it and break
-  existing adapters. The conformance suite therefore does not test it.
+  existing adapters. Since etki-api **0.1.3** you can DECLARE it via
+  `Capabilities(supports_enumeration=True)` — the conformance suite then
+  verifies `all_items()` exists and returns normalized `WorkItem`s (providers
+  without the declaration are skipped, not failed).
 
 ### etki-api versioning policy
 

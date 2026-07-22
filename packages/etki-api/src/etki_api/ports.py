@@ -34,6 +34,14 @@ class Capabilities(BaseModel):
     supports_realtime: bool = False
     supports_effort_tracking: bool = False
     supports_incremental_diff: bool = False
+    # Declares the optional `all_items() -> list[WorkItem]` cheap-enumeration
+    # method on a WorkItemProvider (effort-pool consumption / KPI feeds). The
+    # host still probes with hasattr — the flag is a declaration, deliberately
+    # NOT part of the runtime_checkable protocol (adding the method there would
+    # make isinstance require it and break existing adapters). Declare True only
+    # when enumeration is genuinely cheap (a file export is; a paged REST
+    # tracker usually is not).
+    supports_enumeration: bool = False
 
 
 @runtime_checkable

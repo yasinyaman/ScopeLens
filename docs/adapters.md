@@ -37,7 +37,9 @@ references, resolved only at adapter-build time.
   `title + description + category`.
 - **Fields:** whatever the file provides, one-to-one (`effort_seconds` already in seconds).
 - **Extras:** the only adapter with `all_items()` guaranteed cheap — effort-pool
-  consumption is always complete.
+  consumption is always complete. Declares `supports_enumeration=True`
+  (etki-api 0.1.3); plugins with a cheap enumeration can declare the same and
+  the conformance suite verifies the method.
 
 ### `jira` — Jira Cloud (REST v3)
 

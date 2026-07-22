@@ -4,6 +4,19 @@ All notable changes to the plugin API. Semver: major = breaking, minor = new
 optional method/field, patch = fixes. `0.x` until the first external plugin
 ships — breaking changes are allowed but MUST be announced here.
 
+## [0.1.3] - 2026-07-21
+
+### Added
+- `Capabilities.supports_enumeration: bool = False` — declares the optional
+  `all_items() -> list[WorkItem]` cheap-enumeration method on a
+  `WorkItemProvider` (feeds effort-pool consumption and KPI screens). Purely
+  additive: the host keeps probing with `hasattr`, the flag documents intent;
+  the method is deliberately NOT part of the runtime-checkable protocol.
+- Conformance: `WorkItemProviderContract` gains a CONDITIONAL check — a
+  provider declaring `supports_enumeration=True` must expose `all_items()`
+  returning a list of `WorkItem`; providers without the declaration are
+  SKIPPED, not failed (pre-0.1.3 adapters stay green).
+
 ## [0.1.2] - 2026-07-16
 
 ### Added

@@ -15,7 +15,9 @@ change freely.
 Shadow contract note: the host probes ``WorkItemProvider`` instances for an
 optional ``all_items()`` method via hasattr/getattr (effort-pool consumption,
 pool refresh, KPI); providers without it degrade to an empty pool. It is not
-part of the frozen port — see docs/writing-an-adapter.md §"Optional methods".
+part of the frozen port — declared via ``Capabilities.supports_enumeration``
+(etki-api 0.1.3) and verified conditionally by the conformance suite; see
+docs/writing-an-adapter.md §"Optional methods".
 """
 
 from __future__ import annotations
