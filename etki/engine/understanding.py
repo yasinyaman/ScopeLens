@@ -101,8 +101,16 @@ _WORD_NUM: dict[str, int] = {
     "beşinci": 5, "besinci": 5, "altıncı": 6, "altinci": 6, "yedinci": 7,
     "sekizinci": 8, "dokuzuncu": 9, "onuncu": 10,
 }
-_MONTHLY = re.compile(r"\b(ayda|aylık|her ay)\b", re.IGNORECASE)
-_YEARLY = re.compile(r"\b(yılda|yıllık|her yıl)\b", re.IGNORECASE)
+# EN + ASCII-Turkish period vocabulary mirrors the clause side
+# (scope_extractor): without it "50 reports per year" had no request period and
+# the quota step false-CR'd against a 5/month cap.
+_MONTHLY = re.compile(
+    r"\b(ayda|aylık|aylik|her ay|monthly|per month|every month)\b", re.IGNORECASE
+)
+_YEARLY = re.compile(
+    r"\b(yılda|yilda|yıllık|yillik|her yıl|her yil|yearly|per year|every year|annually)\b",
+    re.IGNORECASE,
+)
 
 
 def _default_hints() -> ModuleHints:

@@ -434,10 +434,10 @@ class TriageEngine:
             assumptions = [llm_note_rr, *assumptions]
         if llm_note_veto:
             assumptions = [llm_note_veto, *assumptions]
-        # PERIOD-MISMATCH NOTE (informational, no decision effect): the quota
-        # step compares quantities only; when the request names a different
-        # period than the clause limit ("10 yearly" vs a 5/monthly cap), say so
-        # in the evidence instead of silently pretending the periods agree.
+        # PERIOD-NORMALIZATION NOTE: when the request and the clause limit name
+        # different periods, the quota step compares both sides annualized
+        # (monthly ×12). The note freezes the even-spread assumption into the
+        # evidence — "50/year" is judged as a sustained rate, not a burst.
         if (
             sub.period
             and best_inc is not None
@@ -446,7 +446,7 @@ class TriageEngine:
         ):
             assumptions = [
                 t(
-                    "engine.asm.period_mismatch", self._language,
+                    "engine.asm.period_normalized", self._language,
                     req=sub.period, clause=best_inc.limits.period,
                 ),
                 *assumptions,
@@ -1196,20 +1196,33 @@ class TriageEngine:
             )
         # 3) Positive (INCLUDED) match + two-evidence rule
         if best_inc is not None and inc_score >= self._in_scope_min:
-            # 3a) limit / quota breach
+            # 3a) limit / quota breach. When the request and the clause limit
+            # name DIFFERENT periods, both sides are annualized (monthly ×12)
+            # before comparing — "50 reports per year" vs a 5/month cap used to
+            # read 50 > 5 and produce a false breach. With any period unknown
+            # the comparison stays direct (the old behavior).
             limit = best_inc.limits.quantity
-            if sub.quantity is not None and limit is not None and sub.quantity > limit:
-                return (
-                    Decision.CR_CANDIDATE,
-                    0.85,
-                    best_inc,
-                    inc_score,
-                    t(
-                        "engine.rsn.limit", lang,
-                        qty=sub.quantity, limit=limit,
-                        ref=best_inc.source_clause or best_inc.id,
-                    ),
-                )
+            if sub.quantity is not None and limit is not None:
+                qty_cmp, limit_cmp = sub.quantity, limit
+                if (
+                    sub.period
+                    and best_inc.limits.period
+                    and sub.period != best_inc.limits.period
+                ):
+                    qty_cmp = sub.quantity * 12 if sub.period == "monthly" else sub.quantity
+                    limit_cmp = limit * 12 if best_inc.limits.period == "monthly" else limit
+                if qty_cmp > limit_cmp:
+                    return (
+                        Decision.CR_CANDIDATE,
+                        0.85,
+                        best_inc,
+                        inc_score,
+                        t(
+                            "engine.rsn.limit", lang,
+                            qty=qty_cmp, limit=limit_cmp,
+                            ref=best_inc.source_clause or best_inc.id,
+                        ),
+                    )
             # 3b) effort-pool breach. (Tried and REVERTED: a short-request exemption —
             # it rescued "payments"/"usability"-type single-word gray cases, but
             # golden GS-53 expects pool-CR on the single word "entegrasyon"; two

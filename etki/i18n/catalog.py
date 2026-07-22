@@ -2138,16 +2138,18 @@ MESSAGES: dict[str, dict[str, str]] = {
         "de": "Aufwandsquelle nicht erreichbar → ähnliche Arbeit konnte nicht abgefragt "
               "werden; Aufwand aus Codemetrik/Annahme. Die Entscheidung bleibt unberührt.",
     },
-    "engine.asm.period_mismatch": {
+    "engine.asm.period_normalized": {
         "tr": "Talepteki periyot ({req}) madde limitinin periyodundan ({clause}) farklı — "
-              "adet karşılaştırması periyot uzlaştırması yapmadan uygulandı; PMO "
-              "değerlendirmesinde dikkate alınmalı.",
+              "kota kıyası iki taraf yıllığa çevrilerek yapıldı (aylık ×12; adetin yıla "
+              "eşit yayıldığı varsayımı). Tek aya yığılma ihtimalini PMO değerlendirmeli.",
         "en": "The request's period ({req}) differs from the clause limit's period "
-              "({clause}) — the quantity check ran without reconciling the periods; "
-              "factor this into the PMO review.",
+              "({clause}) — the quota check annualized both sides (monthly ×12; assumes "
+              "the amount spreads evenly over the year). The PMO should weigh possible "
+              "bursting into a single month.",
         "de": "Der Zeitraum der Anfrage ({req}) weicht vom Zeitraum des Klausel-Limits "
-              "({clause}) ab — der Mengenvergleich lief ohne Zeitraumabgleich; bei der "
-              "PMO-Prüfung zu berücksichtigen.",
+              "({clause}) ab — der Mengenvergleich wurde annualisiert (monatlich ×12; "
+              "Annahme gleichmäßiger Verteilung übers Jahr). Mögliche Ballung in einen "
+              "Monat sollte das PMO prüfen.",
     },
     "engine.asm.code_no_spec": {
         "tr": "Şartnamede açık madde yok, kod mevcut → bakım/iyileştirme varsayıldı.",

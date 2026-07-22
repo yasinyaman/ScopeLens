@@ -170,11 +170,11 @@ async def test_disputed_escalation_kill_switch():
     assert any("ÇELİŞEN nihai kararlar" in a for a in decision.evidence.assumptions)
 
 
-async def test_period_mismatch_adds_note_without_changing_the_decision():
-    """'10 yearly' vs a 5/monthly clause limit: the quota branch still fires
-    (period-blind by design for now), but the evidence chain now SAYS the
-    periods were not reconciled. Decision/confidence/effort stay byte-identical
-    to the matching-period phrasing of the same breach."""
+async def test_period_mismatch_is_annualized_before_the_quota_compare():
+    """'8 yearly' vs a 5/monthly cap (=60/year) is NOT a breach — the old
+    period-blind compare (8 > 5) false-CR'd it. '70 yearly' IS a breach
+    (70 > 60). Both carry the even-spread assumption note; the matching-period
+    phrasing keeps the direct compare and no note."""
     def fresh_baseline():
         return Baseline(
             contract_id="C",
@@ -184,15 +184,16 @@ async def test_period_mismatch_adds_note_without_changing_the_decision():
             )],
         )
 
-    mismatch = (await _engine(fresh_baseline()).triage("yılda 8 rapor üretilsin")).decisions[0]
+    within = (await _engine(fresh_baseline()).triage("yılda 8 rapor üretilsin")).decisions[0]
+    over = (await _engine(fresh_baseline()).triage("yılda 70 rapor üretilsin")).decisions[0]
     same = (await _engine(fresh_baseline()).triage("ayda 8 rapor üretilsin")).decisions[0]
 
-    assert mismatch.decision is same.decision is Decision.CR_CANDIDATE
-    assert mismatch.confidence == same.confidence
-    assert (mismatch.effort_estimate.low, mismatch.effort_estimate.high) == (
-        same.effort_estimate.low, same.effort_estimate.high
-    )
-    assert any("periyot" in a for a in mismatch.evidence.assumptions)
+    assert within.decision is not Decision.CR_CANDIDATE  # 8/year fits 60/year
+    assert over.decision is Decision.CR_CANDIDATE
+    assert "70" in over.evidence.reasoning and "60" in over.evidence.reasoning
+    assert same.decision is Decision.CR_CANDIDATE  # matching period: direct 8 > 5
+    for d in (within, over):
+        assert any("periyot" in a for a in d.evidence.assumptions)
     assert not any("periyot" in a for a in same.evidence.assumptions)
 
 
