@@ -131,6 +131,10 @@ class Settings(BaseSettings):
     est_dep_hours_per_module: float = 2.0
     est_dep_hours_per_api: float = 0.5
     est_dep_unknown_widen: float = 1.5
+    # Analogy narrow-spread floor: when the similar-work spread is thinner than
+    # likely × this ratio, the range widens with the optimistic/pessimistic
+    # factors (0.0 = zero-spread-only, the pre-2026-07 behavior).
+    est_min_spread_ratio: float = 0.0
     # Decision-stamp default (in the API the real value comes from
     # context._resolve_model_version; this is only a fallback for tests/tools that
     # use the engine directly).
@@ -230,6 +234,7 @@ class Settings(BaseSettings):
             dep_hours_per_module=self.est_dep_hours_per_module,
             dep_hours_per_api=self.est_dep_hours_per_api,
             dep_unknown_widen=self.est_dep_unknown_widen,
+            min_spread_ratio=self.est_min_spread_ratio,
         )
 
 

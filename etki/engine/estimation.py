@@ -36,6 +36,11 @@ class EstimationParams(BaseModel):
     dep_hours_per_module: float = 2.0  # per module using the package
     dep_hours_per_api: float = 0.5  # per used API symbol (call site)
     dep_unknown_widen: float = 1.5  # upper-bound factor when the call surface is not in the graph
+    # Narrow-spread floor on the analogy path: two near-identical analogs ([4,5])
+    # collapse p10/p80 to a sub-hour band that misses realistic actuals. When the
+    # spread is thinner than likely × this ratio, widen with the factors (never
+    # narrowing the observed range). 0.0 = zero-spread-only (old behavior).
+    min_spread_ratio: float = 0.0
 
 
 class DependencySurface(BaseModel):
@@ -105,6 +110,13 @@ def estimate(
             optimistic = likely * p.optimistic_factor
             pessimistic = likely * p.pessimistic_factor
             basis += "; " + t("engine.est.zero_spread", lang)
+        elif pessimistic - optimistic <= likely * p.min_spread_ratio:
+            # Narrow spread: near-identical analogs make p10/p80 collapse to a
+            # sliver. Widen with the factors via min/max — the observed analog
+            # range itself is never narrowed.
+            optimistic = min(optimistic, likely * p.optimistic_factor)
+            pessimistic = max(pessimistic, likely * p.pessimistic_factor)
+            basis += "; " + t("engine.est.narrow_spread", lang)
     elif dep_surface is not None:  # dependency change: from the usage surface
         likely = (
             p.dep_base_hours

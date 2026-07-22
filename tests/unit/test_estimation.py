@@ -116,3 +116,32 @@ def test_dependency_analogy_still_wins():
         dep_surface=DependencySurface(modules=2, apis=0),
     )
     assert "benzer" in est.basis  # analogy basis, not the surface basis
+
+
+def test_narrow_spread_widens_only_when_ratio_configured():
+    from etki.engine.estimation import EstimationParams
+
+    # Default (ratio 0.0): near-identical analogs keep today's tight band.
+    tight = estimate([_wi(4 * 3600), _wi(5 * 3600)], [])
+    assert tight.high - tight.low < 1.0
+    # Ratio configured: the band widens with the factors, never narrowing the
+    # observed analog range, and the actual-ish value (6h) fits.
+    wide = estimate(
+        [_wi(4 * 3600), _wi(5 * 3600)], [],
+        EstimationParams(min_spread_ratio=0.25),
+    )
+    assert wide.low < tight.low and wide.high > tight.high
+    assert wide.low <= 4.5 <= wide.high and wide.high >= 6  # actual-ish values fit the P10-P80 band
+
+
+def test_narrow_spread_composes_with_churn_widening():
+    from etki.engine.estimation import EstimationParams
+
+    churned = CodeModule(
+        id="m", path="m/", complexity=Complexity(loc=100), churn=Churn(commits_last_6mo=30)
+    )
+    calm = CodeModule(id="c", path="c/", complexity=Complexity(loc=100))
+    p = EstimationParams(min_spread_ratio=0.25)
+    with_churn = estimate([_wi(4 * 3600), _wi(5 * 3600)], [churned], p)
+    without = estimate([_wi(4 * 3600), _wi(5 * 3600)], [calm], p)
+    assert with_churn.high > without.high  # churn ×1.5 stacks AFTER the widening

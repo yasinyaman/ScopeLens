@@ -2050,6 +2050,11 @@ MESSAGES: dict[str, dict[str, str]] = {
         "en": "single/identical analog → range widened with the factors",
         "de": "einzelnes/identisches Analogon → Spanne mit Faktoren erweitert",
     },
+    "engine.est.narrow_spread": {
+        "tr": "dar analog yayılımı → aralık faktörlerle genişletildi",
+        "en": "narrow analog spread → range widened with the factors",
+        "de": "geringe Analogon-Streuung → Spanne mit Faktoren erweitert",
+    },
     "engine.est.pert": {
         "tr": "PERT~{mean}sa (P10–P80)", "en": "PERT~{mean}h (P10–P80)",
         "de": "PERT~{mean} Std. (P10–P80)",
