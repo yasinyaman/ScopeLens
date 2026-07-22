@@ -194,3 +194,26 @@ async def test_period_mismatch_adds_note_without_changing_the_decision():
     )
     assert any("periyot" in a for a in mismatch.evidence.assumptions)
     assert not any("periyot" in a for a in same.evidence.assumptions)
+
+
+async def test_direction_pair_target_drives_the_quota_branch():
+    """'from 3 to 10' must breach a limit of 3 (target 10), and the decrease
+    'from 6 to 2' must NOT breach it (target 2) — the pair fix end-to-end."""
+    def baseline():
+        return Baseline(
+            contract_id="C",
+            scope_items=[_included(
+                description="oturum yönetimi eşzamanlı oturum sınırı",
+                limits=ScopeLimit(quantity=3),
+            )],
+        )
+
+    breach = (await _engine(baseline()).triage(
+        "eşzamanlı oturum sınırı 3'ten 10'a çıkarılsın"
+    )).decisions[0]
+    within = (await _engine(baseline()).triage(
+        "eşzamanlı oturum sınırı 6'dan 2'ye düşürülsün"
+    )).decisions[0]
+    assert breach.decision is Decision.CR_CANDIDATE
+    assert "limit" in breach.evidence.reasoning.lower()
+    assert within.decision is not Decision.CR_CANDIDATE

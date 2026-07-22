@@ -71,6 +71,18 @@ def has_security_wording(text: str) -> bool:
     return any(kw in low for kw in _SEC_KW)
 
 _QTY = re.compile(r"\b(\d+)\b")
+# Direction pairs: "from 3 to 10" / "5'ten 8'e" / "5 yerine 12" — the requested
+# amount is the TARGET (second) number, but the first-digit rule used to pick
+# the FROM value ("from 3 to 10" read as 3, so 3 > limit(3) never fired — the
+# M3-09 miss; a decrease "from 6 to 2" even produced a FALSE breach). Checked
+# before the plain first-digit rule. Turkish side: ablative N'den/N'ten →
+# dative M'e/M'a/M'ye/M'ya, both apostrophe forms (' and ’) or none; the \b
+# after the dative keeps locative "10'da" and genitive "10'un" out.
+_PAIR_PATTERNS = (
+    re.compile(r"\bfrom\s+(\d+)\s+to\s+(\d+)\b", re.IGNORECASE),
+    re.compile(r"\b(\d+)['’]?[dt][ae]n\s+(\d+)['’]?y?[ae]\b", re.IGNORECASE),
+    re.compile(r"\b(\d+)\s+yerine\s+(\d+)\b", re.IGNORECASE),
+)
 # Word-numbers (v5a): requests say "six reports" / "a fourth provider" while the
 # contract states a numeric limit — cardinals AND ordinals map to their value
 # (an ordinal N implies a total of N: "a fourth provider" = 4 providers).
@@ -158,6 +170,10 @@ def _is_dependency_change(text: str, package: str | None) -> bool:
 
 
 def _quantity(text: str) -> int | None:
+    for pattern in _PAIR_PATTERNS:
+        pair = pattern.search(text)
+        if pair:
+            return int(pair.group(2))  # direction pair: the TARGET is the ask
     match = _QTY.search(text)
     if match:
         return int(match.group(1))  # a digit always wins over word-numbers
@@ -188,8 +204,8 @@ def split_request(
         sub_type = guess_type(p)
         package = _find_package(p, known_packages)
         # Dependency change is recognized AFTER maintenance (patch/defect wording
-        # keeps its maintenance routing) and only classifies — the decision tree
-        # never branches on it (see RequestType docstring).
+        # keeps its maintenance routing); since 2026-07-09 the decision tree DOES
+        # branch on it (`_classify` step 1b — see the RequestType docstring).
         if sub_type is not RequestType.MAINTENANCE and _is_dependency_change(p, package):
             sub_type = RequestType.DEPENDENCY_CHANGE
         is_dep = sub_type is RequestType.DEPENDENCY_CHANGE
@@ -237,13 +253,23 @@ class LLMRequestSplitter:
         for raw_item in payload.get("items", []):
             text = raw_item.get("item", "").strip() if isinstance(raw_item, dict) else str(raw_item)
             if text:
+                sub_type = guess_type(text)
+                # Mirror split_request's dependency handling: recognize the type
+                # and never let a version number feed the limit/quota step as a
+                # quantity (this path used to skip both).
+                if sub_type is not RequestType.MAINTENANCE and _is_dependency_change(
+                    text, None
+                ):
+                    sub_type = RequestType.DEPENDENCY_CHANGE
+                is_dep = sub_type is RequestType.DEPENDENCY_CHANGE
                 subs.append(
                     SubRequest(
                         item=text,
-                        type=guess_type(text),
+                        type=sub_type,
                         module_hint=guess_module(text),
-                        quantity=_quantity(text),
+                        quantity=None if is_dep else _quantity(text),
                         period=_period(text),
+                        target_version=_target_version(text) if is_dep else None,
                     )
                 )
         return subs or split_request(raw)

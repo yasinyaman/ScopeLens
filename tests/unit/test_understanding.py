@@ -76,3 +76,41 @@ def test_digits_win_over_words():
 def test_ambiguous_words_are_excluded():
     assert _quantity("show reports on the dashboard") is None  # EN "on" != TR 10
     assert _quantity("bir rapor ekleyelim") is None  # TR article, not a quantity
+
+
+def test_direction_pair_takes_the_target_number():
+    # "from X to Y" family: the requested amount is the TARGET, not the first
+    # digit (the M3-09 miss) and not the max of the two (decrease case).
+    assert split_request("Raise concurrent sessions per user from 3 to 10")[0].quantity == 10
+    assert split_request("Reduce concurrent sessions per user from 6 to 2")[0].quantity == 2
+    assert split_request("Aylık rapor sayısı 5'ten 8'e çıkarılsın")[0].quantity == 8
+    assert split_request("Oturum sınırı 3’ten 10’a yükseltilsin")[0].quantity == 10  # curly '
+    assert split_request("Rapor limiti 5ten 8e cikarilsin")[0].quantity == 8  # no apostrophe
+    assert split_request("Oturum sınırı 3'ten 6'ya çıksın")[0].quantity == 6  # buffer -ya
+    assert split_request("Rapor sayısını 8'den 4'e düşürelim")[0].quantity == 4
+
+
+def test_yerine_pair_takes_the_second_number():
+    assert split_request("Aylık rapor sayısı 5 yerine 12 olsun")[0].quantity == 12
+
+
+def test_locative_and_genitive_digits_are_not_pairs():
+    # "10'da"/"10'un" must not match the dative side of the pair regex;
+    # the plain first-digit rule stays in charge.
+    assert split_request("3 rapor 10'da bir kontrol edilsin")[0].quantity == 3
+
+
+def test_llm_splitter_clears_quantity_for_dependency_items():
+    # The LLM-splitter path mirrors split_request: a version number is not a
+    # quantity ("Spring Boot 3" must not trip the quota step as "3 items").
+    import asyncio
+
+    from etki.engine.understanding import LLMRequestSplitter
+
+    class FakeLLM:
+        async def complete_json(self, system: str, user: str) -> dict:
+            return {"items": [{"item": "spring boot 3 sürümüne yükseltilsin"}]}
+
+    sub = asyncio.run(LLMRequestSplitter(FakeLLM()).split("yükseltme"))[0]
+    assert sub.type is RequestType.DEPENDENCY_CHANGE
+    assert sub.quantity is None
