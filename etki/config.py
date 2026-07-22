@@ -133,8 +133,9 @@ class Settings(BaseSettings):
     est_dep_unknown_widen: float = 1.5
     # Analogy narrow-spread floor: when the similar-work spread is thinner than
     # likely × this ratio, the range widens with the optimistic/pessimistic
-    # factors (0.0 = zero-spread-only, the pre-2026-07 behavior).
-    est_min_spread_ratio: float = 0.0
+    # factors (0.0 = zero-spread-only, the pre-2026-07 behavior; 0.2 measured
+    # on the 27 effort labels — smallest ratio achieving the maximum).
+    est_min_spread_ratio: float = 0.2
     # Decision-stamp default (in the API the real value comes from
     # context._resolve_model_version; this is only a fallback for tests/tools that
     # use the engine directly).

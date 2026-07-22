@@ -39,8 +39,10 @@ class EstimationParams(BaseModel):
     # Narrow-spread floor on the analogy path: two near-identical analogs ([4,5])
     # collapse p10/p80 to a sub-hour band that misses realistic actuals. When the
     # spread is thinner than likely × this ratio, widen with the factors (never
-    # narrowing the observed range). 0.0 = zero-spread-only (old behavior).
-    min_spread_ratio: float = 0.0
+    # narrowing the observed range). 0.0 = zero-spread-only (pre-2026-07);
+    # default 0.2 measured on the 27 effort labels (backtest+pilot+v3): N3-03
+    # 8h enters the band, nothing else moves.
+    min_spread_ratio: float = 0.2
 
 
 class DependencySurface(BaseModel):

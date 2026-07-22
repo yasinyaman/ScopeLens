@@ -118,20 +118,17 @@ def test_dependency_analogy_still_wins():
     assert "benzer" in est.basis  # analogy basis, not the surface basis
 
 
-def test_narrow_spread_widens_only_when_ratio_configured():
+def test_narrow_spread_widening_and_the_zero_escape_hatch():
     from etki.engine.estimation import EstimationParams
 
-    # Default (ratio 0.0): near-identical analogs keep today's tight band.
-    tight = estimate([_wi(4 * 3600), _wi(5 * 3600)], [])
+    # ratio 0.0 = the pre-2026-07 behavior stays reachable: tight band survives.
+    tight = estimate([_wi(4 * 3600), _wi(5 * 3600)], [], EstimationParams(min_spread_ratio=0.0))
     assert tight.high - tight.low < 1.0
-    # Ratio configured: the band widens with the factors, never narrowing the
-    # observed analog range, and the actual-ish value (6h) fits.
-    wide = estimate(
-        [_wi(4 * 3600), _wi(5 * 3600)], [],
-        EstimationParams(min_spread_ratio=0.25),
-    )
+    # The measured default (0.2) widens with the factors, never narrowing the
+    # observed analog range; realistic actuals fit the P10-P80 band.
+    wide = estimate([_wi(4 * 3600), _wi(5 * 3600)], [])
     assert wide.low < tight.low and wide.high > tight.high
-    assert wide.low <= 4.5 <= wide.high and wide.high >= 6  # actual-ish values fit the P10-P80 band
+    assert wide.low <= 4.5 <= wide.high and wide.high >= 6
 
 
 def test_narrow_spread_composes_with_churn_widening():
