@@ -1,0 +1,68 @@
+[
+  {
+    "id": "PQ-01",
+    "request_text": "Generate 50 standard reports per year",
+    "expected_decision": "IN_SCOPE",
+    "note": "HEADLINE: clause 4.2.1 allows 5/month = 60/year; 50/year fits. Today 'per year' is not recognized (period vocabulary is TR-only) and 50 > 5 produces a FALSE CR."
+  },
+  {
+    "id": "PQ-02",
+    "request_text": "Generate 70 standard reports per year",
+    "expected_decision": "CR_CANDIDATE",
+    "note": "Annualized breach: 70/year > 60/year (5/month cap) — normalization must still flag genuine over-asks."
+  },
+  {
+    "id": "PQ-03",
+    "request_text": "Generate 40 standard reports annually",
+    "expected_decision": "IN_SCOPE",
+    "note": "'annually' vocabulary variant of PQ-01: 40/year fits 60/year."
+  },
+  {
+    "id": "PQ-04",
+    "request_text": "Generate 8 standard reports per month",
+    "expected_decision": "CR_CANDIDATE",
+    "note": "Matching-period regression guard: 8 > 5 per month must keep firing exactly as today."
+  },
+  {
+    "id": "PQ-05",
+    "request_text": "Generate 4 standard reports every month",
+    "expected_decision": "IN_SCOPE",
+    "note": "Matching-period within-limit regression guard: 4 ≤ 5 per month."
+  },
+  {
+    "id": "PQ-06",
+    "request_text": "Generate 8 standard reports for the sales team",
+    "expected_decision": "CR_CANDIDATE",
+    "note": "Request names NO period: the comparison stays direct (8 > 5, today's behavior) — normalization must only run when both periods are known."
+  },
+  {
+    "id": "PQ-07",
+    "request_text": "Yılda 50 standart rapor üretilsin",
+    "expected_decision": "IN_SCOPE",
+    "note": "Turkish mirror of PQ-01: yearly 50 fits 60/year. Today the period IS recognized (TR vocabulary) and the P2 note fires, but the comparison is period-blind: 50 > 5 → false CR."
+  },
+  {
+    "id": "PQ-08",
+    "request_text": "Yılda 70 standart rapor üretilsin",
+    "expected_decision": "CR_CANDIDATE",
+    "note": "Turkish annualized breach: 70/year > 60/year."
+  },
+  {
+    "id": "PQ-09",
+    "request_text": "Ayda 8 standart rapor üretilsin",
+    "expected_decision": "CR_CANDIDATE",
+    "note": "Turkish matching-period regression guard: 8 > 5 per month."
+  },
+  {
+    "id": "PQ-10",
+    "request_text": "Yilda 50 standart rapor uretilsin",
+    "expected_decision": "IN_SCOPE",
+    "note": "ASCII-typed Turkish: 'yilda' is not in today's diacritic-only period vocabulary, so the period is missed and 50 > 5 false-CRs. The vocabulary extension must cover ASCII spellings."
+  },
+  {
+    "id": "PQ-11",
+    "request_text": "Her yıl 30 standart rapor üretilsin",
+    "expected_decision": "IN_SCOPE",
+    "note": "'her yıl' phrasing variant: 30/year fits 60/year."
+  }
+]
