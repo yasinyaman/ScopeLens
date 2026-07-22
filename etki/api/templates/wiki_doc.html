@@ -1,0 +1,11 @@
+<div style="border:1px solid #D7E0DA; border-radius:11px; background:#FAF9F5; overflow:hidden;">
+  <div style="display:flex; align-items:center; gap:10px; padding:10px 14px; background:#F1EFE9; border-bottom:1px solid #E4E9E5;">
+    <div style="flex:1; min-width:0;">
+      <div class="mono" style="font-size:12.5px; font-weight:700;">{{ doc_id }}</div>
+      <div class="meta" style="font-size:10.5px;">{{ t('mem.files_projection') }}</div>
+    </div>
+    <button type="button" class="btn ghost" style="font-size:11.5px; padding:4px 10px;"
+            onclick="document.getElementById('wiki-doc').innerHTML=''">{{ t('common.close') }}</button>
+  </div>
+  <div class="md" style="padding:14px; max-height:480px; overflow:auto; font-size:13px; line-height:1.55;">{{ html|safe }}</div>
+</div>

@@ -16,6 +16,7 @@ import asyncio
 import json
 import logging
 import os
+import re
 import time
 import uuid
 from collections import Counter
@@ -1597,6 +1598,7 @@ async def project_memory(
     cases = ctx.repo.list_cases(project_id)
     case_ids = {c.request_id for c in cases}
     by_request = {c.request_id: c.raw_request for c in cases}
+    wiki_docs = ctx.wiki.list_decisions(project_id)[:10] if ctx.wiki is not None else []
     precedents = [
         {
             "case_id": o.case_id,
@@ -1617,7 +1619,33 @@ async def project_memory(
         "project_hafiza.html",
         {"project": project, "q": q or "", "hits": hits,
          "precedents": precedents, "disputes": disputes, "wiki_on": wiki is not None,
-         "monitor": _monitor(ctx)},
+         "wiki_docs": wiki_docs, "monitor": _monitor(ctx)},
+    )
+
+
+_WIKI_DOC_ID = re.compile(r"DEC-[\w-]+\Z")
+
+
+@router.get("/projeler/{project_id}/hafiza/dosya/{doc_id}", response_class=HTMLResponse,
+            dependencies=[Depends(require_project_access)])
+async def project_memory_doc(
+    request: Request, project_id: str, doc_id: str, ctx: CtxDep
+) -> Response:
+    """One wiki decision file rendered as an HTMX fragment (projection view —
+    the DB stays the source of truth). The adapter path-joins doc_id, so only
+    the DEC-… shape is accepted (traversal guard)."""
+    if ctx.wiki is None or not _WIKI_DOC_ID.fullmatch(doc_id):
+        raise HTTPException(status_code=404, detail=t("err.case_not_found"))
+    text = ctx.wiki.read_decision(project_id, doc_id)
+    if text is None:
+        raise HTTPException(status_code=404, detail=t("err.case_not_found"))
+    # Strip the YAML frontmatter (its fields already render in the list card).
+    if text.startswith("---\n"):
+        end = text.find("\n---\n", 4)
+        if end != -1:
+            text = text[end + 5:]
+    return templates.TemplateResponse(
+        request, "wiki_doc.html", {"doc_id": doc_id, "html": _MD.render(text)},
     )
 
 

@@ -1156,6 +1156,21 @@ MESSAGES: dict[str, dict[str, str]] = {
         "en": "No precedents yet — they accumulate here when the PMO corrects a system recommendation.",
         "de": "Noch keine Präzedenzfälle — sie entstehen, wenn das PMO eine Systemempfehlung korrigiert.",
     },
+    "mem.files_title": {
+        "tr": "Karar dosyaları ({n})",
+        "en": "Decision files ({n})",
+        "de": "Entscheidungsdateien ({n})",
+    },
+    "mem.files_projection": {
+        "tr": "Wiki projeksiyonu — tek kaynak veritabanıdır; dosyalar yeniden üretilebilir.",
+        "en": "Wiki projection — the database is the single source of truth; files are regenerable.",
+        "de": "Wiki-Projektion — die Datenbank ist die einzige Quelle; Dateien sind regenerierbar.",
+    },
+    "mem.no_files": {
+        "tr": "Henüz karar dosyası yok — kararlar sonuçlandıkça wiki projeksiyonu burada listelenir.",
+        "en": "No decision files yet — the wiki projection lists them here as decisions resolve.",
+        "de": "Noch keine Entscheidungsdateien — die Wiki-Projektion listet sie hier, sobald Entscheidungen fallen.",
+    },
     "cf.memory_title": {"tr": "Madde hafızası", "en": "Clause memory", "de": "Klausel-Gedächtnis"},
     "cf.memory_precedents": {
         "tr": "{n} geçmiş PMO düzeltmesi (emsal)", "en": "{n} past PMO correction(s) (precedent)",

@@ -58,5 +58,22 @@
     <p class="meta" style="margin:0;">{{ t('mem.no_precedents') }}</p>
     {% endfor %}
   </div>
+
+  {% if wiki_on %}
+  <div class="card" style="margin-bottom:18px;">
+    <h3 style="margin:0 0 4px; font-size:15.5px; font-weight:700;">📄 {{ t('mem.files_title', n=wiki_docs|length) }}</h3>
+    <p class="meta" style="margin:0 0 10px; font-size:12px;">{{ t('mem.files_projection') }}</p>
+    {% for m in wiki_docs %}
+    <a href="#" hx-get="/projeler/{{ project.id }}/hafiza/dosya/{{ m.doc_id }}" hx-target="#wiki-doc" hx-swap="innerHTML"
+       style="display:block; padding:8px 0; {% if not loop.last %}border-bottom:1px solid #F2F0EA;{% endif %} text-decoration:none; color:inherit;">
+      <div class="mono" style="font-size:12.5px; font-weight:700;">{{ m.doc_id }}</div>
+      <div class="meta mono" style="font-size:11px; margin-top:2px;">{{ m.verdicts|join(', ') }}{% if m.created_at %} · {{ m.created_at[:10] }}{% endif %}</div>
+    </a>
+    {% else %}
+    <p class="meta" style="margin:0;">{{ t('mem.no_files') }}</p>
+    {% endfor %}
+    <div id="wiki-doc" style="margin-top:10px;"></div>
+  </div>
+  {% endif %}
 </main>
 {% endblock %}
