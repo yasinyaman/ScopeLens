@@ -66,6 +66,20 @@ never fires), and the v4c vendor lexicon has a measurable false-positive cost
 (KM-08 keeps a contact's *mobile number* — the word alone flips it toward the
 mobile-app exclusion; the case is designed to keep that trade-off measured).
 
+**rerank_strong recalibration sweep (2026-07-22, closing the 2026-07-12
+follow-up; live bge-reranker-v2-m3 on gx10, current engine, `--llm` off):**
+7 thresholds × 8 open dev files (174 cases; the SEALED heldout_v2 was not
+touched). Dev totals: -2 → 119, -3/-4 → 118, -5 → 121, -6 → 122, **-6.8 →
+126**, -8 → 127; pooled out-of-scope P/R was 0.868/0.733 at EVERY threshold
+(the include-side floor never touches exclusion evidence — by design). The
+pre-committed rule picked θ*=-8 on dev, but the golden regression gate
+rejected it: fresh golden with reranker is 57/66 at -6.8 vs **56/66 at -8**
+(one more adversarial promotion, GS-49). **Conclusion: -6.8 stays the
+default; the assist lane lifts the deterministic dev floor 103 → 126/174 yet
+remains opt-in** (the golden trade-off is unchanged; a default-on decision
+would need a fresh pre-registered held-out one-shot, which this sweep is
+not). No generalization claim — the selection ran on open dev sets only.
+
 **heldout_v3 one-shot (2026-07-21, after the matching/estimator round —
 azure-lexicon fix, TR boilerplate-verb stopwords, diacritic-folded stop lookup,
 surface-count short-query cap, zero-spread analogy widening): Meridian 7/12,

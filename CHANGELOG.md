@@ -212,6 +212,10 @@ First public release.
   88%; deterministic+reranker 80% (no LLM); deterministic floor 68%. The reranker
   lane stays opt-in: it costs 4 adversarial cases on the frozen golden set
   (61 → 57/66) — `rerank_strong` recalibration on a dev set is the follow-up.
+  *Follow-up CLOSED 2026-07-22:* a 7-threshold sweep over 174 dev cases on the
+  current engine found no better operating point (-8 gains one dev case but
+  drops golden 57 → 56); **-6.8 stays the default, assist stays opt-in** — see
+  the sweep table in `eval/datasets/etkibench/README.md`.
 - Live packing A/B (GraphRAG): rerank packing loses to BFS (recall 0.99 → 0.97) —
   published as a negative; packing stays BFS.
 
