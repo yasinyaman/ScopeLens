@@ -1,0 +1,1315 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Evidence-backed scope triage — contract clauses + code knowledge graph + historical effort, fused into auditable decisions.">
+      
+      
+      
+        <link rel="canonical" href="https://yaman.dev/etki/RUNBOOK/">
+      
+      
+        <link rel="prev" href="../writing-an-adapter/">
+      
+      
+        <link rel="next" href="../compliance/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Operations (RUNBOOK) - Etki</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="teal">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#etki-operations-runbook-phase-4" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Etki" class="md-header__button md-logo" aria-label="Etki" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Etki
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Operations (RUNBOOK)
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="teal"  aria-label="Dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="teal" data-md-color-accent="teal"  aria-label="Light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/yasinyaman/etki" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    yasinyaman/etki
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Etki" class="md-nav__button md-logo" aria-label="Etki" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Etki
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/yasinyaman/etki" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    yasinyaman/etki
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../concepts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Concepts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../memory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Decision memory (wiki & graph query)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../MCP/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MCP (use from Claude)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adapters/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adapter reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../writing-an-adapter/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Writing an adapter / plugin
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operations (RUNBOOK)
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operations (RUNBOOK)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#deployment-docker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deployment (Docker)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#database-schema-migrations-alembic" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Database schema &amp; migrations (Alembic)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#code-index-joern-refresh-scheduled" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Code index (Joern) refresh — scheduled
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Code index (Joern) refresh — scheduled">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#graphify-engine-optional-multi-language-no-jvm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        graphify engine (optional, multi-language, no JVM)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cross-encoder-reranker-optional-assist-opt-in" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cross-encoder reranker (optional assist, opt-in)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decision-wiki-file-based-decision-memory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decision wiki (file-based decision memory)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#backup-restore-postgres" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backup &amp; restore (Postgres)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#capability-negotiation-graceful-degradation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Capability negotiation &amp; graceful degradation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Capability negotiation &amp; graceful degradation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#adapter-health-degraded-adapter-visibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Adapter health (degraded-adapter visibility)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pluggability-vendor-swap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pluggability (vendor swap)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#plugins-install-lockfile-policy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Plugins (install, lockfile, policy)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pilot-shadow-mode-calibration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pilot (shadow mode) &amp; calibration
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#multilingual-per-project-llm-profile" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Multilingual &amp; per-project LLM profile
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#security" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Security
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#productization-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Productization (notes)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../compliance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Compliance & traceability
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../KVKK/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Compliance (KVKK, Turkish)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#deployment-docker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deployment (Docker)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#database-schema-migrations-alembic" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Database schema &amp; migrations (Alembic)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#code-index-joern-refresh-scheduled" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Code index (Joern) refresh — scheduled
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Code index (Joern) refresh — scheduled">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#graphify-engine-optional-multi-language-no-jvm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        graphify engine (optional, multi-language, no JVM)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cross-encoder-reranker-optional-assist-opt-in" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cross-encoder reranker (optional assist, opt-in)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decision-wiki-file-based-decision-memory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decision wiki (file-based decision memory)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#backup-restore-postgres" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backup &amp; restore (Postgres)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#capability-negotiation-graceful-degradation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Capability negotiation &amp; graceful degradation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Capability negotiation &amp; graceful degradation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#adapter-health-degraded-adapter-visibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Adapter health (degraded-adapter visibility)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pluggability-vendor-swap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pluggability (vendor swap)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#plugins-install-lockfile-policy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Plugins (install, lockfile, policy)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pilot-shadow-mode-calibration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pilot (shadow mode) &amp; calibration
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#multilingual-per-project-llm-profile" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Multilingual &amp; per-project LLM profile
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#security" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Security
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#productization-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Productization (notes)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+    <a href="https://github.com/yasinyaman/etki/edit/master/docs/RUNBOOK.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
+    </a>
+  
+  
+
+
+<h1 id="etki-operations-runbook-phase-4">Etki — Operations Runbook (Phase 4)<a class="headerlink" href="#etki-operations-runbook-phase-4" title="Permanent link">&para;</a></h1>
+<h2 id="deployment-docker">Deployment (Docker)<a class="headerlink" href="#deployment-docker" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>-d<span class="w"> </span>--build<span class="w">          </span><span class="c1"># app (8000) + Postgres (5433)</span>
+curl<span class="w"> </span>-s<span class="w"> </span>localhost:8000/health<span class="w">         </span><span class="c1"># {&quot;status&quot;:&quot;ok&quot;}</span>
+open<span class="w"> </span>http://localhost:8000/<span class="w">           </span><span class="c1"># live assistant UI</span>
+docker<span class="w"> </span>compose<span class="w"> </span>down<span class="w">                   </span><span class="c1"># stop (data persists in the pgdata volume)</span>
+</code></pre></div>
+<ul>
+<li>The container ships no JVM → the code graph uses the <strong><code>ast</code></strong> adapter (<code>config/connectors.docker.yaml</code>). The index is built automatically on first request.</li>
+<li><strong>Fill in <code>.env</code> first</strong> (<code>cp .env.example .env</code>): <code>POSTGRES_PASSWORD</code>, <code>ETKI_SESSION_SECRET</code> (long random), <code>ETKI_ADMIN_USER</code>/<code>ETKI_ADMIN_PASSWORD</code> (first PMO user). compose won't start without these.</li>
+<li>Env vars (all <code>ETKI_</code>-prefixed): <code>DB_URL</code>, <code>CONNECTORS_PATH</code>, <code>SESSION_SECRET</code>, <code>ADMIN_USER</code>/<code>ADMIN_PASSWORD</code>, <code>MAX_UPLOAD_MB</code>, <code>DEMO_MODE</code>, <code>IN_SCOPE_THRESHOLD</code>, <code>GRAY_THRESHOLD</code>, <code>DEFAULT_LANGUAGE</code> (default UI language tr|en|de), <code>FORCE_CODE_ENGINE</code> (<code>ast</code> | <code>joern</code> | <code>graphify</code>), <code>LLM_PROVIDER</code> (<code>anthropic</code>), <code>ANTHROPIC_API_KEY</code>/<code>ANTHROPIC_MODEL</code>, <code>COOKIE_SECURE</code> (set <code>true</code> on any TLS deployment — Secure session cookie + HSTS).</li>
+<li><strong>Health probes:</strong> <code>/health</code> (liveness) and <code>/ready</code> (is the DB + engine ready; the compose healthcheck polls this). The Postgres port is not published to the host.</li>
+<li><strong><code>workers=1</code> is MANDATORY.</strong> The per-project triage engines (and their living baselines) are process-local; running uvicorn/gunicorn with more than one worker forks divergent baseline copies (a CR approved in worker A is invisible in worker B). The app <strong>fails hard at startup</strong> if <code>WEB_CONCURRENCY</code>/<code>UVICORN_WORKERS</code> &gt; 1. Scale by giving the single worker more CPU, not by adding workers. (Since baselines are now rehydrated from the DB at startup, making the engine stateless and lifting this limit is a known future work item.)</li>
+</ul>
+<h2 id="database-schema-migrations-alembic">Database schema &amp; migrations (Alembic)<a class="headerlink" href="#database-schema-migrations-alembic" title="Permanent link">&para;</a></h2>
+<p>The schema is now managed by <strong>Alembic</strong> (for production schema evolution; <code>create_all</code> is only a test/sqlite convenience):</p>
+<p><div class="highlight"><pre><span></span><code><span class="nv">ETKI_DB_URL</span><span class="o">=</span>postgresql+psycopg://...<span class="w"> </span>uv<span class="w"> </span>run<span class="w"> </span>alembic<span class="w"> </span>upgrade<span class="w"> </span>head<span class="w">   </span><span class="c1"># create/update the schema</span>
+uv<span class="w"> </span>run<span class="w"> </span>alembic<span class="w"> </span>revision<span class="w"> </span>--autogenerate<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;description&quot;</span><span class="w">                 </span><span class="c1"># new migration when models change</span>
+</code></pre></div>
+The first PMO user is created at startup from <code>ETKI_ADMIN_*</code> env (when there are no users) <strong>or</strong>
+with <code>uv run python -m etki.persistence create-user &lt;name&gt; pmo</code>. After that, day-to-day user
+administration lives in the UI: <strong>Settings → Users</strong> (pmo-only) — create/delete users, change
+roles, edit per-user project grants, reset passwords. Guard rails: you cannot delete your own
+account, and the last <code>pmo</code> user can be neither deleted nor demoted. A password reset rotates
+the session-binding token, so the target's live sessions drop immediately.</p>
+<h2 id="code-index-joern-refresh-scheduled">Code index (Joern) refresh — scheduled<a class="headerlink" href="#code-index-joern-refresh-scheduled" title="Permanent link">&para;</a></h2>
+<p>The live Joern index (CPG) for production-grade impact analysis is produced on the host machine / CI; it can be mounted into the container as <code>.etki/index.json</code>.</p>
+<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>etki.indexing<span class="w">          </span><span class="c1"># all projects (or: ... indexing &lt;project_id&gt;)</span>
+</code></pre></div>
+<p>The CLI runs the exact same path as the UI's reindex (<code>context.index_project</code>):
+doc_root composite documents, multi-repo merged graph, and a DB-baseline reconcile —
+approved CRs survive a re-index. A document that fails to parse is skipped with a
+warning; it never takes the whole project's indexing down.</p>
+<p>Recommended cron (nightly full re-index, more often for high-churn modules):
+<div class="highlight"><pre><span></span><code>0 2 * * *  cd /opt/etki &amp;&amp; uv run python -m etki.indexing &gt;&gt; /var/log/etki-index.log 2&gt;&amp;1
+</code></pre></div></p>
+<blockquote>
+<p>If the index is stale it shows in the decision's freshness stamp (<code>index_freshness</code>) and
+as a yellow/red badge on the project screen; incremental re-indexing is future work.</p>
+</blockquote>
+<p><strong>In-app alternative (single-container/pilot deployments, both OFF by default):</strong></p>
+<div class="highlight"><pre><span></span><code><span class="nv">ETKI_REINDEX_INTERVAL_HOURS</span><span class="o">=</span><span class="m">24</span><span class="w">   </span><span class="c1"># background full re-index of every project + context rebuild</span>
+<span class="nv">ETKI_POOL_REFRESH_MINUTES</span><span class="o">=</span><span class="m">15</span><span class="w">     </span><span class="c1"># lightweight effort-pool recompute from the work-item</span>
+<span class="w">                                   </span><span class="c1"># provider (no code/document re-index; engines see the</span>
+<span class="w">                                   </span><span class="c1"># new consumed-by-category totals in place)</span>
+<span class="nv">ETKI_INTAKE_POLL_MINUTES</span><span class="o">=</span><span class="m">5</span><span class="w">       </span><span class="c1"># poll every project&#39;s request-intake provider and triage</span>
+<span class="w">                                   </span><span class="c1"># new requests into PENDING cases (OFF by default)</span>
+<span class="nv">ETKI_INTAKE_BATCH_LIMIT</span><span class="o">=</span><span class="m">20</span><span class="w">       </span><span class="c1"># max requests pulled per project per tick</span>
+<span class="nv">ETKI_PUBLIC_BASE_URL</span><span class="o">=</span>https://etki.example.com<span class="w">  </span><span class="c1"># only used to embed a case link in write-backs</span>
+</code></pre></div>
+<p><strong>Request intake / write-back.</strong> With a <code>request_intake</code> connector configured
+(UI: <em>Dosyalar → Talep Kanalı</em>, or <code>connectors.request_intake</code> in
+<code>projects.yaml</code>), Etki polls the tracker and triages each new request into a
+PENDING case. Cron alternative to the in-app loop:</p>
+<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>etki.intake<span class="w">        </span><span class="c1"># one poll of every project (cron-friendly)</span>
+</code></pre></div>
+<p>The decision is written back to the source per the project's <code>intake_response_mode</code>
+(<code>on_decision</code> = after the PMO decides, the default and the copilot invariant;
+<code>on_triage</code> = an interim recommendation comment; <code>both</code>). Write-back is
+best-effort: a channel failure is recorded in the case's audit chain
+(<code>RESPONSE_POSTED ok=false</code>) and degrades the adapter's health badge, but never
+blocks an approval. Dedup is a deterministic case id (<code>REQ-{project}-{adapter}-{key}</code>)
+plus a poll cursor in <code>.etki/intake-cursors.json</code> (losing it is harmless — the
+id dedup re-absorbs re-seen requests).</p>
+<p>Cron remains the recommended production path (observable, survives restarts mid-cycle);
+the in-app loops exist so a plain <code>docker compose up</code> deployment can stay fresh without
+host-level scheduling. Note: work-item <strong>similar-job evidence</strong> is always fetched live at
+triage time regardless — these intervals only affect the code/document index and the
+effort-pool totals.</p>
+<h3 id="graphify-engine-optional-multi-language-no-jvm">graphify engine (optional, multi-language, no JVM)<a class="headerlink" href="#graphify-engine-optional-multi-language-no-jvm" title="Permanent link">&para;</a></h3>
+<p>For non-Python repos (JS/TS, Go, Java, …) the <strong><code>graphify</code></strong> engine (tree-sitter based, PyPI package <code>graphifyy</code>) produces the same normalized code index without a JVM — so it also works inside the container:</p>
+<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>sync<span class="w"> </span>--extra<span class="w"> </span>graphify<span class="w">                       </span><span class="c1"># installs the graphify CLI (graphifyy)</span>
+<span class="nv">ETKI_FORCE_CODE_ENGINE</span><span class="o">=</span>graphify<span class="w"> </span>uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>etki.indexing
+</code></pre></div>
+<p>Config: <code>code_repo: { adapter: graphify, options: { src_root: ..., export_dir: ..., refresh: true } }</code>. The graph is written to <code>export_dir</code> (default <code>&lt;src_root&gt;/../graphify-out</code>) so cloned customer repos stay pristine; the build is deterministic (<code>graphify update --no-cluster</code>, no LLM key needed). Known limits: per-file LOC is derived from line counts and control-structure counts are unavailable (cyclomatic complexity falls back to the function count). Symbol-level API capture (<code>package_apis</code>, the dependency-effort surface) needs <strong>graphify-mcp</strong> installed (<code>pip install "graphify-mcp[treesitter] @ git+https://github.com/yasinyaman/graphify-mcp"</code> until it reaches PyPI); without it the surface stays empty and dependency-effort estimates carry the wider unknown-surface band.</p>
+<h3 id="cross-encoder-reranker-optional-assist-opt-in">Cross-encoder reranker (optional assist, opt-in)<a class="headerlink" href="#cross-encoder-reranker-optional-assist-opt-in" title="Permanent link">&para;</a></h3>
+<p>A TEI-compatible <code>/rerank</code> endpoint (<code>ETKI_RERANK_BASE_URL</code>, raw logits) feeds the
+v4b matching lane — measured +12 pts on EtkiBench with no LLM. Where the official
+TEI image is unavailable (arm64/GB10 boxes), <code>scripts/rerank_server.py</code> serves the
+same contract:</p>
+<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>fastapi<span class="w"> </span>uvicorn<span class="w"> </span>sentence-transformers
+python<span class="w"> </span>scripts/rerank_server.py<span class="w"> </span>--model<span class="w"> </span>BAAI/bge-reranker-v2-m3<span class="w"> </span>--port<span class="w"> </span><span class="m">8021</span>
+<span class="c1"># app side: ETKI_RERANK_BASE_URL=http://&lt;host&gt;:8021</span>
+</code></pre></div>
+<p>Keep it <strong>opt-in</strong>: on the frozen golden set the lane currently costs adversarial
+cases (see the EtkiBench scoreboard); leave <code>ETKI_RERANK_BASE_URL</code> unset unless
+you accept that trade-off. CI never sets it (the gate stays deterministic).</p>
+<h2 id="decision-wiki-file-based-decision-memory">Decision wiki (file-based decision memory)<a class="headerlink" href="#decision-wiki-file-based-decision-memory" title="Permanent link">&para;</a></h2>
+<p>Every triage decision is automatically projected into a per-project markdown wiki
+(<code>.etki/wiki-{project}/</code>, path template via <code>ETKI_WIKI_DIR</code>; empty string disables).
+The <strong>database stays the single source of truth</strong> — the wiki is a regenerable
+projection, so it never needs its own backup:</p>
+<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>etki.wiki<span class="w"> </span>search<span class="w"> </span><span class="s2">&quot;SSO entegrasyonu&quot;</span><span class="w"> </span>--project<span class="w"> </span>demo<span class="w">   </span><span class="c1"># find precedents</span>
+uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>etki.wiki<span class="w"> </span>show<span class="w"> </span>DEC-20260709-req-demo-1a2b3c4d<span class="w"> </span>--project<span class="w"> </span>demo
+uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>etki.wiki<span class="w"> </span>rebuild<span class="w">            </span><span class="c1"># regenerate ALL projects from the DB</span>
+</code></pre></div>
+<p>Do not hand-edit wiki files (<code>rebuild</code> overwrites them). Deleting a project keeps its
+wiki (readable projection of the preserved audit history). If the decision files contain
+personal data, the directory falls under the same residency/access rules as the DB —
+see <code>KVKK.md</code>. Search prefers <code>rg</code> (ripgrep) when installed and falls back to a pure-Python
+scan.</p>
+<p>The wiki also carries the <strong>derived HITL memory</strong> (regenerated on every PMO decision and
+by <code>rebuild</code>): a PMO override promotes the case to <code>precedents/PRE-*.md</code> (boundary-case
+memory), and conflicting resolved decisions on the same contract clause are collected in
+<code>disputed.md</code> — read it before ruling on that clause again. Counters for both appear on
+the project's Raporlar screen. Concepts and retrieval details: see
+<a href="../memory/">Decision memory</a>.</p>
+<h2 id="backup-restore-postgres">Backup &amp; restore (Postgres)<a class="headerlink" href="#backup-restore-postgres" title="Permanent link">&para;</a></h2>
+<p><div class="highlight"><pre><span></span><code>docker<span class="w"> </span>compose<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>db<span class="w"> </span>pg_dump<span class="w"> </span>-U<span class="w"> </span>postgres<span class="w"> </span>etki<span class="w"> </span>&gt;<span class="w"> </span>backup_<span class="k">$(</span>date<span class="w"> </span>+%F<span class="k">)</span>.sql<span class="w">   </span><span class="c1"># date computed on the host</span>
+cat<span class="w"> </span>backup.sql<span class="w"> </span><span class="p">|</span><span class="w"> </span>docker<span class="w"> </span>compose<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-T<span class="w"> </span>db<span class="w"> </span>psql<span class="w"> </span>-U<span class="w"> </span>postgres<span class="w"> </span>etki<span class="w">           </span><span class="c1"># restore</span>
+</code></pre></div>
+The audit trail (<code>audit_events</code>) and versioned baseline (<code>baseline_versions</code>) are backed up — so every decision stays reconstructable for a contractual dispute.</p>
+<p>The database is NOT the whole state. A complete backup also needs:</p>
+<ul>
+<li><strong><code>.etki/</code></strong> (the <code>etki-index</code> volume): project indexes, uploaded-contract
+  workspaces (<code>.etki/projects/{id}/</code>), intake cursors, plugin options
+  (<code>plugin-options.json</code> holds adapter secrets — treat the backup accordingly),
+  and the decision wiki (regenerable, but cheap to include).</li>
+<li><strong><code>config/</code></strong> (the <code>etki-config</code> volume): <code>projects.yaml</code> written by
+  UI-driven project management. Named volumes seed themselves from the image on
+  FIRST use only — image updates do not overwrite them.</li>
+<li>Demo profile: the SQLite DB lives on the <code>etki-demo-data</code> volume
+  (<code>/app/data/etki.db</code>).</li>
+</ul>
+<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>-v<span class="w"> </span>etki_etki-index:/v<span class="w"> </span>-v<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$PWD</span><span class="s2">:/out&quot;</span><span class="w"> </span>alpine<span class="w"> </span>tar<span class="w"> </span>czf<span class="w"> </span>/out/etki-index.tgz<span class="w"> </span>-C<span class="w"> </span>/v<span class="w"> </span>.
+docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>-v<span class="w"> </span>etki_etki-config:/v<span class="w"> </span>-v<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$PWD</span><span class="s2">:/out&quot;</span><span class="w"> </span>alpine<span class="w"> </span>tar<span class="w"> </span>czf<span class="w"> </span>/out/etki-config.tgz<span class="w"> </span>-C<span class="w"> </span>/v<span class="w"> </span>.
+</code></pre></div>
+<h2 id="capability-negotiation-graceful-degradation">Capability negotiation &amp; graceful degradation<a class="headerlink" href="#capability-negotiation-graceful-degradation" title="Permanent link">&para;</a></h2>
+<p>Each adapter declares its capabilities (<code>supports_webhooks/realtime/effort_tracking/incremental_diff</code>). The system degrades accordingly:
+- no webhooks → periodic polling; no incremental diff → full re-index.
+- For a composite document source, a capability is supported only if <strong>all children</strong> support it (most conservative).</p>
+<h3 id="adapter-health-degraded-adapter-visibility">Adapter health (degraded-adapter visibility)<a class="headerlink" href="#adapter-health-degraded-adapter-visibility" title="Permanent link">&para;</a></h3>
+<p>A work-items or documents adapter that fails to <strong>build</strong> (bad options, a plugin
+that failed to load, unreachable config) never takes the project down: the context
+falls back to an empty fake and records an <code>AdapterHealth</code> entry. Degraded adapters
+surface as <strong>red badges</strong> on the project's Özet screen and the Dosyalar work-items
+card (tooltip = the recorded error), and the Raporlar effort-pool figures carry a
+"pool may be stale" note when the provider failed at refresh time. There is <strong>no
+auto-heal</strong>: fix the config/plugin, then re-save the work-items settings or trigger
+a reindex — the context rebuild clears the badge. A project deliberately
+<em>configured</em> with the <code>fake</code> adapter is not "degraded"; the badge only appears when
+a real adapter fell back.</p>
+<h2 id="pluggability-vendor-swap">Pluggability (vendor swap)<a class="headerlink" href="#pluggability-vendor-swap" title="Permanent link">&para;</a></h2>
+<p>Moving to a new organization = a <strong>config change</strong> (<code>connectors.*.yaml</code>); core code does not change:
+<div class="highlight"><pre><span></span><code><span class="nt">work_items</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt"> adapter</span><span class="p">:</span><span class="w"> </span><span class="nv">jira|gitlab|file</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">...</span><span class="w"> </span><span class="p p-Indicator">}</span>
+<span class="nt">code_repo</span><span class="p">:</span><span class="w">  </span><span class="p p-Indicator">{</span><span class="nt"> adapter</span><span class="p">:</span><span class="w"> </span><span class="nv">joern|ast|graphify</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">...</span><span class="w"> </span><span class="p p-Indicator">}</span>
+<span class="nt">documents</span><span class="p">:</span><span class="w">  </span><span class="p p-Indicator">{</span><span class="nt"> adapter</span><span class="p">:</span><span class="w"> </span><span class="nv">filesystem|composite</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">...</span><span class="w"> </span><span class="p p-Indicator">}</span>
+</code></pre></div>
+Proof: <code>tests/integration/test_composite.py</code> — the documents <code>filesystem → composite</code> swap yields the same decision.</p>
+<h2 id="plugins-install-lockfile-policy">Plugins (install, lockfile, policy)<a class="headerlink" href="#plugins-install-lockfile-policy" title="Permanent link">&para;</a></h2>
+<p>Third-party adapters ship as <strong>plugin packages</strong> against <code>etki-api</code> (entry-point
+group <code>etki.adapters</code>). Operational rules:</p>
+<ul>
+<li><strong>Policy is an env-only admin lock:</strong> <code>ETKI_PLUGIN_POLICY=verified_only</code>
+  (default — installs blocked, non-editable unverified distributions don't even
+  load) | <code>allow_git</code> | <code>allow_local</code>. Deliberately NOT a UI/Settings value;
+  <code>.etki/llm.json</code> cannot touch it.</li>
+<li><strong>Install</strong> (operator CLI, capability confirmation from the static manifest —
+  plugin code is never executed for the prompt):
+  <div class="highlight"><pre><span></span><code><span class="nv">ETKI_PLUGIN_POLICY</span><span class="o">=</span>allow_git<span class="w"> </span>uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>etki.plugin<span class="w"> </span>install<span class="w"> </span>git+https://…@v1.2.0
+<span class="nv">ETKI_PLUGIN_POLICY</span><span class="o">=</span>allow_local<span class="w"> </span>uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>etki.plugin<span class="w"> </span>install<span class="w"> </span>./acme.whl<span class="w"> </span>--sha256<span class="w"> </span>&lt;hash&gt;
+</code></pre></div>
+  Branches are rejected; tags resolve to the full commit SHA and the SHA is what
+  installs and locks. Wheel installs verify SHA-256 BEFORE anything runs.</li>
+<li><strong><code>etki-plugins.lock</code></strong> (TOML, repo-committable) records source/commit/hash/
+  capabilities per plugin. <code>python -m etki.plugin sync</code> reproduces the exact
+  state on a new machine (local wheels re-hash-verified); <code>remove &lt;dist&gt;</code>
+  uninstalls + drops the entry; <code>list [--json]</code> is the KVKK inventory feed.</li>
+<li><strong>Verified marketplace</strong> (signed index): the official index lives at
+  <strong><code>https://yasinyaman.github.io/etki-plugins/index.json</code></strong> (source repo
+  <a href="https://github.com/yasinyaman/etki-plugins">yasinyaman/etki-plugins</a>;
+  acceptance process in its <code>PROCESS.md</code>). Under the default <code>verified_only</code>
+  policy the ONLY install path is an index-verified one:
+  <div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>etki.plugin<span class="w"> </span>search<span class="w"> </span>acme
+uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>etki.plugin<span class="w"> </span>install<span class="w"> </span>etki-plugin-acme
+</code></pre></div>
+  <code>--index &lt;url|dir&gt;</code> is optional: both commands resolve the same trust root
+  as the UI — <code>ETKI_PLUGIN_INDEX_URL</code> if set, else the official index — and
+  print the source they used. Pass it explicitly to target a mirror directory
+  or a non-default index.
+  A weekly scheduled workflow (<code>marketplace-live-verify.yml</code>) mirrors the live
+  index with REAL signature verification and does a verified install — the
+  end-to-end canary for the whole chain.
+  A REMOTE index requires a valid <strong>sigstore</strong> signature (keyless, GitHub OIDC;
+  the verification tooling ships behind the optional extra <code>etki[plugins]</code> — the
+  base/air-gapped install never pulls it). The signer identity is pinned to the
+  index repo's release workflow, overridable for forks/self-hosted marketplaces
+  via <code>ETKI_PLUGIN_INDEX_IDENTITY</code>/<code>ETKI_PLUGIN_INDEX_ISSUER</code> (env-only, like the
+  policy). The artifact's SHA-256 must match the index BEFORE any install
+  subprocess; success writes <code>verified = true</code> to the lockfile — which is also
+  what lets the plugin load at runtime under <code>verified_only</code>.</li>
+<li><strong>Air-gapped flow:</strong> mirror on the ONLINE side —
+  <code>python -m etki.plugin mirror &lt;index-url&gt; &lt;dir&gt;</code> (the signature is verified at
+  mirror time, every artifact hash-checked, recorded in <code>mirror-manifest.json</code>) —
+  carry the directory inside, then <code>install &lt;name&gt; --index &lt;dir&gt;</code> offline.
+  Inside the mirror SHA-256 stays mandatory and the signature is optional
+  (a missing sigstore toolchain degrades to a warning; a FAILED verification is
+  always fatal).</li>
+<li><strong>UI — Settings → Plugins</strong> (<code>/ayarlar/eklentiler</code>, pmo-only): every installed
+  plugin with status (<code>active/failed/incompatible/blocked/disabled</code> + error
+  text), install source (from the lockfile), <code>api_compat</code> and a verified badge;
+  the policy is displayed <strong>read-only</strong>. The single UI mutation is
+  enable/disable (persisted to <code>.etki/plugins.json</code>; the toggle rebuilds the
+  registry/context) — install/remove/policy have <strong>no HTTP endpoint by design</strong>.</li>
+<li><strong>UI — marketplace browse</strong> (same screen, lazy-loaded card): a <strong>projection
+  of the signed index</strong> — search, per-plugin summary/ports/capability
+  declaration, the highest version compatible with the installed etki-api,
+  installed/update badges, and a <strong>copyable operator-CLI install command</strong>. The
+  index source is <strong><code>ETKI_PLUGIN_INDEX_URL</code></strong> (env-only, like the policy — the
+  UI-writable settings file can never redirect the trust root; default = the
+  official index URL; a mirror <strong>directory</strong> also works for air-gapped setups).
+  Remote fetches verify the sigstore signature; without the <code>etki[plugins]</code>
+  extra the card degrades to a friendly error and the rest of the screen keeps
+  working. Responses are cached in-process for 15 min; Refresh re-fetches.</li>
+<li><strong>UI install (optional, default OFF):</strong> setting <strong><code>ETKI_PLUGIN_UI_INSTALL=true</code></strong>
+  (env-only) puts an Install/Update button on the marketplace card for pmo
+  users. It uses ONLY the verified path — the source stays env-pinned, the
+  capability declaration is confirmed before the POST, signature + SHA-256 +
+  lockfile <code>verified=true</code> are exactly the CLI chain — and git/wheel targets
+  still have <strong>no UI route</strong>. Each install is recorded in the process log as a
+  <code>plugin_install</code> event (user, plugin, sha256). Bare-metal/venv only: inside a
+  container the image is immutable — keep installing at build time.</li>
+<li><strong>UI — plugin detail &amp; adapter defaults</strong> (<code>/ayarlar/eklentiler/{name}</code>,
+  pmo-only): status/manifest info plus a <strong>default-options form per adapter</strong>,
+  rendered from the plugin's <code>options_model</code> (e.g. the Linear <code>api_key</code>).
+  Values are stored in <code>.etki/plugin-options.json</code> (0600, atomic — the llm.json
+  posture): secret-named fields are never echoed back and an empty submit keeps
+  the stored value; <code>env:VAR</code> references are stored unresolved. At build time
+  the defaults merge <strong>under</strong> each project's connector options — the project
+  value always wins — so a key is entered once and reused across projects.</li>
+<li><strong>Containers install plugins at IMAGE BUILD TIME</strong> from the lockfile — see
+  <code>Dockerfile.plugins</code>. Runtime <code>sync</code> inside a container does not survive a
+  restart (immutable images); it is for bare-metal/venv deployments.</li>
+<li>Private git hosts: authenticate via a git <strong>credential helper</strong> — never embed
+  tokens in the URL (it would be recorded in the lockfile).</li>
+<li>The public <code>etki-plugins</code> index repo is <strong>live</strong> (since 2026-07-16): signed
+  index on GitHub Pages, wheels under <code>artifacts/</code>, conformance reports under
+  <code>reports/</code>, acceptance process in its <code>PROCESS.md</code>. Git-tag and wheel installs
+  remain the channels for plugins not (yet) in the index.</li>
+</ul>
+<h2 id="pilot-shadow-mode-calibration">Pilot (shadow mode) &amp; calibration<a class="headerlink" href="#pilot-shadow-mode-calibration" title="Permanent link">&para;</a></h2>
+<p><div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>etki.pilot<span class="w">      </span><span class="c1"># the system recommends, compared against the PMO reference</span>
+</code></pre></div>
+Report: decision agreement, effort-in-range hit rate, per-decision-type P/R, <strong>confidence calibration</strong>, threshold suggestion. Thresholds are config-driven (<code>ETKI_IN_SCOPE_THRESHOLD</code>); the calibration suggestion is applied with human approval.</p>
+<h2 id="multilingual-per-project-llm-profile">Multilingual &amp; per-project LLM profile<a class="headerlink" href="#multilingual-per-project-llm-profile" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Global LLM provider (UI-managed):</strong> <strong>Settings → AI Assistant</strong> (pmo-only) selects <em>off / Anthropic Claude API / OpenAI-compatible (Ollama, vLLM)</em>, with model, endpoint, timeout and a <strong>connection-test</strong> button. Values are persisted to <code>.etki/llm.json</code> (chmod 600, git-ignored, only whitelisted LLM keys) and <strong>take precedence over env vars</strong> — "off" in the UI wins even when <code>ETKI_LLM_BASE_URL</code> is set. Changes apply on the next request (engine contexts rebuild; no restart). Keys are never echoed back to the form; an empty field keeps the stored secret, and a checkbox wipes stored keys. In production, prefer env vars for secrets and leave the UI fields empty.</li>
+<li><strong>UI language (TR/EN/DE):</strong> changed from the top-right via <code>POST /dil</code> (written to the session); on first visit <code>Accept-Language</code> → <code>ETKI_DEFAULT_LANGUAGE</code>. UI text only; does not change data flow.</li>
+<li><strong>Per-project LLM profile:</strong> each project gets an <strong>output language</strong> + a selectable <strong>domain/skill profile</strong> (<code>config/domains/*.md</code>) + free-text instructions (Files &amp; Settings screen → <code>POST /projeler/{id}/ayarlar/llm-profili</code>). The index does not change; only the context cache is cleared. An optional <strong>pivot translation</strong> is enabled per project (translate input → working language → reason → translate back; extra LLM call). A new domain profile = add a <code>config/domains/&lt;id&gt;.md</code> file.</li>
+</ul>
+<h2 id="security">Security<a class="headerlink" href="#security" title="Permanent link">&para;</a></h2>
+<p>Authentication is a <strong>real login</strong> (pbkdf2 + signed session cookie); the old self-asserted <code>X-Role</code> header was removed. Roles (RBAC v3): <code>pmo</code> approves and administers, <code>engineer</code> runs triage/analysis, <strong><code>viewer</code> is read-only</strong> (all mutating endpoints reject it with 403). <strong>Project access is isolated</strong> (RBAC v2): a user only sees projects granted in the <code>user_projects</code> table (managed in <strong>Settings → Users</strong>, or <code>create-user &lt;name&gt; &lt;role&gt; --projects p1,p2</code>); case/evidence endpoints derive the project from the case itself (no IDOR); the top-bar portfolio count is shown to <code>pmo</code> only. The <code>pmo</code> role bypasses grants while <code>ETKI_PMO_GLOBAL=true</code> (single-customer default) — set it to <code>false</code> for multi-customer pilots.</p>
+<p><strong>Session hardening:</strong> login is rate-limited in-process (5 failures per IP+username within 15 min → 15 min lock; single-worker enforcement makes the in-memory counter authoritative; a restart resets it). The post-login redirect only accepts site-relative paths (open-redirect guard). CSRF is covered twice: <code>same_site=lax</code> cookies plus a middleware that rejects mutating requests browsers stamp <code>Sec-Fetch-Site: cross-site</code>. Sessions are <strong>token-bound to the password hash</strong>: a password reset or user deletion invalidates live sessions on their next request, and role changes apply immediately (the role is re-read from the DB per request). "Remember me" is enforced server-side — 30 days checked, 8 hours unchecked. For production hardening (reverse proxy + OAuth/SSO + internal network) and KVKK/VERBİS/DPIA, see <code>docs/KVKK.md</code>.</p>
+<p><strong>Hardening pass (2026-07 security audit):</strong>
+- Markdown from LLM output / user text (pre-analysis, chat) renders with <strong>raw HTML
+  disabled</strong> — <code>&lt;script&gt;</code>/<code>&lt;img onerror=…&gt;</code> in a saved analysis is escaped, not
+  executed (stored-XSS fix).
+- Responses carry <code>X-Content-Type-Options: nosniff</code> and <code>X-Frame-Options: DENY</code>;
+  with <code>ETKI_COOKIE_SECURE=true</code> (any TLS deployment) the session cookie gains
+  <code>Secure</code> and HSTS is sent. Keep it <code>false</code> only for local HTTP dev.
+- Uploads are size-capped (<code>ETKI_MAX_UPLOAD_MB</code>, default 20) and docx/xlsx archives
+  declaring an unsafe expansion are rejected <strong>before parsing</strong> (zip-bomb guard:
+  512 MB expanded / 200× ratio ceilings; PDFs get page and extracted-text caps).
+- User/config-supplied LLM, embedding and rerank endpoints are refused when they
+  point at the cloud instance-metadata range (<code>169.254.0.0/16</code> — SSRF guard,
+  <code>etki/net_guard.py</code>). Localhost/RFC1918 stay allowed on purpose: local
+  Ollama/vLLM is the primary use case.
+- <code>.etki/llm.json</code> is created 0600 atomically (no window where an API key sits
+  world-readable).</p>
+<h2 id="productization-notes">Productization (notes)<a class="headerlink" href="#productization-notes" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Multi-project:</strong> each contract gets its own baseline + index; separated by <code>contract_id</code>/<code>project_id</code>.</li>
+<li><strong>Multi-customer:</strong> data separation (schema/DB per customer) + per-customer connector config.</li>
+<li><strong>Licensing:</strong> core + adapter packages; vendor adapters can ship as plugins.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.top", "content.code.copy", "content.action.edit"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

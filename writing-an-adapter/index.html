@@ -1,0 +1,1437 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Evidence-backed scope triage — contract clauses + code knowledge graph + historical effort, fused into auditable decisions.">
+      
+      
+      
+        <link rel="canonical" href="https://yaman.dev/etki/writing-an-adapter/">
+      
+      
+        <link rel="prev" href="../adapters/">
+      
+      
+        <link rel="next" href="../RUNBOOK/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Writing an adapter / plugin - Etki</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="teal">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#writing-an-adapter-plugin" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Etki" class="md-header__button md-logo" aria-label="Etki" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Etki
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Writing an adapter / plugin
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="teal"  aria-label="Dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="teal" data-md-color-accent="teal"  aria-label="Light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/yasinyaman/etki" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    yasinyaman/etki
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Etki" class="md-nav__button md-logo" aria-label="Etki" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Etki
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/yasinyaman/etki" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    yasinyaman/etki
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../concepts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Concepts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../memory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Decision memory (wiki & graph query)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../MCP/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MCP (use from Claude)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adapters/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adapter reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Writing an adapter / plugin
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Writing an adapter / plugin
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#the-ports" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The ports
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#worked-example-a-workitemprovider" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worked example: a WorkItemProvider
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Worked example: a WorkItemProvider">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#register-it-the-only-other-file-you-touch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Register it (the only other file you touch)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#test-it" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Test it
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#shipping-it-as-a-plugin-package" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Shipping it as a plugin package
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Shipping it as a plugin package">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#distributing-your-plugin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Distributing your plugin
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#your-plugin-in-the-ui" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Your plugin in the UI
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#port-contracts-the-conformance-suite-adapterbench" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Port contracts &amp; the conformance suite ("AdapterBench")
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Port contracts &amp; the conformance suite (&#34;AdapterBench&#34;)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#optional-methods-shadow-contracts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Optional methods (shadow contracts)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#etki-api-versioning-policy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        etki-api versioning policy
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#rules-that-keep-the-architecture-honest" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rules that keep the architecture honest
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#checklist-for-the-pr" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Checklist for the PR
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../RUNBOOK/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operations (RUNBOOK)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../compliance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Compliance & traceability
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../KVKK/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Compliance (KVKK, Turkish)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#the-ports" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The ports
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#worked-example-a-workitemprovider" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worked example: a WorkItemProvider
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Worked example: a WorkItemProvider">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#register-it-the-only-other-file-you-touch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Register it (the only other file you touch)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#test-it" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Test it
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#shipping-it-as-a-plugin-package" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Shipping it as a plugin package
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Shipping it as a plugin package">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#distributing-your-plugin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Distributing your plugin
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#your-plugin-in-the-ui" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Your plugin in the UI
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#port-contracts-the-conformance-suite-adapterbench" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Port contracts &amp; the conformance suite ("AdapterBench")
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Port contracts &amp; the conformance suite (&#34;AdapterBench&#34;)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#optional-methods-shadow-contracts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Optional methods (shadow contracts)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#etki-api-versioning-policy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        etki-api versioning policy
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#rules-that-keep-the-architecture-honest" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rules that keep the architecture honest
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#checklist-for-the-pr" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Checklist for the PR
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+    <a href="https://github.com/yasinyaman/etki/edit/master/docs/writing-an-adapter.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
+    </a>
+  
+  
+
+
+<h1 id="writing-an-adapter-plugin">Writing an adapter / plugin<a class="headerlink" href="#writing-an-adapter-plugin" title="Permanent link">&para;</a></h1>
+<p>Adapters are Etki's main extension point — and the most wanted contribution.
+The core is hexagonal: the decision engine, indexer and API talk only to abstract
+<strong>ports</strong> and never mention a vendor. Core code never changes; which adapter is
+active is <strong>configuration, never code</strong>. Two ways to ship one:</p>
+<ol>
+<li><strong>In-tree adapter</strong> (a PR to this repo): one new file under <code>etki/adapters/</code>
+   plus one registry branch — the classic path, described below.</li>
+<li><strong>Plugin package</strong> (your own repo/distribution): a package depending only on
+   <strong><a href="https://pypi.org/project/etki-api/"><code>etki-api</code></a></strong> that declares an
+   <code>etki.adapters</code> entry point — see
+   <a href="#shipping-it-as-a-plugin-package">Shipping it as a plugin package</a>.
+   The first-party reference is
+   <a href="https://github.com/yasinyaman/etki/tree/master/packages/etki-plugin-linear"><code>packages/etki-plugin-linear</code></a>.</li>
+</ol>
+<blockquote>
+<p>Looking for what the <em>existing</em> adapters pull (endpoints, field mappings, known
+limitations)? See the <a href="../adapters/">Adapter reference</a>.</p>
+</blockquote>
+<h2 id="the-ports">The ports<a class="headerlink" href="#the-ports" title="Permanent link">&para;</a></h2>
+<p>The <strong>external-integration ports</strong> (the first six rows below) live in the frozen
+plugin API package <a href="https://github.com/yasinyaman/etki/tree/master/packages/etki-api"><code>etki-api</code></a>
+(<code>from etki_api import WorkItemProvider, WorkItem, Capabilities</code>); <code>etki/core/ports.py</code>
+re-exports them, so in-tree code may import from either — plugins import <strong>only</strong>
+<code>etki_api</code>. The internal ports (<code>WikiStore</code>, <code>GraphQueryPort</code>, persistence) stay in
+<a href="https://github.com/yasinyaman/etki/blob/master/etki/core/ports.py"><code>etki/core/ports.py</code></a>
+and are not part of the plugin API. All are <code>typing.Protocol</code>s — adapters satisfy
+them <em>structurally</em>, no base class to inherit:</p>
+<table>
+<thead>
+<tr>
+<th>Port</th>
+<th>Abstracts</th>
+<th>Methods</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>WorkItemProvider</code></td>
+<td>the work tracker (Jira, GitLab, ADO…)</td>
+<td><code>get_work_item(id)</code>, <code>find_similar(description, limit=5)</code>, <code>capabilities()</code></td>
+</tr>
+<tr>
+<td><code>CodeRepositoryProvider</code></td>
+<td>repo + module graph (Joern, AST…)</td>
+<td><code>list_modules()</code>, <code>get_impacted(module_hint)</code>, <code>capabilities()</code></td>
+</tr>
+<tr>
+<td><code>DocumentSourceProvider</code></td>
+<td>the document source (filesystem, Confluence, SharePoint…)</td>
+<td><code>list_documents()</code>, <code>fetch_content(id)</code>, <code>capabilities()</code></td>
+</tr>
+<tr>
+<td><code>LLMClient</code></td>
+<td>the LLM serving layer (optional)</td>
+<td><code>complete_json(system=, user=)</code></td>
+</tr>
+<tr>
+<td><code>EmbeddingProvider</code></td>
+<td>embeddings, OpenAI-compatible (optional)</td>
+<td><code>embed(texts, kind=)</code></td>
+</tr>
+<tr>
+<td><code>RerankProvider</code></td>
+<td>a TEI-compatible cross-encoder (optional)</td>
+<td><code>rerank(query, documents)</code></td>
+</tr>
+<tr>
+<td><code>RequestIntakeProvider</code></td>
+<td>pulls new client requests from a tracker (poll)</td>
+<td><code>fetch_new(cursor=, limit=20)</code>, <code>capabilities()</code></td>
+</tr>
+<tr>
+<td><code>ResponseChannel</code></td>
+<td>writes the decision back (comment/status) — the first WRITING port</td>
+<td><code>post_response(response)</code>, <code>capabilities()</code></td>
+</tr>
+<tr>
+<td><code>WikiStore</code></td>
+<td>the decision-memory store (default: filesystem markdown)</td>
+<td><code>write_decision(case)</code>, <code>search(project, query)</code>, <code>rebuild(project, cases)</code>, <code>write_precedent(…)</code>, <code>write_disputed(…)</code></td>
+</tr>
+<tr>
+<td><code>GraphQueryPort</code></td>
+<td>retrieval over the knowledge graph</td>
+<td><code>find_k_nodes(text, k)</code>, <code>expand(seeds, hops, budget, query=)</code>, <code>nl_query(question)</code></td>
+</tr>
+</tbody>
+</table>
+<p>All data crossing a port is <strong>normalized</strong> in vendor-neutral models
+(<code>etki/core/models.py</code>). The single most important normalization:
+<strong><code>WorkItem.effort_seconds</code></strong> — whatever the tracker calls time spent (Jira
+<code>timespent</code>, GitLab <code>total_time_spent</code>, Redmine <code>spent_hours</code>,
+Azure DevOps <code>CompletedWork</code>), the adapter converts it to seconds. That field
+powers effort-by-analogy estimation.</p>
+<h2 id="worked-example-a-workitemprovider">Worked example: a WorkItemProvider<a class="headerlink" href="#worked-example-a-workitemprovider" title="Permanent link">&para;</a></h2>
+<p>The real reference is <a href="https://github.com/yasinyaman/etki/blob/master/etki/adapters/jira_work_item.py"><code>adapters/jira_work_item.py</code></a>
+(~80 lines). The skeleton every work-item adapter follows:</p>
+<div class="highlight"><pre><span></span><code><span class="sd">&quot;&quot;&quot;Acme Tracker WorkItemProvider.</span>
+
+<span class="sd">Effort in Acme comes from &lt;vendor field&gt;; the core only ever sees the</span>
+<span class="sd">normalized WorkItem.effort_seconds. Needs a live server → integration is</span>
+<span class="sd">CI-skipped; pure parsing is unit-tested.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">httpx</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">etki_api</span><span class="w"> </span><span class="kn">import</span> <span class="n">Capabilities</span><span class="p">,</span> <span class="n">WorkItem</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">AcmeWorkItemProvider</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">api_token</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">30.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_base_url</span> <span class="o">=</span> <span class="n">base_url</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_token</span> <span class="o">=</span> <span class="n">api_token</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_timeout</span> <span class="o">=</span> <span class="n">timeout</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_to_work_item</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">raw</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">WorkItem</span><span class="p">:</span>
+        <span class="c1"># ALL vendor quirks die here — nothing vendor-shaped leaves this method.</span>
+        <span class="k">return</span> <span class="n">WorkItem</span><span class="p">(</span>
+            <span class="nb">id</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">raw</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]),</span>
+            <span class="n">title</span><span class="o">=</span><span class="n">raw</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;subject&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+            <span class="n">description</span><span class="o">=</span><span class="n">raw</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;body&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+            <span class="n">status</span><span class="o">=</span><span class="n">raw</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;state&quot;</span><span class="p">),</span>
+            <span class="n">effort_seconds</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">raw</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;minutes_spent&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="o">*</span> <span class="mi">60</span><span class="p">,</span>  <span class="c1"># normalize!</span>
+        <span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_work_item</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">WorkItem</span><span class="p">:</span>
+        <span class="k">async</span> <span class="k">with</span> <span class="n">httpx</span><span class="o">.</span><span class="n">AsyncClient</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_timeout</span><span class="p">)</span> <span class="k">as</span> <span class="n">client</span><span class="p">:</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="k">await</span> <span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_base_url</span><span class="si">}</span><span class="s2">/api/items/</span><span class="si">{</span><span class="n">item_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                                 <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;Authorization&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;Bearer </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_token</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">})</span>
+            <span class="n">r</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_work_item</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">json</span><span class="p">())</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">find_similar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">description</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">WorkItem</span><span class="p">]:</span>
+        <span class="o">...</span>  <span class="c1"># vendor search API → [self._to_work_item(x) for x in hits[:limit]]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">capabilities</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Capabilities</span><span class="p">:</span>
+        <span class="c1"># Declare honestly — the system degrades gracefully from this</span>
+        <span class="c1"># (no webhooks → polling; no effort tracking → code-metric estimates).</span>
+        <span class="k">return</span> <span class="n">Capabilities</span><span class="p">(</span><span class="n">supports_effort_tracking</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="register-it-the-only-other-file-you-touch">Register it (the only other file you touch)<a class="headerlink" href="#register-it-the-only-other-file-you-touch" title="Permanent link">&para;</a></h3>
+<p>One branch in the relevant builder in
+<a href="https://github.com/yasinyaman/etki/blob/master/etki/adapters/registry.py"><code>adapters/registry.py</code></a>:</p>
+<div class="highlight"><pre><span></span><code><span class="k">if</span> <span class="n">cfg</span><span class="o">.</span><span class="n">adapter</span> <span class="o">==</span> <span class="s2">&quot;acme&quot;</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">AcmeWorkItemProvider</span><span class="p">(</span><span class="n">opt</span><span class="p">[</span><span class="s2">&quot;base_url&quot;</span><span class="p">],</span> <span class="n">_secret</span><span class="p">(</span><span class="n">opt</span><span class="p">[</span><span class="s2">&quot;api_token&quot;</span><span class="p">]))</span>
+</code></pre></div>
+<p><code>_secret()</code> resolves <code>env:VARIABLE</code> references, so tokens never sit in YAML:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">connectors</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">work_items</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">adapter</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">acme</span>
+<span class="w">    </span><span class="nt">options</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">base_url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://acme.example.com</span>
+<span class="w">      </span><span class="nt">api_token</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">env:ACME_TOKEN</span>
+</code></pre></div>
+<h3 id="test-it">Test it<a class="headerlink" href="#test-it" title="Permanent link">&para;</a></h3>
+<p>Follow <a href="https://github.com/yasinyaman/etki/blob/master/tests/unit/test_jira.py"><code>tests/unit/test_jira.py</code></a>:</p>
+<ol>
+<li><strong>Pure parsing, no network</strong> — feed <code>_to_work_item</code> a captured payload dict and
+   assert the normalization (especially <code>effort_seconds</code>).</li>
+<li><strong>Capabilities</strong> — assert the declaration matches reality.</li>
+<li><strong>Graceful degradation</strong> — anything needing a live server must be CI-skipped,
+   and triage must survive your adapter being unreachable: the engine already
+   catches <code>find_similar</code> errors and falls back to code-metric estimates
+   (<code>TriageEngine._safe_find_similar</code>); don't wrap your errors in ways that hide them.</li>
+<li>For engine-level tests, in-memory fakes live in <code>etki/adapters/fakes/</code> —
+   your adapter is <em>not</em> needed to test core logic.</li>
+</ol>
+<h2 id="shipping-it-as-a-plugin-package">Shipping it as a plugin package<a class="headerlink" href="#shipping-it-as-a-plugin-package" title="Permanent link">&para;</a></h2>
+<p>The same provider class, packaged out-of-tree. Your distribution depends <strong>only on
+<code>etki-api</code></strong> (never on <code>etki</code>) and declares three things:</p>
+<p><strong>1. A <code>PluginSpec</code></strong> — the runtime contract, a module-level instance:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">etki_api</span><span class="w"> </span><span class="kn">import</span> <span class="n">AdapterFactory</span><span class="p">,</span> <span class="n">PluginSpec</span><span class="p">,</span> <span class="n">SecurityCapabilities</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">AcmeOptions</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Validated BEFORE build(); secrets (env:VAR) arrive already resolved.&quot;&quot;&quot;</span>
+    <span class="n">base_url</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">api_token</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">30.0</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_build</span><span class="p">(</span><span class="n">options</span><span class="p">:</span> <span class="n">BaseModel</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AcmeWorkItemProvider</span><span class="p">:</span>
+    <span class="n">opts</span> <span class="o">=</span> <span class="n">AcmeOptions</span><span class="o">.</span><span class="n">model_validate</span><span class="p">(</span><span class="n">options</span><span class="o">.</span><span class="n">model_dump</span><span class="p">())</span>
+    <span class="k">return</span> <span class="n">AcmeWorkItemProvider</span><span class="p">(</span><span class="n">opts</span><span class="o">.</span><span class="n">base_url</span><span class="p">,</span> <span class="n">opts</span><span class="o">.</span><span class="n">api_token</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">opts</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
+
+
+<span class="n">PLUGIN</span> <span class="o">=</span> <span class="n">PluginSpec</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;etki-plugin-acme&quot;</span><span class="p">,</span>
+    <span class="n">api_compat</span><span class="o">=</span><span class="s2">&quot;&gt;=0.1,&lt;0.2&quot;</span><span class="p">,</span>          <span class="c1"># PEP 440 range against etki-api</span>
+    <span class="n">capabilities</span><span class="o">=</span><span class="n">SecurityCapabilities</span><span class="p">(</span>  <span class="c1"># SECURITY declaration (KVKK inventory),</span>
+        <span class="n">network</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>                   <span class="c1"># separate from the functional Capabilities</span>
+        <span class="n">filesystem</span><span class="o">=</span><span class="s2">&quot;none&quot;</span><span class="p">,</span>
+        <span class="n">external_write</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>           <span class="c1"># True if the plugin WRITES out (e.g. a ResponseChannel</span>
+                                        <span class="c1"># posting comments) — shown at install time</span>
+        <span class="n">endpoints</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;acme.example.com&quot;</span><span class="p">],</span>
+    <span class="p">),</span>
+    <span class="n">adapters</span><span class="o">=</span><span class="p">(</span><span class="n">AdapterFactory</span><span class="p">(</span><span class="n">port</span><span class="o">=</span><span class="s2">&quot;work_items&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;acme&quot;</span><span class="p">,</span>
+                             <span class="n">options_model</span><span class="o">=</span><span class="n">AcmeOptions</span><span class="p">,</span> <span class="n">build</span><span class="o">=</span><span class="n">_build</span><span class="p">),),</span>
+<span class="p">)</span>
+</code></pre></div>
+<p><strong>2. An entry point</strong> in your <code>pyproject.toml</code> — this is how Etki discovers you:</p>
+<div class="highlight"><pre><span></span><code><span class="k">[project.entry-points.</span><span class="s2">&quot;etki.adapters&quot;</span><span class="k">]</span>
+<span class="n">acme</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;etki_plugin_acme:PLUGIN&quot;</span>
+</code></pre></div>
+<p><strong>3. An <code>etki-plugin.toml</code> manifest</strong> at the repo/wheel root — the <em>static twin</em>
+of the spec, readable <strong>without executing your code</strong> (the install confirmation
+prompt and the marketplace index read it; <code>etki plugin verify</code> cross-checks it
+against the spec and fails on drift):</p>
+<div class="highlight"><pre><span></span><code><span class="k">[plugin]</span>
+<span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;etki-plugin-acme&quot;</span>
+<span class="n">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;adapter&quot;</span>
+<span class="n">api_compat</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&gt;=0.1,&lt;0.2&quot;</span>
+
+<span class="k">[plugin.capabilities]</span>
+<span class="n">network</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+<span class="n">filesystem</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;none&quot;</span>
+<span class="n">endpoints</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;acme.example.com&quot;</span><span class="p">]</span>
+
+<span class="k">[[plugin.adapters]]</span>
+<span class="n">port</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;work_items&quot;</span>
+<span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;acme&quot;</span>
+<span class="n">options_model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;etki_plugin_acme:AcmeOptions&quot;</span>
+</code></pre></div>
+<p>Once installed next to Etki, <code>adapter: acme</code> in <code>connectors.yaml</code> resolves to your
+plugin — no registry branch needed.</p>
+<h3 id="distributing-your-plugin">Distributing your plugin<a class="headerlink" href="#distributing-your-plugin" title="Permanent link">&para;</a></h3>
+<p>Three channels, gated by the operator-side <code>ETKI_PLUGIN_POLICY</code>
+(operational details: <a href="../RUNBOOK/#plugins-install-lockfile-policy">RUNBOOK §Plugins</a>):</p>
+<ul>
+<li><strong>Git tag</strong> — <code>python -m etki.plugin install git+https://…@v1.0.0</code> (needs
+  <code>allow_git</code>). Branch refs are rejected; the tag resolves to a full commit SHA,
+  which is what installs and gets pinned in the operator's <code>etki-plugins.lock</code>.</li>
+<li><strong>Wheel</strong> — <code>install ./etki_plugin_acme-1.0.0-py3-none-any.whl --sha256 &lt;hash&gt;</code>
+  (needs <code>allow_local</code>; the hash is verified before anything runs).</li>
+<li>
+<p><strong>Verified marketplace</strong> — an entry in the signed index at
+  <a href="https://yasinyaman.github.io/etki-plugins/index.json"><code>https://yasinyaman.github.io/etki-plugins/index.json</code></a>
+  makes your plugin installable under the DEFAULT policy (<code>verified_only</code>).
+  Getting listed is a PR against
+  <a href="https://github.com/yasinyaman/etki-plugins">yasinyaman/etki-plugins</a>
+  carrying three things (full criteria:
+  <a href="https://github.com/yasinyaman/etki-plugins/blob/master/PROCESS.md">PROCESS.md</a>):</p>
+</li>
+<li>
+<p>your wheel under <code>artifacts/</code> — build it (<code>uv build</code>), note its hash
+     (<code>shasum -a 256 dist/*.whl</code>);</p>
+</li>
+<li>a green conformance report under <code>reports/</code> —
+     <code>python -m etki_api.conformance etki-plugin-acme --report report.json</code>
+     (<code>failed: 0</code>; its <code>version</code>/<code>api_compat</code>/<code>etki_api_version</code> fields feed
+     the index's compatibility matrix);</li>
+<li>your <code>index.json</code> entry: name/summary/source repo/ports, an honest
+     capability declaration, and per-version <code>api_compat</code> +
+     <code>artifact.sha256</code> + <code>conformance_report</code> + <code>released_at</code>.</li>
+</ul>
+<p>All three pieces are built in one command (in-tree tooling — wheel, green
+  conformance report, and a <strong>schema-validated</strong> <code>index.json</code> entry, assembled
+  under <code>dist/submission/&lt;plugin&gt;/</code>):</p>
+<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>scripts/build_plugin_submission.py<span class="w"> </span>etki-plugin-acme
+</code></pre></div>
+<p>Or run the <strong>Plugin submission bundle</strong> GitHub Action (<code>workflow_dispatch</code>,
+  pick the plugin) and download the bundle as an artifact. Either way you then
+  open the PR against <code>etki-plugins</code> with the produced files.</p>
+<p>On merge, CI re-validates the schema and every hash, re-signs the index
+  (sigstore keyless, identity pinned to that repo's release workflow) and
+  republishes the Pages site — no further action on your side.</p>
+<p>In every channel the install confirmation prompt shows your <code>etki-plugin.toml</code>
+capability declaration (network / filesystem / endpoints) to the operator
+<strong>without executing your code</strong> — keep it honest and minimal; it is also what
+KVKK/compliance reviews inspect.</p>
+<h3 id="your-plugin-in-the-ui">Your plugin in the UI<a class="headerlink" href="#your-plugin-in-the-ui" title="Permanent link">&para;</a></h3>
+<p>A plugin never ships its own screens — the web UI is always a projection of what
+the plugin declares:</p>
+<ul>
+<li><strong>Ayarlar → Eklentiler</strong> lists every installed plugin: name, version (+git
+  commit), install source (from the lockfile), <code>api_compat</code>, ports, state
+  (<code>active/failed/incompatible/blocked/disabled</code>) with the error text, and a
+  verified badge. The only mutation is a pmo-only enable/disable toggle;
+  install/remove and <code>ETKI_PLUGIN_POLICY</code> stay on the operator/CLI side.</li>
+<li><strong>Marketplace card</strong> (same screen): once your plugin is accepted into the
+  signed index, its entry renders there automatically — <code>summary</code>, <code>ports</code>, the
+  <code>capabilities</code> declaration from your manifest, <code>source_repo</code>/conformance links
+  (http(s) only), and the highest version whose <code>api_compat</code> covers the
+  installed etki-api, next to a copyable <code>python -m etki.plugin install …</code>
+  command. The card is a projection of the index: good metadata in your index
+  entry IS your store listing. When the operator sets <code>ETKI_PLUGIN_UI_INSTALL=true</code>,
+  the card also offers a one-click <strong>verified install</strong> (env-pinned source,
+  capability confirm, the same signature + SHA-256 chain as the CLI).</li>
+<li><strong>Plugin detail page</strong> (<code>/ayarlar/eklentiler/&lt;plugin&gt;</code>): your <code>options_model</code>
+  powers a <strong>default-options form</strong> — field names containing key/token/secret/
+  password/pat render as masked password inputs that are never echoed back.
+  Defaults merge UNDER project options at build time (the project value wins),
+  so name your credential fields conventionally (<code>api_key</code>, <code>token</code>, …) and
+  keep non-secret knobs (timeouts, conventions) as plain typed fields.</li>
+<li><strong>Work-item adapter dropdown</strong> (project → Dosyalar) is fed by
+  <code>registry.available_adapters("work_items")</code>: builtins first, then the adapter
+  names of ACTIVE plugins — your <code>AdapterFactory.name</code> appears there
+  automatically once the plugin loads. Options are entered as <code>key: value</code>
+  lines and validated through your <code>options_model</code> at build time (secrets as
+  <code>env:VAR</code> references, resolved by core — your plugin only ever sees values).</li>
+<li><strong>Talep Kanalı card</strong> (same screen) is the twin for a <code>RequestIntakeProvider</code> /
+  <code>ResponseChannel</code> pair: one card configures the adapter, its options (typed
+  from your <code>options_model</code>) and the write-back timing (<code>on_decision</code> / <code>on_triage</code>
+  / <code>both</code>) together. An <code>external_write</code> capability surfaces in the install
+  confirm and the plugin/market cards as "dış sisteme yazma".</li>
+<li>Every triage decision is stamped with the active plugin set
+  (<code>TriageDecision.plugin_set</code>, e.g. <code>etki-plugin-acme@1.0.0</code>) for the audit
+  trail.</li>
+</ul>
+<h2 id="port-contracts-the-conformance-suite-adapterbench">Port contracts &amp; the conformance suite ("AdapterBench")<a class="headerlink" href="#port-contracts-the-conformance-suite-adapterbench" title="Permanent link">&para;</a></h2>
+<p>The ports are <code>runtime_checkable Protocol</code>s — <code>isinstance</code> only checks that the
+methods EXIST. The <strong>conformance suite</strong> (<code>etki_api.conformance</code>, extra
+<code>etki-api[conformance]</code>) pins the documented SEMANTICS. These are the contracts
+it encodes (reviewed against the Jira/Linear adapters and the fakes):</p>
+<table>
+<thead>
+<tr>
+<th>Port</th>
+<th>Contract</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>WorkItemProvider</code></td>
+<td><code>find_similar</code> returns a <strong>list</strong> of <code>WorkItem</code> (≤ <code>limit</code>; empty or a recent-items fallback on no match — <strong>never an exception</strong>); Turkish/unicode text accepted; every item normalized (<code>id</code> non-empty, <code>effort_seconds</code> an <code>int ≥ 0</code>); <code>capabilities()</code> sync, stable</td>
+</tr>
+<tr>
+<td><code>CodeRepositoryProvider</code></td>
+<td><code>list_modules</code> returns <code>CodeModule</code>s with <strong>unique ids</strong>; <code>get_impacted(None)</code> and unknown hints return a list (empty ok), never raise; impacted ⊆ listed graph</td>
+</tr>
+<tr>
+<td><code>DocumentSourceProvider</code></td>
+<td><code>list_documents</code> returns <code>DocumentRef</code>s with unique ids; <strong>every listed id is fetchable</strong> and yields <code>bytes</code> (not <code>str</code>)</td>
+</tr>
+<tr>
+<td><code>LLMClient</code></td>
+<td><code>complete_json</code> returns a <code>dict</code></td>
+</tr>
+<tr>
+<td><code>EmbeddingProvider</code></td>
+<td>one vector per input, aligned, uniform non-zero dimension, floats; both <code>kind</code>s accepted; <strong>deterministic</strong> for the same input (auditable matching)</td>
+</tr>
+<tr>
+<td><code>RerankProvider</code></td>
+<td>one float score per document, aligned with input order (raw logits)</td>
+</tr>
+<tr>
+<td><code>RegistryMetadataProvider</code></td>
+<td><code>latest</code> returns <code>PackageMetadata</code> or <code>None</code>; unknown package / backend failure <strong>degrades to <code>None</code></strong>, never raises</td>
+</tr>
+<tr>
+<td><code>RequestIntakeProvider</code></td>
+<td><code>fetch_new</code> returns an <code>IntakeBatch</code> (≤ <code>limit</code>; every item has a non-empty <code>external_id</code> and some title/description); an exhausted source returns an <strong>empty list, never an exception</strong>; the cursor is <strong>opaque</strong> and makes monotonic progress (re-fetching with a returned cursor does not re-emit its ids)</td>
+</tr>
+<tr>
+<td><code>ResponseChannel</code></td>
+<td><code>post_response</code> to a known target succeeds; an unknown target <strong>RAISES</strong> (failures must surface — the host is the only best-effort layer, and posting is <strong>not idempotent</strong>, so the host dedups)</td>
+</tr>
+</tbody>
+</table>
+<p>Two ways to run it:</p>
+<ol>
+<li><strong>In your test suite</strong> — subclass the contract class, provide an <em>offline</em>
+   <code>provider</code> fixture (canned data / mock transport; never live credentials):</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">etki_api.conformance</span><span class="w"> </span><span class="kn">import</span> <span class="n">WorkItemProviderContract</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">TestAcmeConformance</span><span class="p">(</span><span class="n">WorkItemProviderContract</span><span class="p">):</span>
+    <span class="n">known_item_id</span> <span class="o">=</span> <span class="s2">&quot;ACME-1&quot;</span>          <span class="c1"># optional: exercises get_work_item</span>
+
+    <span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">provider</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">offline_acme_provider</span><span class="p">()</span>
+</code></pre></div>
+<ol>
+<li><strong>Zero test code</strong> — declare a <code>conformance</code> factory on your <code>PluginSpec</code>
+   returning offline provider instances per port, then:</li>
+</ol>
+<div class="highlight"><pre><span></span><code>python<span class="w"> </span>-m<span class="w"> </span>etki_api.conformance<span class="w"> </span>etki-plugin-acme<span class="w"> </span>--report<span class="w"> </span>conformance-report.json
+<span class="c1"># or, with etki installed: python -m etki.plugin verify etki-plugin-acme</span>
+</code></pre></div>
+<p>The JSON report carries the version-compat matrix fields
+   (<code>version</code>, <code>api_compat</code>, <code>etki_api_version</code>) the verified marketplace
+   consumes. Exit code 0 = conformant.</p>
+<p><strong>CI in one job</strong> — the repo publishes a reusable workflow; add to your plugin's CI:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">jobs</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">conformance</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">yasinyaman/etki/.github/workflows/plugin-conformance.yml@master</span>
+<span class="w">    </span><span class="nt">with</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">plugin-dist</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">etki-plugin-acme</span>
+</code></pre></div>
+<p>If your repo uses pytest-asyncio in <code>strict</code> mode, nothing extra is needed —
+the contract tests carry their own <code>@pytest.mark.asyncio</code> markers.</p>
+<h3 id="optional-methods-shadow-contracts">Optional methods (shadow contracts)<a class="headerlink" href="#optional-methods-shadow-contracts" title="Permanent link">&para;</a></h3>
+<p>One method sits OUTSIDE the frozen <code>WorkItemProvider</code> protocol but is probed by
+the host via <code>hasattr</code>/<code>getattr</code>:</p>
+<ul>
+<li><strong><code>all_items() -&gt; list[WorkItem]</code></strong> — cheap enumeration of every work item.
+  The host uses it to compute <strong>effort-pool consumption</strong> (per-category spent
+  hours), the background pool refresh, and the KPI/pool screens
+  (<code>etki/index_tools.py</code>, <code>etki/api/context.py</code>, <code>etki/api/web.py</code>,
+  <code>etki/pilot/__main__.py</code>). A provider without it still triages fine — the
+  pool degrades to an empty consumption dict (documented degradation, same
+  spirit as <code>Capabilities</code>). Implement it only when your backend can enumerate
+  cheaply (the built-in <code>file</code> adapter does; a paged REST tracker usually
+  should not). It is deliberately not part of the port: adding it to the
+  <code>runtime_checkable</code> Protocol would make <code>isinstance</code> require it and break
+  existing adapters. Since etki-api <strong>0.1.3</strong> you can DECLARE it via
+  <code>Capabilities(supports_enumeration=True)</code> — the conformance suite then
+  verifies <code>all_items()</code> exists and returns normalized <code>WorkItem</code>s (providers
+  without the declaration are skipped, not failed).</li>
+</ul>
+<h3 id="etki-api-versioning-policy">etki-api versioning policy<a class="headerlink" href="#etki-api-versioning-policy" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>etki-api</code> follows <strong>semver</strong>: major = breaking, minor = new optional
+  method/field, patch = fixes. Every change is recorded in
+  <a href="https://github.com/yasinyaman/etki/blob/master/packages/etki-api/CHANGELOG.md"><code>packages/etki-api/CHANGELOG.md</code></a>.</li>
+<li>While <code>0.x</code>, breaking changes are allowed but announced — pin
+  <code>etki-api&gt;=0.1,&lt;0.2</code> and set the same range as your <code>api_compat</code>; the loader
+  refuses (loudly, never silently) plugins whose range doesn't cover the
+  installed version.</li>
+<li>The public surface is exactly <code>etki_api.__all__</code> — enforced by
+  <code>tests/unit/test_api_surface.py</code>. If you need a symbol that isn't exported,
+  open an issue; don't reach into <code>etki.*</code>.</li>
+</ul>
+<h2 id="rules-that-keep-the-architecture-honest">Rules that keep the architecture honest<a class="headerlink" href="#rules-that-keep-the-architecture-honest" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>No vendor names in core.</strong> If <code>engine/</code>, <code>indexing/</code> or <code>api/</code> needs to know
+  it's talking to Acme, the design is wrong — push it into the adapter.</li>
+<li><strong>Normalize inside the adapter.</strong> Units, field names, pagination, auth: none of
+  it leaks past the port.</li>
+<li><strong>Declare capabilities truthfully.</strong> <code>supports_effort_tracking=False</code> with a
+  fallback beats fabricated efforts (single-point estimates are forbidden anyway).</li>
+<li><strong>Fail soft.</strong> An unreachable backend must degrade the answer, not kill triage.</li>
+<li><strong>Secrets via <code>env:</code> references</strong> — never plain text in config.</li>
+</ul>
+<h2 id="checklist-for-the-pr">Checklist for the PR<a class="headerlink" href="#checklist-for-the-pr" title="Permanent link">&para;</a></h2>
+<ul>
+<li>[ ] One file under <code>etki/adapters/</code>, one branch in <code>registry.py</code>, zero core changes</li>
+<li>[ ] <code>effort_seconds</code> (or the port's equivalent) normalized and unit-tested from a captured payload</li>
+<li>[ ] Live-server tests CI-skipped; parsing tested without network</li>
+<li>[ ] <code>uv run ruff check . &amp;&amp; uv run mypy etki &amp;&amp; uv run pytest</code> green</li>
+<li>[ ] <code>uv run python -m eval.runner</code> still green (adapters shouldn't move it — if it moves, something leaked)</li>
+<li>[ ] A config example in your adapter's module docstring or the PR description</li>
+</ul>
+<p>Vendor candidates we'd love: <strong>Azure DevOps, GitLab, Linear, Redmine, Confluence,
+SharePoint.</strong> Open an issue first so we can agree on scope — see
+<a href="https://github.com/yasinyaman/etki/blob/master/CONTRIBUTING.md">CONTRIBUTING.md</a>.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.top", "content.code.copy", "content.action.edit"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
