@@ -98,6 +98,12 @@ def estimate(
     The `basis` free text is produced in the project language (i18n catalog) and
     written frozen into the evidence chain."""
     p = params or _DEFAULT_PARAMS
+    # Zero-effort similars carry no analogy signal (live trackers return matched
+    # issues with no logged time) and would collapse the range to [0, 0] — the
+    # widening factors multiply likely=0. Drop them; with none left the estimate
+    # falls through to the dep-surface/code-metric branches (the linear plugin
+    # applies the same rule at the source).
+    similar = [it for it in similar if it.effort_seconds > 0]
     if similar:  # strongest source: real past effort (analogy)
         hours = sorted(it.effort_seconds / 3600 for it in similar)
         optimistic = hours[0]

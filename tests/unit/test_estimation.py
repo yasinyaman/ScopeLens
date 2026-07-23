@@ -142,3 +142,14 @@ def test_narrow_spread_composes_with_churn_widening():
     with_churn = estimate([_wi(4 * 3600), _wi(5 * 3600)], [churned], p)
     without = estimate([_wi(4 * 3600), _wi(5 * 3600)], [calm], p)
     assert with_churn.high > without.high  # churn ×1.5 stacks AFTER the widening
+
+
+def test_zero_effort_similars_never_produce_a_point_range():
+    """Live trackers return matched issues with no logged time — those analogs
+    used to collapse the estimate to [0, 0] (ranges-never-points violation).
+    They are dropped; with none left the code-metric/floor branches take over."""
+    zeros = [_wi(0), _wi(0)]
+    est = estimate(zeros, [])
+    assert est.low < est.high and est.high > 0  # floor branch, a true range
+    mixed = estimate([_wi(0), _wi(6 * 3600)], [])
+    assert mixed.low > 0  # the zero analog no longer drags the band to 0
