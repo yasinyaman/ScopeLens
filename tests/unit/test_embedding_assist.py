@@ -65,13 +65,14 @@ async def test_no_embedder_keeps_pure_lexical_behavior():
 async def test_semantic_include_annotates_but_never_changes_the_decision():
     # DELIBERATE asymmetry: cosine cannot tell "paraphrase of a clause (IN)" from
     # "new capability near a clause (CR)" — the include side only records an
-    # informational evidence note; the decision stays lexical.
-    embedder = _FakeEmbedder()
-    decision = (
-        await _engine(embedder).triage("managers download the monthly numbers qqq")
-    ).decisions[0]
-    assert decision.decision.value == "CR_CANDIDATE"  # lexical outcome, unchanged
-    assert any("kosinüs" in a or "cosine" in a for a in decision.evidence.assumptions)
+    # informational evidence note; the decision stays whatever the LEXICAL path
+    # says (pinned RELATIVELY: with-embedder == without-embedder, so lexicon
+    # rounds moving the lexical outcome cannot silently weaken this invariant).
+    text = "managers download the monthly numbers qqq"
+    lexical = (await _engine(None).triage(text)).decisions[0]
+    semantic = (await _engine(_FakeEmbedder()).triage(text)).decisions[0]
+    assert semantic.decision is lexical.decision  # note-only, never a signal
+    assert any("kosinüs" in a or "cosine" in a for a in semantic.evidence.assumptions)
 
 
 async def test_strong_semantic_exclude_routes_out_of_scope():

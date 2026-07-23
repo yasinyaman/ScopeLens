@@ -153,9 +153,13 @@ def surface_token_count(text: str) -> int:
     content words the user actually typed. The short-query cap judges request
     length on this count, so a brand pair collapsing to one canonical concept
     ("Okta ve Auth0 entegrasyonu" → {idp, entegrasyon}) is not mistaken for a
-    two-word request."""
+    two-word request. Digit-led tokens COUNT here ("ayda 2 rapor" says three
+    things) even though tokenize drops them from the score set — numbers are
+    stated content owned by the quantity layer, not scorer noise."""
     words = re.findall(r"\w+", text.lower())
-    return len({w for w in words if len(w) > 2 and _fold(w) not in _STOP_FOLDED})
+    return len(
+        {w for w in words if (len(w) > 2 or w.isdigit()) and _fold(w) not in _STOP_FOLDED}
+    )
 
 
 def _match(a: str, b: str) -> bool:
