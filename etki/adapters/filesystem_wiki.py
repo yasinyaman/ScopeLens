@@ -69,6 +69,12 @@ class FileSystemWikiAdapter:
         # `rebuild` regenerates headings in the CURRENT config language — the
         # wiki is a projection, not an archive, so that is correct behavior.
         self._languages = languages or {}
+        # Per-project frontmatter cache (W6 follow-up): _regenerate used to
+        # re-read EVERY decision file on EVERY write (O(total decisions) per
+        # triage). This adapter is the single writer (projection rule), so the
+        # cache only needs invalidation on rebuild; disk stays the source of
+        # truth across processes (the CLI rebuild reloads it).
+        self._meta_cache: dict[str, dict[str, dict]] = {}
 
     def _lang(self, project_id: str) -> str:
         return self._languages.get(project_id, "tr")
@@ -96,7 +102,12 @@ class FileSystemWikiAdapter:
         doc_id = self.doc_id_for(case)
         target = self._decisions_dir(project_id) / f"{doc_id}.md"
         target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_text(self._render_decision(doc_id, case), encoding="utf-8")
+        content = self._render_decision(doc_id, case)
+        target.write_text(content, encoding="utf-8")
+        if project_id in self._meta_cache:
+            meta, _ = _split_frontmatter(content)
+            if meta.get("doc_id"):
+                self._meta_cache[project_id][doc_id] = meta
         self._regenerate(project_id)
         return doc_id
 
@@ -106,6 +117,7 @@ class FileSystemWikiAdapter:
         root = self._root(project_id)
         if root.exists():
             shutil.rmtree(root)
+        self._meta_cache.pop(project_id, None)  # reload from disk after the rewrite
         count = 0
         for case in cases:
             if (case.project_id or "default") != project_id:
@@ -365,12 +377,16 @@ class FileSystemWikiAdapter:
         self._write_entities(project_id, metas)
 
     def _all_decision_meta(self, project_id: str) -> list[dict]:
-        d = self._decisions_dir(project_id)
-        metas = []
-        for path in sorted(d.glob("DEC-*.md")) if d.exists() else []:
-            meta, _ = _split_frontmatter(path.read_text(encoding="utf-8"))
-            if meta.get("doc_id"):
-                metas.append(meta)
+        cached = self._meta_cache.get(project_id)
+        if cached is None:
+            d = self._decisions_dir(project_id)
+            cached = {}
+            for path in sorted(d.glob("DEC-*.md")) if d.exists() else []:
+                meta, _ = _split_frontmatter(path.read_text(encoding="utf-8"))
+                if meta.get("doc_id"):
+                    cached[str(meta["doc_id"])] = meta
+            self._meta_cache[project_id] = cached
+        metas = list(cached.values())
         metas.sort(key=lambda m: str(m.get("created_at") or ""), reverse=True)
         return metas
 
