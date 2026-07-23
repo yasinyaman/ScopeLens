@@ -93,3 +93,9 @@ def test_short_query_cap_uses_surface_count_not_canon_count():
     target = tokenize("IdP entegrasyonu sağlanacaktır")  # short clause: raw score 1.0
     assert score(q, target) == 0.6  # canon count 2 → capped as a "short" query
     assert score(q, target, query_size=surface_token_count(text)) == 1.0  # not short
+
+
+def test_connect_bridges_to_integration():
+    # "Connect X to Y" requests describe integrations; the bridge lets them
+    # reach the integration clause (kept by measurement: v0 45→46, no set down).
+    assert "integration" in tokenize("Connect the CRM to the warehouse system")

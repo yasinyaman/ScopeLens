@@ -118,6 +118,7 @@ _SYNONYM_STEMS: list[tuple[str, str]] = [
     # "azure" was mapped to idp until 2026-07 and mistranslated every Azure
     # product (a plausible Azure DevOps integration request became a two-hit
     # exclusion match); the identity sense stays covered by ("entra","idp").
+    ("connect", "integration"),  # trial: M3-04 'connect X to Y' family
     ("eşzamanlı", "concurrent"), ("eszamanli", "concurrent"),
     ("aylık", "month"), ("aylik", "month"), ("ayda", "month"),
     ("yılda", "year"), ("yilda", "year"), ("yıllık", "year"), ("yillik", "year"),
