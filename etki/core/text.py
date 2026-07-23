@@ -36,6 +36,13 @@ _STOP = {
     # producing false exclusion hits. Surface forms only; "sağlayıcı" itself
     # must stay a token.
     "sağlanır", "sağlanacak", "sağlanacaktır", "sağlanması", "sağlar", "sağlamak",
+    # W4 measured round (counterfactual-backed): TR filler/imperative vocabulary
+    # diluted q_cov below the 0.22 in-scope floor and made the quota branch
+    # unreachable for TR requests (QT-04..08/12, PQ-11 families). Surface forms
+    # only; 'den' is NOT stopped (QT-12 would drop under the short-query cap)
+    # while 'ten' is (the apostrophe-split fragment of "5'ten").
+    "her", "yerine", "sayısı", "sayısını", "ten",
+    "çıkarılsın", "yükseltilsin", "düşürülsün", "düşürelim", "çıksın", "üretilsin",
     # TR mirror of the stopped EN "supported/supports": the inflected verb forms
     # are clause boilerplate ("X desteklenir"), yet the ("deste","support")
     # bridge promoted them to content tokens. Noun forms (destek/desteği =
@@ -111,6 +118,9 @@ _SYNONYM_STEMS: list[tuple[str, str]] = [
     # "azure" was mapped to idp until 2026-07 and mistranslated every Azure
     # product (a plausible Azure DevOps integration request became a two-hit
     # exclusion match); the identity sense stays covered by ("entra","idp").
+    ("eşzamanlı", "concurrent"), ("eszamanli", "concurrent"),
+    ("aylık", "month"), ("aylik", "month"), ("ayda", "month"),
+    ("yılda", "year"), ("yilda", "year"), ("yıllık", "year"), ("yillik", "year"),
     ("okta", "idp"), ("auth0", "idp"), ("keycloak", "idp"),
     ("onelogin", "idp"), ("entra", "idp"),
     ("android", "mobile"), ("iphone", "mobile"), ("ipad", "mobile"),
@@ -128,7 +138,14 @@ def _canon(word: str) -> str:
 
 def tokenize(text: str) -> set[str]:
     words = re.findall(r"\w+", text.lower())
-    return {_canon(w) for w in words if len(w) > 2 and _fold(w) not in _STOP_FOLDED}
+    # Digit-led tokens ("5ten", "8e", "500") are noise here: numbers belong to
+    # the quantity layer's raw-text regexes, and the apostrophe-split fragments
+    # only diluted the symmetric score.
+    return {
+        _canon(w)
+        for w in words
+        if len(w) > 2 and not w[0].isdigit() and _fold(w) not in _STOP_FOLDED
+    }
 
 
 def surface_token_count(text: str) -> int:
