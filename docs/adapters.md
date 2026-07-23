@@ -43,7 +43,8 @@ references, resolved only at adapter-build time.
 
 ### `jira` — Jira Cloud (REST v3)
 
-- **Auth:** Basic (email + API token). **Similar-work search:** `GET /rest/api/3/search`
+- **Auth:** Basic (email + API token). **Similar-work search:** `GET /rest/api/3/search/jql`
+  (the enhanced-search endpoint; the legacy `/search` was removed by Atlassian)
   with JQL `text ~ "<request text>"` (Jira searches title+description server-side);
   an optional `jql_extra` config narrows it (e.g. `project = ABC AND statusCategory = Done`).
 - **Fields pulled** (deliberately minimal — `fields=summary,status,timespent,labels`):
@@ -54,7 +55,7 @@ references, resolved only at adapter-build time.
 | `summary` | `title` | |
 | `status.name` | `status` | |
 | `timespent` | `effort_seconds` | already seconds |
-| `labels[0]` | `category` | first label = contract category → effort pool works (same convention as GitLab) |
+| `labels[0]` | `category` | first label = contract category — the category feeds pool matching, BUT live pool *consumption* needs `all_items()`, which this adapter does not provide (see the honesty note below) |
 
 - **Not pulled:** `description` (Jira v3 serves it as an ADF rich-text document),
   `issuetype`, worklog detail, comments, attachments. No issue-type filtering
@@ -71,7 +72,7 @@ references, resolved only at adapter-build time.
 |---|---|---|
 | `iid` | `id` | |
 | `title` / `description` | `title` / `description` | |
-| `labels[0]` | `category` | first label = contract category → effort pool works |
+| `labels[0]` | `category` | first label = contract category — same `all_items()` caveat as Jira: pool consumption stays empty on live trackers |
 | `state` | `status` | |
 | `time_stats.total_time_spent` | `effort_seconds` | native time tracking, already seconds |
 
@@ -283,3 +284,13 @@ Every adapter declares `Capabilities` (`supports_webhooks`, `supports_realtime`,
 gracefully. Today these are honest **declarations**: webhook listeners and incremental
 diff are not implemented yet — sources refresh as described in the
 [RUNBOOK](RUNBOOK.md) (work items live at triage time; code/documents at index time).
+
+## Honesty note: effort-pool consumption on live trackers
+
+Pool **consumption** (`consumed_by_category`) is computed from `all_items()` —
+the optional cheap-enumeration method (`Capabilities.supports_enumeration`).
+Among the built-ins only the `file` adapter provides it; the live trackers
+(jira, gitlab, redmine, azure_devops) do **not**, so their pool consumption is
+silently **zero** — the effort-pool branch still fires on the clause's own pool
+size, but "consumed" reflects only file/plugin sources. A plugin with a cheap
+enumeration can declare `supports_enumeration=True` and fill the gap.

@@ -122,3 +122,37 @@ def test_broken_adapter_degrades_project_not_context(hermetic_context_env, monke
     degraded = {h.port: h for h in ctx.degraded_adapters("demo")}
     assert set(degraded) == {"work_items", "documents"}
     assert "RuntimeError" in (degraded["work_items"].error or "")
+
+def test_runtime_workitem_failure_flips_the_health_badge(
+    hermetic_context_env, monkeypatch
+):
+    """W2: a provider that builds fine but fails AT TRIAGE TIME (expired token,
+    401 mid-poll) must degrade AdapterHealth — the badge used to stay green
+    while every triage silently lost its effort history."""
+
+    class _ExpiredToken:
+        def capabilities(self):  # noqa: ANN202 — provider double
+            from etki.core.ports import Capabilities
+
+            return Capabilities()
+
+        async def find_similar(self, description, *, limit=5):  # noqa: ANN001
+            raise RuntimeError("401 Unauthorized")
+
+        async def get_work_item(self, item_id):  # noqa: ANN001
+            raise RuntimeError("401 Unauthorized")
+
+    ctx = context_mod.get_context()  # healthy pass persists the index (gate-3 pattern)
+    assert "demo" in ctx.engines
+    context_mod.get_context.cache_clear()
+    monkeypatch.setattr(context_mod, "build_work_items", lambda cfg: _ExpiredToken())
+    ctx = context_mod.get_context()
+    assert ctx.degraded_adapters("demo") == []  # build succeeded → green
+
+    import asyncio
+
+    case = asyncio.run(ctx.engines["demo"].triage("rapora yeni filtre eklensin"))
+    assert case.decisions  # triage still succeeds (graceful degradation)
+    (health,) = ctx.degraded_adapters("demo")
+    assert health.port == "work_items"
+    assert "401" in (health.error or "")

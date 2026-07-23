@@ -64,8 +64,12 @@ class JiraWorkItemProvider:
         if self._jql_extra:
             jql = f"({jql}) AND {self._jql_extra}"
         async with httpx.AsyncClient(timeout=self._timeout) as client:
+            # /search/jql is the enhanced-search endpoint; the legacy
+            # /rest/api/3/search was removed by Atlassian (the jira plugin
+            # migrated first — this mirrors it). Single page, no pagination:
+            # find_similar needs only the top `limit` matches.
             response = await client.get(
-                f"{self._base_url}/rest/api/3/search",
+                f"{self._base_url}/rest/api/3/search/jql",
                 headers=self._headers(),
                 params={"jql": jql, "maxResults": limit, "fields": _FIELDS},
             )

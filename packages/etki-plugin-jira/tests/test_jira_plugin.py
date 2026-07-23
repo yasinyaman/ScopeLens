@@ -140,3 +140,51 @@ def test_manifest_matches_the_spec():
     assert manifest.capabilities == PLUGIN.capabilities
     assert {a.name for a in manifest.adapters} == {a.name for a in PLUGIN.adapters}
     assert {a.port for a in manifest.adapters} == {a.port for a in PLUGIN.adapters}
+
+
+def test_fetch_new_pages_through_a_bulk_minute_via_token_cursor():
+    """A minute holding more issues than one batch must be crossable: the poll
+    follows nextPageToken up to `limit`, and a leftover token rides the opaque
+    cursor so the NEXT poll resumes mid-minute (no livelock)."""
+    import asyncio
+
+    provider = JiraRequestIntakeProvider(_OPTS)
+    calls: list[dict] = []
+
+    class _Resp:
+        def __init__(self, payload):  # noqa: ANN001
+            self._payload = payload
+
+        def json(self):  # noqa: ANN202
+            return self._payload
+
+    pages = {
+        None: {"issues": [
+            {"id": "1", "key": "D-1",
+             "fields": {"summary": "a", "created": "2026-07-16T09:30:00.000+0300"}},
+        ], "nextPageToken": "T1"},
+        "T1": {"issues": [
+            {"id": "2", "key": "D-2",
+             "fields": {"summary": "b", "created": "2026-07-16T09:30:00.000+0300"}},
+        ], "nextPageToken": "T2"},
+    }
+
+    async def fake_request(method, path, **kwargs):  # noqa: ANN001, ANN003
+        params = kwargs["params"]
+        calls.append(params)
+        return _Resp(pages[params.get("nextPageToken")])
+
+    provider._request = fake_request  # type: ignore[method-assign]
+    batch = asyncio.run(provider.fetch_new(cursor="2026-07-16 09:30", limit=2))
+    assert [i.external_id for i in batch.items] == ["1", "2"]
+    assert batch.cursor == "2026-07-16 09:30|T2"  # leftover token rides the cursor
+    assert 'created >= "2026-07-16 08:30"' in calls[0]["jql"]  # 60min DST/skew floor
+
+    # Next poll resumes AT the token (same query), not at page one again.
+    pages["T2"] = {"issues": [
+        {"id": "3", "key": "D-3",
+         "fields": {"summary": "c", "created": "2026-07-16T09:31:00.000+0300"}},
+    ]}
+    batch2 = asyncio.run(provider.fetch_new(cursor=batch.cursor, limit=2))
+    assert [i.external_id for i in batch2.items] == ["3"]
+    assert batch2.cursor == "2026-07-16 09:31"  # pages exhausted → bare watermark

@@ -9,6 +9,7 @@ request gets 401.
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import logging
 import os
 import uuid
@@ -110,6 +111,10 @@ async def _intake_loop(interval_minutes: float) -> None:
         try:
             ctx = await run_in_threadpool(get_context)
             created = await run_intake_cycle(ctx, Settings())
+            if ctx.responder is not None:
+                # Drain fire-and-forget decision write-backs each tick so a later
+                # crash/shutdown cannot orphan a scheduled post.
+                await ctx.responder.drain()
             logger.info("talep alma turu tamam (%s yeni vaka)", created)
         except Exception:
             logger.exception("talep alma turu başarısız; bir sonraki tur beklenecek")
@@ -141,6 +146,11 @@ async def lifespan(app: FastAPI):  # type: ignore[no-untyped-def]
     yield
     for task in background:
         task.cancel()
+    # Orphan guard: in-flight write-backs get a bounded window to finish.
+    with contextlib.suppress(Exception):
+        ctx = get_context()
+        if ctx.responder is not None:
+            await ctx.responder.drain(5.0)
 
 
 app = FastAPI(title="Etki", version="0.1.0a1", lifespan=lifespan)

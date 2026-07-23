@@ -3,9 +3,11 @@
 Two adapters share one options model and one transport (`_JiraClient`):
 
 - ``JiraRequestIntakeProvider`` polls new issues via JQL (REST v3 enhanced
-  search). A minute-precision ``created`` watermark is the opaque cursor; the
-  ``>=`` overlap on the boundary minute is deliberate — the host's
-  deterministic request-id dedup absorbs it, so nothing is ever missed.
+  search). The opaque cursor is a minute-precision ``created`` watermark,
+  optionally carrying a ``|nextPageToken`` suffix so consecutive polls can walk
+  through a bulk-created minute (no livelock). The JQL floor backs off 60
+  minutes (DST/clock-skew guard); the host's deterministic request-id dedup
+  absorbs every overlap, so nothing is missed and nothing duplicates.
 - ``JiraResponseChannel`` posts the host-composed decision text back as an
   issue comment (Atlassian Document Format). It RAISES on failure; the host is
   the only best-effort layer.
@@ -18,7 +20,7 @@ Depends ONLY on etki-api (+ httpx).
 from __future__ import annotations
 
 import base64
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Any
 
 import httpx
@@ -126,21 +128,45 @@ class JiraRequestIntakeProvider(_JiraClient):
     async def fetch_new(
         self, *, cursor: str | None = None, limit: int = 20
     ) -> IntakeBatch:
+        """Cursor is opaque: either a bare watermark minute or
+        ``"<minute>|<nextPageToken>"`` when a poll stopped mid-page. The token
+        form lets consecutive polls WALK THROUGH a minute holding more issues
+        than one batch (bulk import) — with a bare minute-watermark alone the
+        cursor could never cross it (livelock: same first page every poll).
+        The JQL floor also backs off 60 minutes (DST shift / clock skew guard);
+        the host's deterministic request-id dedup absorbs the overlap."""
+        minute, _, page_token = (cursor or "").partition("|")
         jql = self._base_jql()
-        if cursor:
-            # `>=` overlaps the boundary minute on purpose — host dedup absorbs it.
-            jql = f'({jql}) AND created >= "{cursor}" ORDER BY created ASC'
+        if minute:
+            floor = minute
+            try:
+                floor_dt = datetime.strptime(minute, _WATERMARK_FMT) - timedelta(minutes=60)
+                floor = floor_dt.strftime(_WATERMARK_FMT)
+            except ValueError:
+                pass  # unknown cursor shape → use it verbatim
+            jql = f'({jql}) AND created >= "{floor}" ORDER BY created ASC'
         else:
             jql = f"({jql}) ORDER BY created ASC"
+
+        items: list[IncomingRequest] = []
+        next_token: str | None = page_token or None
         max_results = min(limit, self._opts.page_size)
-        response = await self._request(
-            "GET",
-            "/rest/api/3/search/jql",
-            params={"jql": jql, "maxResults": max_results, "fields": _FIELDS},
+        while len(items) < limit:
+            params: dict[str, Any] = {
+                "jql": jql, "maxResults": max_results, "fields": _FIELDS,
+            }
+            if next_token:
+                params["nextPageToken"] = next_token
+            response = await self._request("GET", "/rest/api/3/search/jql", params=params)
+            payload = response.json()
+            issues = payload.get("issues", []) or []
+            items.extend(self._to_incoming(issue) for issue in issues)
+            next_token = payload.get("nextPageToken") or None
+            if not issues or next_token is None:
+                break
+        return IntakeBatch(
+            items=items, cursor=self._next_cursor(items, cursor, leftover_token=next_token)
         )
-        issues = response.json().get("issues", []) or []
-        items = [self._to_incoming(issue) for issue in issues]
-        return IntakeBatch(items=items, cursor=self._next_cursor(items, cursor))
 
     def _to_incoming(self, issue: dict[str, Any]) -> IncomingRequest:
         fields = issue.get("fields", {}) or {}
@@ -158,11 +184,22 @@ class JiraRequestIntakeProvider(_JiraClient):
             labels=list(fields.get("labels") or []),
         )
 
-    def _next_cursor(self, items: list[IncomingRequest], prev: str | None) -> str | None:
+    def _next_cursor(
+        self,
+        items: list[IncomingRequest],
+        prev: str | None,
+        *,
+        leftover_token: str | None = None,
+    ) -> str | None:
         stamps = [i.created_at for i in items if i.created_at is not None]
         if not stamps:
             return prev  # empty batch → keep the watermark
-        return max(stamps).strftime(_WATERMARK_FMT)
+        minute = max(stamps).strftime(_WATERMARK_FMT)
+        if leftover_token:
+            # Stopped mid-page: resume the SAME query at the next page so a
+            # bulk-created minute is crossed over consecutive polls.
+            return f"{minute}|{leftover_token}"
+        return minute
 
     def capabilities(self) -> Capabilities:
         return Capabilities(supports_webhooks=False, supports_realtime=False)

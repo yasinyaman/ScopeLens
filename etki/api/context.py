@@ -193,6 +193,15 @@ def _build_code_repo(project: ProjectConfig, settings: Settings) -> CodeReposito
     for repo in project.resolved_repos():
         if not repo.src_root:
             continue
+        if repo.git_url:
+            # Refresh the shallow clone so a reindex sees today's code (clone()
+            # fetches+resets an existing tree; falls back to stale on failure).
+            from etki.adapters.git_clone import GitCloneError, clone
+
+            try:
+                clone(repo.git_url, repo.src_root)
+            except GitCloneError as exc:
+                logger.warning("[%s] repo tazeleme atlandı (%s): %s", project.id, repo.name, exc)
         # If force_code_engine is set it overrides the repo's engine (e.g. JVM-less
         # container → "ast").
         engine = settings.force_code_engine or repo.engine
@@ -330,6 +339,34 @@ def get_context() -> AppContext:
                 h.error = msg
                 return
 
+    class _HealthWatchedWorkItems:
+        """Delegating proxy: a RUNTIME work-items failure (expired token, 401,
+        network) degrades the project's AdapterHealth badge. Build-time
+        fallbacks already did; without this the badge stayed green while every
+        triage silently lost its effort history. hasattr probes (all_items)
+        pass through __getattr__ untouched."""
+
+        def __init__(self, inner: object, pid: str) -> None:
+            self._inner = inner
+            self._pid = pid
+
+        def __getattr__(self, name: str):  # type: ignore[no-untyped-def]
+            return getattr(self._inner, name)
+
+        async def find_similar(self, description: str, *, limit: int = 5):  # type: ignore[no-untyped-def]
+            try:
+                return await self._inner.find_similar(description, limit=limit)  # type: ignore[attr-defined]
+            except Exception as exc:
+                _degrade(self._pid, "work_items", f"{type(exc).__name__}: {exc}")
+                raise
+
+        async def get_work_item(self, item_id: str):  # type: ignore[no-untyped-def]
+            try:
+                return await self._inner.get_work_item(item_id)  # type: ignore[attr-defined]
+            except Exception as exc:
+                _degrade(self._pid, "work_items", f"{type(exc).__name__}: {exc}")
+                raise
+
     responder = DecisionResponder(
         repo, public_base_url=settings.public_base_url, on_error=lambda pid, msg: _degrade(
             pid, "response_channel", msg
@@ -370,6 +407,9 @@ def get_context() -> AppContext:
         try:
             work_items = build_work_items(project.connectors.work_items)
             health.append(AdapterHealth("work_items", wi_adapter))
+            # Runtime failures (401 mid-poll, network) must also flip the badge —
+            # only real providers get the watch; the Fake fallback cannot fail.
+            work_items = _HealthWatchedWorkItems(work_items, project.id)
         except Exception as exc:
             logger.exception(
                 "[%s] work-item adaptörü kurulamadı; efor geçmişi devre dışı "

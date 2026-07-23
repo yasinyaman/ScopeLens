@@ -9,10 +9,13 @@ use the separate `src_root` field in the UI.
 from __future__ import annotations
 
 import ipaddress
+import logging
 import re
 import subprocess
 from pathlib import Path
 from urllib.parse import urlsplit
+
+logger = logging.getLogger("etki")
 
 _ALLOWED_SCHEMES = {"http", "https", "ssh", "git"}
 # scp-like ssh shortcut: user@host:path (no scheme)
@@ -56,11 +59,26 @@ def _validate_git_url(git_url: str) -> None:
 
 
 def clone(git_url: str, target: str | Path) -> str:
-    """Shallow clone via `git clone --depth 1`; if the target exists, uses it as-is.
-    Returns the path."""
+    """Shallow clone via `git clone --depth 1`; an EXISTING clone is refreshed
+    (fetch + hard reset) so a reindex sees today's code — it used to be frozen
+    at the first clone forever while the index got a fresh timestamp. A failed
+    refresh falls back to the stale tree with a warning (offline reindex must
+    keep working). Returns the path."""
     _validate_git_url(git_url)
     path = Path(target)
     if path.exists() and any(path.iterdir()):
+        try:
+            subprocess.run(
+                ["git", "fetch", "--depth", "1", "origin", "HEAD"],
+                cwd=path, capture_output=True, text=True, timeout=300, check=True,
+            )
+            subprocess.run(
+                ["git", "reset", "--hard", "FETCH_HEAD"],
+                cwd=path, capture_output=True, text=True, timeout=60, check=True,
+            )
+        except (FileNotFoundError, subprocess.SubprocessError) as exc:
+            detail = getattr(exc, "stderr", "") or str(exc)
+            logger.warning("git tazeleme başarısız, mevcut kopya kullanılacak: %s", detail[-200:])
         return str(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     try:

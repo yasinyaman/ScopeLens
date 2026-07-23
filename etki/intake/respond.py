@@ -14,6 +14,7 @@ reference to ``on_decision`` and never imports intake.
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import logging
 from collections.abc import Callable, Coroutine
 from dataclasses import dataclass
@@ -124,10 +125,24 @@ class DecisionResponder:
         return self.bindings.get(case.project_id)
 
     def _already_posted(self, case_id: str, trigger: str) -> bool:
+        # Only a SUCCESSFUL post counts: an ok=false audit row used to satisfy
+        # this check and make a single write-back failure permanent.
         return any(
-            e.action == RESPONSE_POSTED and e.detail.get("trigger") == trigger
+            e.action == RESPONSE_POSTED
+            and e.detail.get("trigger") == trigger
+            and e.detail.get("ok") is True
             for e in self._repo.list_audit(case_id)
         )
+
+    async def drain(self, timeout: float = 20.0) -> None:
+        """Awaits in-flight fire-and-forget posts (intake tick / shutdown) so a
+        process exit cannot orphan a scheduled write-back."""
+        if not self._pending:
+            return
+        with contextlib.suppress(TimeoutError):
+            await asyncio.wait_for(
+                asyncio.gather(*list(self._pending), return_exceptions=True), timeout
+            )
 
     def on_decision(self, case: CaseFile) -> None:
         """Sync hook for ApprovalService.decide — schedules the final write-back
