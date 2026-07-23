@@ -6,6 +6,7 @@ sets) — a silent extraction shift here would move all of them at once. Values
 recorded from the shipped extractor on 2026-07-23 (before the W3 fixes)."""
 
 import asyncio
+from pathlib import Path
 
 import pytest
 from etki.extraction.scope_extractor import HeuristicScopeExtractor
@@ -40,7 +41,7 @@ _PIN = {
 
 @pytest.mark.parametrize("corpus", sorted(_PIN))
 def test_samples_contract_extraction_is_pinned(corpus: str) -> None:
-    text = open(f"samples/{corpus}/contract.md", encoding="utf-8").read()
+    text = Path(f"samples/{corpus}/contract.md").read_text(encoding="utf-8")
     items = asyncio.run(HeuristicScopeExtractor().extract("C", text))
     expected = _PIN[corpus]
     assert len(items) == expected["n"]

@@ -216,3 +216,32 @@ def test_pool_phrasing_variants_and_bullet_sections():
     items = asyncio.run(HeuristicScopeExtractor().extract("C", contract))
     assert items[0].effort_pool_hours == 40.0  # 'Efor havuzu: N saat' variant
     assert [i.effort_pool_hours for i in items[1:]] == [24.0, 24.0]  # bullets inherit
+
+
+def test_llm_extractor_falls_back_and_backfills():
+    """W3: an LLM/endpoint error used to abort the whole project index; and LLM
+    items silently lost limits/pools. Failure → heuristic fallback; success →
+    deterministic backfill from each item's description."""
+    import asyncio
+
+    from etki.extraction.scope_extractor import LLMScopeExtractor
+
+    contract = "## Madde 4.1 — Raporlama\nAyda en fazla 5 rapor. Efor havuzu 40 saattir.\n"
+
+    class _Boom:
+        async def complete_json(self, *, system: str, user: str) -> dict:
+            raise RuntimeError("endpoint down")
+
+    items = asyncio.run(LLMScopeExtractor(_Boom()).extract("C", contract))
+    assert items and items[0].limits.quantity == 5  # heuristic fallback ran
+
+    class _NoLimits:
+        async def complete_json(self, *, system: str, user: str) -> dict:
+            return {"items": [{
+                "id": "S1", "description": "Ayda en fazla 5 rapor. Efor havuzu 40 saattir.",
+                "category": "reporting", "polarity": "INCLUDED", "source_clause": "Madde 4.1",
+            }]}
+
+    items = asyncio.run(LLMScopeExtractor(_NoLimits()).extract("C", contract))
+    assert items[0].limits.quantity == 5  # backfilled
+    assert items[0].effort_pool_hours == 40.0

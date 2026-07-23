@@ -63,7 +63,6 @@ def test_cp1254_turkish_upload_keeps_exclusion_polarity():
 
 def test_undecodable_text_is_refused_loudly():
     import pytest
-
     from etki.extraction.parsers import DocumentUnreadable
 
     with pytest.raises(DocumentUnreadable):

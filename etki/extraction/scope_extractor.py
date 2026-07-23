@@ -281,11 +281,31 @@ class LLMScopeExtractor:
             "id, description, category, polarity (INCLUDED/EXCLUDED), source_clause. "
             'JSON only: {"items": [...]}.'
         )
-        payload = await self._llm.complete_json(system=system, user=text)
-        items: list[ScopeItem] = []
-        for raw in payload.get("items", []):
-            raw.setdefault("contract_id", contract_id)
-            items.append(ScopeItem.model_validate(raw))
+        try:
+            payload = await self._llm.complete_json(system=system, user=text)
+            items: list[ScopeItem] = []
+            for raw in payload.get("items", []):
+                raw.setdefault("contract_id", contract_id)
+                items.append(ScopeItem.model_validate(raw))
+        except Exception:  # noqa: BLE001 — endpoint/JSON failure must not kill indexing
+            # One LLM error used to abort the WHOLE project index; the heuristic
+            # extractor is always available and deterministic.
+            import logging
+
+            logging.getLogger("etki").exception(
+                "LLM extraction başarısız — heuristik extractor'a düşülüyor"
+            )
+            return await HeuristicScopeExtractor().extract(contract_id, text)
+        if not items:
+            return await HeuristicScopeExtractor().extract(contract_id, text)
+        # Deterministic backfill: the LLM prompt asks for polarity/category only —
+        # limits and effort pools got silently DROPPED. The same regexes the
+        # heuristic path uses recover them from each item's own description.
+        for item in items:
+            if item.limits.quantity is None:
+                item.limits = _limits(item.description)
+            if item.effort_pool_hours is None:
+                item.effort_pool_hours = _effort_pool(item.description)
         return items
 
 

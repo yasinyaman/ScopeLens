@@ -439,7 +439,7 @@ def test_upload_with_unparseable_headings_warns_about_zero_clauses(
     app_context.engines["demo"].baseline.scope_items.clear()
     r = client.post(
         "/projeler/demo/dosyalar/upload",
-        files={"files": ("basliksiz.txt", "serbest metin, hic baslik yok".encode(), "text/plain")},
+        files={"files": ("basliksiz.txt", b"serbest metin, hic baslik yok", "text/plain")},
     )
     assert r.status_code == 200
     assert "kapsam maddesi" in r.text  # pf.no_clauses warning rendered
