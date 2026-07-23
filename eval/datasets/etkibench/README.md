@@ -99,6 +99,17 @@ not). No generalization claim — the selection ran on open dev sets only.
   round (TR quota family; quantity_crs 11/12, period_quota 11/11, backtest
   12/12 — all without touching any answer key).
 
+**Pilot-set refresh one-shot (2026-07-23):** the old `pilot_crs.json` was
+10/12 a verbatim copy of the backtest answer key — its 75-83% "pilot agreement"
+double-counted the same cases. The refreshed set (12 fresh TR phrasings, zero
+copies, full strata mix) scores **7/12 (58%) — below the 0.75 gate — and
+effort-in-range 6/12**, matching the open dev-set reality (50-68%) instead of
+the circular number. Per the pre-committed rule the pilot gate therefore does
+NOT enter CI; `python -m etki.pilot` now reports the honest number (RET) and
+its calibration suggestions run on genuinely fresh data. The answer key stays
+as labeled — the gap is the engine's (and the effort labels are judgment
+calls, stated as such).
+
 **heldout_v3 one-shot (2026-07-21, after the matching/estimator round —
 azure-lexicon fix, TR boilerplate-verb stopwords, diacritic-folded stop lookup,
 surface-count short-query cap, zero-spread analogy widening): Meridian 7/12,
