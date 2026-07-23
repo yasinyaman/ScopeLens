@@ -173,13 +173,26 @@ def _category(text: str) -> str:
     return best
 
 
+# A number followed by a DURATION unit is an SLA ("en fazla 4 saat içinde
+# yanıt"), not a deliverable quota — it used to parse as limit=4 and the quota
+# step flagged "5 rapor" against it.
+_DURATION_AFTER = re.compile(
+    r"^\s*(?:saat|sa\b|dakika|dk\b|iş\s*günü|is\s*gunu|gün|gun\b"
+    r"|hours?|minutes?|business\s+days?|days?)",
+    re.IGNORECASE,
+)
+
+
 def _limits(text: str) -> ScopeLimit:
-    match = _LIMIT.search(text)
-    if not match:
-        return ScopeLimit()
-    quantity = int(next(g for g in match.groups() if g))
-    period = "monthly" if _MONTHLY.search(text) else "yearly" if _YEARLY.search(text) else None
-    return ScopeLimit(quantity=quantity, period=period)
+    for match in _LIMIT.finditer(text):
+        if _DURATION_AFTER.match(text[match.end():]):
+            continue  # SLA duration → skip; the first NON-duration limit wins
+        quantity = int(next(g for g in match.groups() if g))
+        period = (
+            "monthly" if _MONTHLY.search(text) else "yearly" if _YEARLY.search(text) else None
+        )
+        return ScopeLimit(quantity=quantity, period=period)
+    return ScopeLimit()
 
 
 def _condense(text: str, limit: int = 240) -> str:

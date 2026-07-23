@@ -185,3 +185,18 @@ def test_numbered_list_lines_in_prose_are_not_headings():
     )
     items = asyncio.run(HeuristicScopeExtractor().extract("C", contract))
     assert len(items) == 1  # the numbered prose lines stay in the section body
+
+
+def test_sla_durations_are_not_quota_limits():
+    import asyncio
+
+    contract = (
+        "## Madde 9.1 — Destek\n"
+        "Kritik hatalara en fazla 4 saat içinde yanıt verilir; "
+        "ayda en fazla 5 rapor üretilir.\n"
+        "## Clause 9.2 — Support\n"
+        "Incidents are answered within at most 8 hours.\n"
+    )
+    items = asyncio.run(HeuristicScopeExtractor().extract("C", contract))
+    assert items[0].limits.quantity == 5  # the SLA '4 saat' is skipped, the quota wins
+    assert items[1].limits.quantity is None  # duration-only clause → no quota
