@@ -73,12 +73,14 @@ from etki.extraction.parsers import parse_document
 from etki.extraction.scope_extractor import HeuristicScopeExtractor
 from etki.graphquery import IndexGraphQuery
 from etki.hitl.ingest import derive_disputes, precedents_by_clause
+from etki.hitl.service import AlreadyDecidedError
 from etki.i18n import LANG_NAMES, SUPPORTED, get_locale, resolve_locale, set_locale, t
 from etki.index_tools import IndexTools
 from etki.indexing.engine import load_index
 from etki.kpi import compute_kpis
 from etki.llm_profile import build_system_preamble, wrap_untrusted
 from etki.net_guard import is_metadata_url
+from etki.plugin.options_store import is_secret_field
 from etki.process_log import log_event, read_events
 from etki.reporting.docx_report import build_case_report
 
@@ -1017,9 +1019,15 @@ async def ui_action(
         raise HTTPException(status_code=404, detail=t("err.case_not_found"))
     ensure_project_access(user, case.project_id, ctx.user_store)
     engine = ctx.get_engine(case.project_id)
-    result = ctx.approval.decide(
-        case_id, index, _ACTION[action], actor=user["username"], current_baseline=engine.baseline
-    )
+    try:
+        result = ctx.approval.decide(
+            case_id, index, _ACTION[action],
+            actor=user["username"], current_baseline=engine.baseline,
+        )
+    except AlreadyDecidedError as exc:
+        raise HTTPException(status_code=409, detail=t("err.already_decided")) from exc
+    except IndexError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
     if result.new_scope_item is not None:
         # Living baseline: engine + index.json grow together (survives a restart).
         ctx.apply_baseline_bump(case.project_id, result.new_scope_item)
@@ -1910,8 +1918,13 @@ def _schema_fields(
             input_type = "number"
         else:  # strings, unions (anyOf), anything exotic → plain text
             input_type = "text"
-        secret = mask_secrets and input_type == "text" and is_secret_field(name)
         value = current.get(name, prop.get("default", ""))
+        # env: references are pointers, not secrets — they stay visible (U4 rule);
+        # only LITERAL values of secret-named fields are masked.
+        is_env_ref = isinstance(value, str) and value.startswith("env:")
+        secret = (
+            mask_secrets and input_type == "text" and is_secret_field(name) and not is_env_ref
+        )
         fields.append(
             {
                 "name": name,
@@ -1931,7 +1944,7 @@ def _wi_form_fields(adapter: str, current: dict) -> list[dict] | None:
     model = options_model_for("work_items", adapter)
     if model is None:
         return None
-    return _schema_fields(model, current)
+    return _schema_fields(model, current, mask_secrets=True)
 
 
 def _wi_form_context(
@@ -1951,7 +1964,10 @@ def _wi_form_context(
     fields = None if mode == "raw" else _wi_form_fields(adapter, opts)
     return {
         "wi_fields": fields,
-        "wi_raw": "".join(f"{k}: {v}\n" for k, v in opts.items()),
+        "wi_raw": "".join(
+            f"{k}: {'' if is_secret_field(k) and not str(v).startswith('env:') else v}\n"
+            for k, v in opts.items()
+        ),
     }
 
 
@@ -1960,7 +1976,7 @@ def _intake_form_fields(adapter: str, current: dict) -> list[dict] | None:
     model = options_model_for("request_intake", adapter)
     if model is None:
         return None
-    return _schema_fields(model, current)
+    return _schema_fields(model, current, mask_secrets=True)
 
 
 def _intake_form_context(
@@ -1977,7 +1993,10 @@ def _intake_form_context(
     fields = None if mode == "raw" else _intake_form_fields(adapter, opts)
     return {
         "intake_fields": fields,
-        "intake_raw": "".join(f"{k}: {v}\n" for k, v in opts.items()),
+        "intake_raw": "".join(
+            f"{k}: {'' if is_secret_field(k) and not str(v).startswith('env:') else v}\n"
+            for k, v in opts.items()
+        ),
     }
 
 
@@ -2053,7 +2072,8 @@ async def project_files_upload(
     if not payloads:
         return RedirectResponse(f"/projeler/{project_id}/dosyalar", status_code=303)
     try:
-        projects_store.add_documents(project_id, payloads)
+        # Parse (docx/pdf) is CPU-bound sync work — off the event loop.
+        await run_in_threadpool(projects_store.add_documents, project_id, payloads)
     except ValueError as exc:
         return templates.TemplateResponse(
             request, "project_files.html", (await _files_context(ctx, project, error=str(exc))),
@@ -2090,7 +2110,10 @@ async def project_repo_add(
     if project is None:
         return RedirectResponse("/", status_code=303)
     try:
-        projects_store.add_repo(
+        # Clone runs a git subprocess (up to minutes) — keep it off the single
+        # worker's event loop (health probes must stay responsive).
+        await run_in_threadpool(
+            projects_store.add_repo,
             project_id, name.strip(),
             git_url=git_url.strip() or None, src_root=src_root.strip() or None, engine=engine,
         )
@@ -2172,6 +2195,13 @@ async def project_work_items(
             for k, v in form.items()
             if k.startswith("opt_") and str(v).strip() != ""
         }
+    # Secret fields render masked/empty — an empty submit means "keep the stored
+    # value", never "wipe it" (the plugin options-store idiom).
+    stored_wi = project.connectors.work_items
+    if adapter == stored_wi.adapter:
+        for key, val in stored_wi.options.items():
+            if is_secret_field(key) and not str(opts.get(key, "")).strip():
+                opts[key] = val
     # Validate against the options model when one exists — WITHOUT resolving
     # env: references (whether the variable exists is the deployment's concern,
     # not the form's; string fields accept the reference as-is).
@@ -2251,6 +2281,11 @@ async def project_intake(
             for k, v in form.items()
             if k.startswith("opt_") and str(v).strip() != ""
         }
+    stored_in = project.connectors.request_intake
+    if adapter == stored_in.adapter:
+        for key, val in stored_in.options.items():
+            if is_secret_field(key) and not str(opts.get(key, "")).strip():
+                opts[key] = val
     model = options_model_for("request_intake", adapter)
     if model is not None:
         try:

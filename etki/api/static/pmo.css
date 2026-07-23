@@ -137,6 +137,15 @@ button:focus-visible, a:focus-visible {
 .badge.d-CR_CANDIDATE::before { content: "± "; }
 .badge.d-GRAY_AREA::before    { content: "? "; }
 .badge.d-MAINTENANCE::before  { content: "⟲ "; }
+/* PMO durum rozetleri: dört durum dört ayrı görünüm (PENDING artık yeşil ✓ değil) */
+.s-PENDING        { color: #55666D; background: #EEEBE4; }
+.s-APPROVE        { color: var(--pmo-ok); background: var(--pmo-ok-soft); }
+.s-REJECT         { color: var(--pmo-risk); background: var(--pmo-risk-soft); }
+.s-CONVERT_TO_CR  { color: var(--pmo-warn); background: var(--pmo-warn-soft); }
+.badge.s-PENDING::before       { content: "… "; }
+.badge.s-APPROVE::before       { content: "✓ "; }
+.badge.s-REJECT::before        { content: "✕ "; }
+.badge.s-CONVERT_TO_CR::before { content: "± "; }
 .risk-LOW    { color:#1E7A43; font-weight: 600; }
 .risk-MEDIUM { color: #8F5F00; font-weight: 600; }
 .risk-HIGH, .risk-CRITICAL { color:#A83228; font-weight: 700; }

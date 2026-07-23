@@ -28,6 +28,12 @@ class DocumentTooLarge(ValueError):
     """An upload whose decompressed size exceeds the safety bound (zip/xml bomb guard)."""
 
 
+class DocumentUnreadable(ValueError):
+    """A corrupt or mislabeled upload (BadZipFile / broken PDF / …). Subclassing
+    ValueError lets the upload routes' existing `except ValueError` render a
+    helpful 400 instead of the bare 500 these library errors used to become."""
+
+
 def _guard_zip_bomb(data: bytes) -> None:
     """Reject a ZIP-based document (docx/xlsx) that declares an unsafe expansion BEFORE any
     library decompresses it. Uses the central-directory `file_size` (what a real decompress
@@ -112,15 +118,22 @@ def _from_pdf(data: bytes) -> tuple[str, list[str]]:
 
 def parse_document(filename: str, data: bytes) -> tuple[str, list[str]]:
     ext = Path(filename).suffix.lower()
-    if ext == ".csv":
-        return _from_csv(data, ",")
-    if ext == ".tsv":
-        return _from_csv(data, "\t")
-    if ext == ".docx":
-        return _from_docx(data)
-    if ext == ".xlsx":
-        return _from_xlsx(data)
-    if ext == ".pdf":
-        return _from_pdf(data)
+    try:
+        if ext == ".csv":
+            return _from_csv(data, ",")
+        if ext == ".tsv":
+            return _from_csv(data, "\t")
+        if ext == ".docx":
+            return _from_docx(data)
+        if ext == ".xlsx":
+            return _from_xlsx(data)
+        if ext == ".pdf":
+            return _from_pdf(data)
+    except ValueError:
+        raise  # our own guards (DocumentTooLarge / DocumentUnreadable) pass through
+    except Exception as exc:
+        # docx/openpyxl/pypdf raise library-specific errors (BadZipFile,
+        # InvalidFileException, PdfStreamError, …) on corrupt/mislabeled files.
+        raise DocumentUnreadable(f"dosya okunamadı ({ext or 'bilinmeyen tür'}): {exc}") from exc
     # .txt / .md / unknown → plain text
     return _from_text(data.decode("utf-8", errors="replace"))

@@ -149,6 +149,23 @@ cat backup.sql | docker compose exec -T db psql -U postgres etki           # res
 ```
 The audit trail (`audit_events`) and versioned baseline (`baseline_versions`) are backed up — so every decision stays reconstructable for a contractual dispute.
 
+The database is NOT the whole state. A complete backup also needs:
+
+- **`.etki/`** (the `etki-index` volume): project indexes, uploaded-contract
+  workspaces (`.etki/projects/{id}/`), intake cursors, plugin options
+  (`plugin-options.json` holds adapter secrets — treat the backup accordingly),
+  and the decision wiki (regenerable, but cheap to include).
+- **`config/`** (the `etki-config` volume): `projects.yaml` written by
+  UI-driven project management. Named volumes seed themselves from the image on
+  FIRST use only — image updates do not overwrite them.
+- Demo profile: the SQLite DB lives on the `etki-demo-data` volume
+  (`/app/data/etki.db`).
+
+```bash
+docker run --rm -v etki_etki-index:/v -v "$PWD:/out" alpine tar czf /out/etki-index.tgz -C /v .
+docker run --rm -v etki_etki-config:/v -v "$PWD:/out" alpine tar czf /out/etki-config.tgz -C /v .
+```
+
 ## Capability negotiation & graceful degradation
 
 Each adapter declares its capabilities (`supports_webhooks/realtime/effort_tracking/incremental_diff`). The system degrades accordingly:

@@ -31,10 +31,12 @@ from etki.api.security import (
     ensure_project_access,
     require_pmo,
     require_user,
+    require_writer,
 )
 from etki.auth import build_user_store
 from etki.config import Settings
 from etki.core.models import AuditEvent, CaseFile
+from etki.hitl.service import AlreadyDecidedError
 from etki.kpi import compute_kpis
 from etki.logging_config import configure_logging
 
@@ -238,7 +240,9 @@ async def ready() -> JSONResponse:
         # sync dependency.
         ctx = await run_in_threadpool(get_context)
         ctx.repo.list_cases(None)  # lightweight DB query
-        ok = len(ctx.engines) > 0
+        # The DEFAULT project must be servable: default-routed endpoints 404
+        # when it failed to build, so "ready" must not claim otherwise.
+        ok = len(ctx.engines) > 0 and ctx.default_project in ctx.engines
     except Exception:
         logger.exception("Hazırlık probu başarısız")
         ok = False
@@ -253,7 +257,11 @@ async def projects(ctx: CtxDep, user: UserDep) -> list[dict[str, str]]:
 
 
 @app.post("/triage")
-async def triage(body: TriageRequest, ctx: CtxDep, user: UserDep) -> CaseFile:
+async def triage(
+    body: TriageRequest,
+    ctx: CtxDep,
+    user: Annotated[dict[str, str], Depends(require_writer)],
+) -> CaseFile:
     pid = ctx.resolve_project(body.project_id)
     ensure_project_access(user, pid, ctx.user_store)
     request_id = f"REQ-{pid}-{uuid.uuid4().hex[:8]}"
@@ -317,6 +325,8 @@ async def decide(
             current_baseline=engine.baseline,
             override_decision=body.override_decision,
         )
+    except AlreadyDecidedError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
     except IndexError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     if result.new_scope_item is not None:

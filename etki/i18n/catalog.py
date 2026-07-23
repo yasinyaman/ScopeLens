@@ -207,6 +207,11 @@ MESSAGES: dict[str, dict[str, str]] = {
         "tr": "Vaka dosyası bulunamadı", "en": "Case file not found", "de": "Fallakte nicht gefunden",
     },
     "err.invalid_action": {"tr": "Geçersiz aksiyon", "en": "Invalid action", "de": "Ungültige Aktion"},
+    "err.already_decided": {
+        "tr": "Bu karar zaten sonuçlandırılmış — sayfayı yenileyin.",
+        "en": "This decision was already resolved — refresh the page.",
+        "de": "Diese Entscheidung wurde bereits getroffen — Seite neu laden.",
+    },
     "login.rate_limited": {
         "tr": "Çok fazla başarısız deneme. Lütfen yaklaşık {min} dakika sonra tekrar deneyin.",
         "en": "Too many failed attempts. Please try again in about {min} minute(s).",
@@ -1765,6 +1770,11 @@ MESSAGES: dict[str, dict[str, str]] = {
         "tr": "ilk {n} karakter", "en": "first {n} characters", "de": "erste {n} Zeichen",
     },
     "common.close": {"tr": "Kapat", "en": "Close", "de": "Schließen"},
+    "common.request_failed": {
+        "tr": "İstek başarısız — sayfayı yenileyip tekrar deneyin.",
+        "en": "Request failed — refresh the page and try again.",
+        "de": "Anfrage fehlgeschlagen — Seite neu laden und erneut versuchen.",
+    },
     "dp.truncated": {
         "tr": "… belge kısaltıldı (yalnızca ilk kısım gösteriliyor).",
         "en": "… document truncated (only the first part is shown).",

@@ -77,3 +77,31 @@ def test_override_tracked_in_kpi(client: TestClient):
     kpi = client.get("/kpi").json()
     assert kpi["override_count"] >= 1
     assert kpi["override_rate"] > 0
+
+
+def test_second_decision_on_resolved_case_is_conflict(
+    client: TestClient, app_context: AppContext
+):
+    """A duplicate PMO ruling must not double-bump the baseline or rewrite
+    history: the service raises, both routes map it to 409."""
+    cid = _triage(client, "login ekranına SSO entegrasyonu")
+    before = app_context.engines["demo"].baseline.version
+    first = client.post(
+        f"/casefiles/{cid}/decisions/0/action", json={"action": "CONVERT_TO_CR"}
+    )
+    assert first.status_code == 200
+    again = client.post(
+        f"/casefiles/{cid}/decisions/0/action", json={"action": "REJECT"}
+    )
+    assert again.status_code == 409
+    assert app_context.engines["demo"].baseline.version == before + 1  # bumped ONCE
+    case = app_context.repo.get_case(cid)
+    assert case.decisions[0].human_decision.value == "CONVERT_TO_CR"  # history intact
+    ui = client.post(f"/ui/casefiles/{cid}/decisions/0/approve")
+    assert ui.status_code == 409  # UI twin maps the same guard
+
+
+def test_triage_requires_writer_role(client: TestClient, auth_role: dict):
+    auth_role["role"] = "viewer"
+    r = client.post("/triage", json={"request_text": "rapora filtre"})
+    assert r.status_code == 403  # parity with the UI twin (require_writer)

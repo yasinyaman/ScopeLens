@@ -3,7 +3,7 @@
   <div>
     <h2 style="margin:0 0 4px; font-size:20px; font-weight:800;">{{ t('cf.case_file') }} {{ case.request_id }}</h2>
     <p class="meta" style="margin:0;">{{ t('cf.project') }}: <b>{{ project.name if project else case.project_id }}</b> · {{ t('cf.status') }}:
-      <span class="badge d-{{ 'IN_SCOPE' if case.status.value in ('APPROVE','PENDING') else 'OUT_OF_SCOPE' }}" style="font-size:11px">{{ case.status.value|tr_status }}</span>
+      <span class="badge s-{{ case.status.value }}" style="font-size:11px">{{ case.status.value|tr_status }}</span>
       · "{{ case.raw_request }}"</p>
   </div>
   <a href="/ui/casefiles/{{ case.request_id }}/report.docx"><button class="btn ghost" type="button">{{ t('cf.download_report') }}</button></a>

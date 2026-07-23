@@ -384,3 +384,32 @@ def test_report_docx_download(client: TestClient) -> None:
     assert r.headers["content-type"].startswith(
         "application/vnd.openxmlformats-officedocument"
     )
+
+
+def test_corrupt_docx_upload_is_a_helpful_400_not_500(client: TestClient) -> None:
+    r = client.post(
+        "/projeler/demo/dosyalar/upload",
+        files={"files": ("bozuk.docx", b"this is not a zip container", "application/octet-stream")},
+    )
+    assert r.status_code == 400  # DocumentUnreadable → form error, not a bare 500
+
+
+def test_workitem_form_never_echoes_stored_secrets(client: TestClient, monkeypatch) -> None:
+    # projects_store.get is monkeypatched: the REAL config/projects.yaml must
+    # never be written by a test (it is the developer's live config).
+    from etki import projects_store
+
+    hacked = projects_store.get("demo").model_copy(deep=True)
+    hacked.connectors.work_items.adapter = "jira"
+    hacked.connectors.work_items.options = {
+        "base_url": "https://x.atlassian.net", "email": "a@b.c",
+        "api_token": "SUPER-SECRET-TOKEN", "jql": "project=X",
+    }
+    monkeypatch.setattr(projects_store, "get", lambda pid: hacked if pid == "demo" else None)
+    r = client.get("/projeler/demo/ayarlar/work-items/form", params={"adapter": "jira"})
+    assert r.status_code == 200
+    assert "SUPER-SECRET-TOKEN" not in r.text  # masked in typed fields
+    raw = client.get(
+        "/projeler/demo/ayarlar/work-items/form", params={"adapter": "jira", "mode": "raw"}
+    )
+    assert "SUPER-SECRET-TOKEN" not in raw.text  # and in the raw textarea

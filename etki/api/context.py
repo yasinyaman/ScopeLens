@@ -159,6 +159,11 @@ class AppContext:
         """Falls back to the default only when project_id is not given (explicit intent);
         an unknown id is never silently redirected to another project → UnknownProjectError."""
         if not project_id:
+            if self.default_project not in self.engines:
+                # The default project failed to index/build at startup: surface a
+                # clean 404 (the UnknownProjectError path) instead of a raw
+                # KeyError-500 from engines[default].
+                raise UnknownProjectError(self.default_project)
             return self.default_project
         if project_id not in self.engines:
             raise UnknownProjectError(project_id)

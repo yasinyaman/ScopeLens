@@ -31,6 +31,12 @@ logger = logging.getLogger("etki")
 _TERMINAL = {PmoDecision.APPROVE, PmoDecision.REJECT, PmoDecision.CONVERT_TO_CR}
 
 
+class AlreadyDecidedError(ValueError):
+    """A second PMO ruling on an already-terminal decision. Without this guard a
+    duplicate CONVERT_TO_CR double-bumped the living baseline and a late REJECT
+    silently rewrote history (the audit trail showed both, the case only one)."""
+
+
 @dataclass
 class ApprovalResult:
     case: CaseFile
@@ -109,6 +115,11 @@ class ApprovalService:
             raise IndexError(f"Geçersiz karar indeksi: {decision_index}")
 
         decision = case.decisions[decision_index]
+        if decision.human_decision is not PmoDecision.PENDING:
+            raise AlreadyDecidedError(
+                f"Karar zaten sonuçlandırılmış: {case_id}#{decision_index} "
+                f"({decision.human_decision.value})"
+            )
         system_decision = decision.decision
         now = datetime.now(UTC)
 

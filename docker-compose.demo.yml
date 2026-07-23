@@ -19,6 +19,8 @@ services:
       - "8000:8000"
     volumes:
       - etki-demo-index:/app/.etki
+      - etki-demo-data:/app/data  # SQLite audit DB survives container recreation
 
 volumes:
   etki-demo-index:
+  etki-demo-data:
