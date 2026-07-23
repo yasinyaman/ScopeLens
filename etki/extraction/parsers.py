@@ -34,6 +34,22 @@ class DocumentUnreadable(ValueError):
     helpful 400 instead of the bare 500 these library errors used to become."""
 
 
+def _decode(data: bytes) -> str:
+    """Strict UTF-8, then strict CP1254 (Turkish Windows exports). The old
+    `errors="replace"` path silently turned 'hariçtir' into 'hari�tir' — the
+    exclusion keyword vanished and the clause polarity INVERTED. Refusing an
+    undecodable file loudly beats guessing its meaning."""
+    try:
+        return data.decode("utf-8")
+    except UnicodeDecodeError:
+        try:
+            return data.decode("cp1254")
+        except UnicodeDecodeError as exc:
+            raise DocumentUnreadable(
+                "metin kodlaması çözülemedi (UTF-8/CP1254 değil) — dosyayı UTF-8 kaydedin"
+            ) from exc
+
+
 def _guard_zip_bomb(data: bytes) -> None:
     """Reject a ZIP-based document (docx/xlsx) that declares an unsafe expansion BEFORE any
     library decompresses it. Uses the central-directory `file_size` (what a real decompress
@@ -60,7 +76,7 @@ def _from_text(text: str) -> tuple[str, list[str]]:
 
 
 def _from_csv(data: bytes, delimiter: str) -> tuple[str, list[str]]:
-    text = data.decode("utf-8", errors="replace")
+    text = _decode(data)
     items: list[str] = []
     for row in csv.reader(io.StringIO(text), delimiter=delimiter):
         joined = " ".join(cell.strip() for cell in row if cell.strip())
@@ -136,4 +152,4 @@ def parse_document(filename: str, data: bytes) -> tuple[str, list[str]]:
         # InvalidFileException, PdfStreamError, …) on corrupt/mislabeled files.
         raise DocumentUnreadable(f"dosya okunamadı ({ext or 'bilinmeyen tür'}): {exc}") from exc
     # .txt / .md / unknown → plain text
-    return _from_text(data.decode("utf-8", errors="replace"))
+    return _from_text(_decode(data))

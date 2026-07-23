@@ -45,3 +45,26 @@ def test_parse_xlsx_rows():
     _, items = parse_document("crler.xlsx", buffer.getvalue())
     assert any("rapora filtre" in it for it in items)
     assert any("kripto" in it for it in items)
+
+
+def test_cp1254_turkish_upload_keeps_exclusion_polarity():
+    """W3: a Windows-1254 export used to decode with errors='replace' — 'hariçtir'
+    became 'hari�tir', the keyword vanished and the clause polarity INVERTED."""
+    import asyncio
+
+    from etki.extraction.scope_extractor import HeuristicScopeExtractor
+
+    contract = "## Madde 7.1 — Kapsam\nSSO entegrasyonu hariçtir.\n"
+    text, _ = parse_document("sozlesme.txt", contract.encode("cp1254"))
+    assert "hariçtir" in text  # decoded via the CP1254 fallback, not replaced
+    items = asyncio.run(HeuristicScopeExtractor().extract("C", text))
+    assert items[0].polarity.value == "EXCLUDED"
+
+
+def test_undecodable_text_is_refused_loudly():
+    import pytest
+
+    from etki.extraction.parsers import DocumentUnreadable
+
+    with pytest.raises(DocumentUnreadable):
+        parse_document("garip.txt", b"\xff\xfe\x00\x01\x81\x91")
