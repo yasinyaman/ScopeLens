@@ -5,9 +5,9 @@ Two adapters share one options model and one transport (`_JiraClient`):
 - ``JiraRequestIntakeProvider`` polls new issues via JQL (REST v3 enhanced
   search). The opaque cursor is a minute-precision ``created`` watermark,
   optionally carrying a ``|nextPageToken`` suffix so consecutive polls can walk
-  through a bulk-created minute (no livelock). The JQL floor backs off 60
-  minutes (DST/clock-skew guard); the host's deterministic request-id dedup
-  absorbs every overlap, so nothing is missed and nothing duplicates.
+  through a bulk-created minute (no livelock). The ``>=`` boundary-minute
+  overlap is host-dedup-absorbed; there is deliberately NO wider time backoff
+  (the port contract requires exhaustion + no re-emission).
 - ``JiraResponseChannel`` posts the host-composed decision text back as an
   issue comment (Atlassian Document Format). It RAISES on failure; the host is
   the only best-effort layer.
@@ -20,7 +20,7 @@ Depends ONLY on etki-api (+ httpx).
 from __future__ import annotations
 
 import base64
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Any
 
 import httpx
@@ -133,18 +133,15 @@ class JiraRequestIntakeProvider(_JiraClient):
         form lets consecutive polls WALK THROUGH a minute holding more issues
         than one batch (bulk import) — with a bare minute-watermark alone the
         cursor could never cross it (livelock: same first page every poll).
-        The JQL floor also backs off 60 minutes (DST shift / clock skew guard);
-        the host's deterministic request-id dedup absorbs the overlap."""
+        No time backoff: the port contract requires an exhausted source to
+        return empty and a returned cursor not to re-emit — the `>=` boundary
+        overlap is the only (host-dedup-absorbed) re-read. Residual risk: a
+        DST shift during a poll gap can skip up to an hour; documented, not
+        papered over with a contract-breaking window."""
         minute, _, page_token = (cursor or "").partition("|")
         jql = self._base_jql()
         if minute:
-            floor = minute
-            try:
-                floor_dt = datetime.strptime(minute, _WATERMARK_FMT) - timedelta(minutes=60)
-                floor = floor_dt.strftime(_WATERMARK_FMT)
-            except ValueError:
-                pass  # unknown cursor shape → use it verbatim
-            jql = f'({jql}) AND created >= "{floor}" ORDER BY created ASC'
+            jql = f'({jql}) AND created >= "{minute}" ORDER BY created ASC'
         else:
             jql = f"({jql}) ORDER BY created ASC"
 

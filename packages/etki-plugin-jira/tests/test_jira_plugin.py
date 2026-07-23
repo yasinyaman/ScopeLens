@@ -178,7 +178,7 @@ def test_fetch_new_pages_through_a_bulk_minute_via_token_cursor():
     batch = asyncio.run(provider.fetch_new(cursor="2026-07-16 09:30", limit=2))
     assert [i.external_id for i in batch.items] == ["1", "2"]
     assert batch.cursor == "2026-07-16 09:30|T2"  # leftover token rides the cursor
-    assert 'created >= "2026-07-16 08:30"' in calls[0]["jql"]  # 60min DST/skew floor
+    assert 'created >= "2026-07-16 09:30"' in calls[0]["jql"]  # exact watermark floor
 
     # Next poll resumes AT the token (same query), not at page one again.
     pages["T2"] = {"issues": [
