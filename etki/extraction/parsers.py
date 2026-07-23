@@ -87,15 +87,33 @@ def _from_csv(data: bytes, delimiter: str) -> tuple[str, list[str]]:
 
 def _from_docx(data: bytes) -> tuple[str, list[str]]:
     from docx import Document
+    from docx.table import Table
+    from docx.text.paragraph import Paragraph
 
     _guard_zip_bomb(data)
     document = Document(io.BytesIO(data))
-    items = [p.text.strip() for p in document.paragraphs if _meaningful(p.text)]
-    for table in document.tables:
-        for row in table.rows:
-            joined = " ".join(cell.text.strip() for cell in row.cells if cell.text.strip())
-            if _meaningful(joined):
-                items.append(joined)
+    items: list[str] = []
+    # Walk the body IN DOCUMENT ORDER: the old paragraphs-then-tables order
+    # appended every table after all prose, so a table under "Madde 3" was
+    # attributed to the LAST clause. List-style paragraphs get a "- " marker —
+    # Word keeps bullets as formatting, so exclusion lists never matched
+    # _BULLET and collapsed into one clause.
+    for child in document.element.body.iterchildren():
+        if child.tag.endswith("}p"):
+            paragraph = Paragraph(child, document)
+            text = paragraph.text.strip()
+            if not _meaningful(text):
+                continue
+            style = (paragraph.style.name or "") if paragraph.style is not None else ""
+            if style.startswith("List"):
+                text = f"- {text}"
+            items.append(text)
+        elif child.tag.endswith("}tbl"):
+            table = Table(child, document)
+            for row in table.rows:
+                joined = " ".join(cell.text.strip() for cell in row.cells if cell.text.strip())
+                if _meaningful(joined):
+                    items.append(joined)
     return "\n".join(items), items
 
 

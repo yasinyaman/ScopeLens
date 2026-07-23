@@ -68,3 +68,25 @@ def test_undecodable_text_is_refused_loudly():
 
     with pytest.raises(DocumentUnreadable):
         parse_document("garip.txt", b"\xff\xfe\x00\x01\x81\x91")
+
+
+def test_docx_preserves_document_order_and_bullet_markers(tmp_path):
+    """W3: tables used to be appended AFTER all paragraphs (attributed to the
+    last clause) and Word list bullets lost their markers (never matched
+    _BULLET). Both fixed by walking the body in document order."""
+    from docx import Document as DocxDocument
+
+    doc = DocxDocument()
+    doc.add_paragraph("Madde 3 — Entegrasyon")
+    table = doc.add_table(rows=1, cols=2)
+    table.rows[0].cells[0].text = "ERP sistemi"
+    table.rows[0].cells[1].text = "dahildir"
+    doc.add_paragraph("Madde 7 — Hariç Tutulanlar")
+    doc.add_paragraph("SSO entegrasyonu kapsam dışıdır.", style="List Bullet")
+    path = tmp_path / "sozlesme.docx"
+    doc.save(path)
+
+    text, _ = parse_document("sozlesme.docx", path.read_bytes())
+    lines = text.splitlines()
+    assert lines.index("ERP sistemi dahildir") < lines.index("Madde 7 — Hariç Tutulanlar")
+    assert "- SSO entegrasyonu kapsam dışıdır." in lines  # bullet marker restored
