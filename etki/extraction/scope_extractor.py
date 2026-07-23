@@ -104,8 +104,17 @@ _CATEGORY_KW: dict[str, tuple[str, ...]] = {
 
 # `#` is optional: catches both markdown (## Madde X) and plain-text (Madde X — ...) uploads.
 # Besides TR "Madde", EN contract headings (Clause/Section/Article) also count as sections.
+# Separators: em-dash, EN-dash, hyphen, colon and "Madde 5. Başlık"-style dot (real
+# uploads use all of them; the unmatched ones used to extract ZERO clauses silently).
 _HEADING = re.compile(
-    r"^#{0,6}\s*((?:Madde|Clause|Section|Article)\s+[\d.]+)\s*[—\-:]\s*(.+?)\s*$", re.IGNORECASE
+    r"^#{0,6}\s*((?:Madde|Bölüm|Clause|Section|Article)\s+[\d.]+)\s*[—–\-:.]\s*(.+?)\s*$",
+    re.IGNORECASE,
+)
+# Fallback for keyword-less numbered headings ("5. KAPSAM", "5.1) Teslimatlar"):
+# the number needs a dot/paren and the title must start with an uppercase letter,
+# so numbered LIST lines in prose ("1. adım…") don't get promoted to sections.
+_HEADING_NUMBERED = re.compile(
+    r"^#{0,6}\s*(\d+(?:\.\d+)*)[.)]\s+([A-ZÇĞİÖŞÜ].{2,}?)\s*$"
 )
 _BULLET = re.compile(r"^\s*[-*]\s+(.*\S)\s*$")
 _LIMIT = re.compile(
@@ -272,10 +281,16 @@ def _split_sections(text: str) -> list[tuple[str, str, list[str]]]:
     body: list[str] = []
     for line in text.splitlines():
         heading = _HEADING.match(line)
-        if heading:
+        numbered = _HEADING_NUMBERED.match(line) if heading is None else None
+        if heading or numbered:
             if clause is not None:
                 sections.append((clause, title, body))
-            clause, title, body = heading.group(1), heading.group(2), []
+            if heading:
+                clause, title = heading.group(1), heading.group(2)
+            else:
+                assert numbered is not None
+                clause, title = f"Madde {numbered.group(1)}", numbered.group(2)
+            body = []
         elif clause is not None:
             body.append(line)
     if clause is not None:

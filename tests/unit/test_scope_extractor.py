@@ -152,3 +152,36 @@ def test_negated_exclusions_stay_included():
     )
     items = asyncio.run(HeuristicScopeExtractor().extract("C", contract))
     assert [i.polarity.value for i in items] == ["INCLUDED", "INCLUDED"]
+
+
+def test_real_world_heading_styles_extract_clauses():
+    """En-dash, 'MADDE 5. BAŞLIK' dot separator and keyword-less '5. KAPSAM'
+    numbered headings used to extract ZERO clauses silently."""
+    import asyncio
+
+    contract = (
+        "Madde 3 – Kimlik Doğrulama\n"          # en-dash
+        "Parola girişi kapsam dahilindedir.\n"
+        "MADDE 5. RAPORLAMA\n"                   # uppercase + dot separator
+        "Aylık rapor üretimi yapılır.\n"
+        "6.1) Hariç Tutulanlar\n"                # keyword-less numbered heading
+        "SSO entegrasyonu kapsam dışıdır.\n"
+    )
+    items = asyncio.run(HeuristicScopeExtractor().extract("C", contract))
+    assert len(items) == 3
+    assert items[0].source_clause == "Madde 3"
+    assert items[1].source_clause == "MADDE 5"
+    assert items[2].source_clause == "Madde 6.1"
+    assert items[2].polarity is Polarity.EXCLUDED
+
+
+def test_numbered_list_lines_in_prose_are_not_headings():
+    import asyncio
+
+    contract = (
+        "## Madde 2 — Süreç\n"
+        "1. adım tamamlanır ve rapor üretilir.\n"
+        "2. adım onaya gider.\n"
+    )
+    items = asyncio.run(HeuristicScopeExtractor().extract("C", contract))
+    assert len(items) == 1  # the numbered prose lines stay in the section body
