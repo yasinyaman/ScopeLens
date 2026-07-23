@@ -25,7 +25,17 @@ ENGINE_PREFIXES = (
     "etki/engine/",
     "etki/extraction/",
     "etki/core/text.py",
+    # Decision-equivalent lane (W5): threshold/estimation DEFAULTS live in
+    # Settings — changing them changes decisions exactly like engine code, so
+    # config edits cannot ride in the same change set as an answer key either.
+    # (adapters/ stays OUTSIDE deliberately: manifests.py was placed there so
+    # manifest tweaks never collide with the guard — a documented decision.)
+    "etki/config.py",
 )
+
+# The SEALED one-shot sets: any change to them is a violation on its own —
+# they are pre-registered answer keys awaiting their single scoring run.
+SEALED_PREFIXES = ("eval/datasets/etkibench/heldout_v2_",)
 # Answer keys: every labeled dataset the gates or the public benchmark score against.
 # Only the labeled data itself (.json) — READMEs/docs inside the datasets tree are
 # documentation and may legitimately change alongside engine work (e.g. scoreboards).
@@ -45,6 +55,14 @@ def classify(files: list[str]) -> tuple[list[str], list[str]]:
 
 def violation(files: list[str]) -> str | None:
     """Returns a human-readable violation message, or None if the change set is clean."""
+    sealed = [f for f in files if any(f.startswith(p) for p in SEALED_PREFIXES)]
+    if sealed:
+        return (
+            "FREEZE VIOLATION: sealed held-out set edited: "
+            + ", ".join(sealed)
+            + " — heldout_v2 is a pre-registered one-shot answer key; it can only "
+            "change in a change set that ALSO retires it in the EtkiBench README."
+        )
     engine, datasets = classify(files)
     if engine and datasets:
         return (

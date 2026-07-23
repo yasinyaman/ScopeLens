@@ -93,6 +93,7 @@
       <a class="kpi kpi-link" href="/projeler/{{ p.id }}/gecmis?filtre=analiz"><span class="meta">{{ t('rep.avg_cr_hours') }}</span><b>{{ k.avg_cr_approval_hours|fmt_hours }}</b></a>
       <a class="kpi kpi-link" href="/projeler/{{ p.id }}/hafiza"><span class="meta">{{ t('rep.precedents') }}</span><b>{{ k.precedent_count }}</b></a>
       <a class="kpi kpi-link" href="/projeler/{{ p.id }}/hafiza"><span class="meta">{{ t('rep.disputed') }}</span><b{% if k.disputed_count %} style="color:#A84E12;"{% endif %}>{{ k.disputed_count }}</b></a>
+      <a class="kpi kpi-link" href="/projeler/{{ p.id }}/gecmis?filtre=bekleyen"><span class="meta">{{ t('rep.gray_rate') }}</span><b{% if k.gray_share > 0.5 %} style="color:#A84E12;"{% endif %}>{{ '%.0f'|format(k.gray_share * 100) }}%</b></a>
     </div>
 
     <div style="display:grid; grid-template-columns:1.4fr 1fr; gap:16px;">

@@ -80,6 +80,25 @@ remains opt-in** (the golden trade-off is unchanged; a default-on decision
 would need a fresh pre-registered held-out one-shot, which this sweep is
 not). No generalization claim — the selection ran on open dev sets only.
 
+**Gate honesty notes (2026-07-23, from the critical study):**
+
+- **The golden warn band's real floor is ~71%, not 80%.** The gate uses a
+  Wilson interval: a point estimate below 80% whose interval still covers the
+  threshold prints a WARNING but passes — that tolerates down to 47/66 (71%);
+  a clear fail starts at 46/66. This is statistically deliberate (single-case
+  flips should not break CI) and now surfaced as a first-class `::warning::`
+  annotation instead of a silent pass.
+- **The effort-in-range gate is weak evidence for now:** 6 of the 12 backtest
+  requests are close restatements of the very work items the analogy draws
+  from, and the effort labels come from those analogs — the gate mostly
+  verifies the plumbing, not calibration. Real pilot data replaces it.
+- **Sealed sets are now enforced, not just convention:** the freeze guard
+  fails any change set touching `heldout_v2_*.json`, and `eval.runner` refuses
+  to run them without `ETKI_UNSEAL=1`.
+- Deterministic baseline moved 45 → **46/66** in the 2026-07-23 W4 lexicon
+  round (TR quota family; quantity_crs 11/12, period_quota 11/11, backtest
+  12/12 — all without touching any answer key).
+
 **heldout_v3 one-shot (2026-07-21, after the matching/estimator round —
 azure-lexicon fix, TR boilerplate-verb stopwords, diacritic-folded stop lookup,
 surface-count short-query cap, zero-spread analogy widening): Meridian 7/12,

@@ -12,6 +12,7 @@ from pathlib import Path
 from etki.engine.triage import TriageEngine
 
 _OOS = "OUT_OF_SCOPE"
+_GRAY = "GRAY_AREA"
 
 
 async def evaluate(engine: TriageEngine, dataset_path: str | Path) -> dict:
@@ -21,6 +22,7 @@ async def evaluate(engine: TriageEngine, dataset_path: str | Path) -> dict:
     in_range = 0
     effort_scored = 0  # rows that carry actual_effort_hours (denominator for range accuracy)
     tp = fp = fn = 0
+    g_tp = g_fp = g_fn = 0
     rows: list[dict] = []
 
     for cr in cases:
@@ -46,6 +48,16 @@ async def evaluate(engine: TriageEngine, dataset_path: str | Path) -> dict:
         elif got != _OOS and expected == _OOS:
             fn += 1
 
+        # GRAY precision measures the escalation channel's signal quality: on
+        # dev distributions ~4 of 5 GRAY outputs were decidable cases absorbed
+        # into PMO escalation — invisible until it was counted.
+        if got == _GRAY and expected == _GRAY:
+            g_tp += 1
+        elif got == _GRAY and expected != _GRAY:
+            g_fp += 1
+        elif got != _GRAY and expected == _GRAY:
+            g_fn += 1
+
         rows.append(
             {"id": cr["id"], "expected": expected, "got": got, "match": matched,
              "actual": actual, "range": [low, high], "in_range": hit}
@@ -60,5 +72,8 @@ async def evaluate(engine: TriageEngine, dataset_path: str | Path) -> dict:
         "effort_scored": effort_scored,
         "oos_precision": precision,
         "oos_recall": recall,
+        "gray_precision": g_tp / (g_tp + g_fp) if (g_tp + g_fp) else 1.0,
+        "gray_recall": g_tp / (g_tp + g_fn) if (g_tp + g_fn) else 1.0,
+        "gray_produced": g_tp + g_fp,
         "rows": rows,
     }

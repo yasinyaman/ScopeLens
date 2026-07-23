@@ -1188,6 +1188,11 @@ MESSAGES: dict[str, dict[str, str]] = {
         "de": "Strittige Klausel — widersprüchliche frühere Entscheidungen",
     },
     "rep.precedents": {"tr": "Emsal kararlar", "en": "Precedent decisions", "de": "Präzedenzentscheidungen"},
+    "rep.gray_rate": {
+        "tr": "Gri-alan payı",
+        "en": "Gray-area share",
+        "de": "Grauzonen-Anteil",
+    },
     "rep.disputed": {"tr": "İhtilaflı madde", "en": "Disputed clauses", "de": "Strittige Klauseln"},
     # --- Decision-wiki markdown headings (rendered in the PROJECT's language;
     #     tr values must stay byte-identical to the original literals) ---

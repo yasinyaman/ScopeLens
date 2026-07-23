@@ -63,6 +63,12 @@ def compute_kpis(
     for case in cases:
         for decision in case.decisions:
             by_decision[decision.decision.value] = by_decision.get(decision.decision.value, 0) + 1
+    # The escalation channel's load: share of system recommendations that punt
+    # to the PMO. A high share means the copilot is under-deciding (the critical
+    # study measured ~4 of 5 dev-distribution GRAYs as decidable cases).
+    gray_share = (
+        round(by_decision.get("GRAY_AREA", 0) / total_decisions, 2) if total_decisions else 0.0
+    )
 
     # Approval speed only makes sense for cases with a terminal PMO decision;
     # counting undecided cases would measure triage→last-edit, not approval time.
@@ -93,6 +99,7 @@ def compute_kpis(
         "disputed_count": len(derive_disputes(cases)),
         "avg_cr_approval_hours": round(sum(speeds) / len(speeds), 2) if speeds else None,
         "by_decision": by_decision,
+        "gray_share": gray_share,
         "effort_pools": pools,
         "calibration": calibration_suggestions(overrides),
         "baseline_version": baseline.version,

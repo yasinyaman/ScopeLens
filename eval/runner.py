@@ -27,6 +27,7 @@ from __future__ import annotations
 import argparse
 import asyncio
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -169,6 +170,11 @@ async def _golden_agreement(engine: TriageEngine) -> tuple[bool, str]:
     )
     for m in misses:
         report += f"\n  ✗ {m}"
+    if verdict == "uyari":
+        # Surfaced as a first-class CI annotation: the warn band is statistically
+        # defensible (Wilson) but must never pass silently — the real hard floor
+        # sits at the interval's edge (47/66 ≈ 71%), not the advertised 80%.
+        print(f"::warning title=Golden warn-bandı::{report.splitlines()[0]}")
     return verdict != "kaldi", report
 
 
@@ -197,6 +203,10 @@ async def run_dataset(
     else:
         print("efor-isabet: — (hiçbir vakada actual_effort_hours yok)")
     print(f"kapsam-dışı P/R: {bt['oos_precision']:.2f}/{bt['oos_recall']:.2f}")
+    print(
+        f"gri-alan P/R: {bt['gray_precision']:.2f}/{bt['gray_recall']:.2f} "
+        f"({bt['gray_produced']} GRAY üretildi)"
+    )
     for row in bt["rows"]:
         mark = "✓" if row["match"] else "✗"
         effort = ""
@@ -238,7 +248,8 @@ async def run(llm_client: LLMClient | None = None, code_engine: str = "ast") -> 
     print(
         f"geriye-test: örtüşme={bt['agreement']:.0%} (%95 GA {bt_low:.0%}–{bt_high:.0%}) "
         f"efor-isabet={bt['range_accuracy']:.0%} "
-        f"kapsam-dışı P/R={bt['oos_precision']:.2f}/{bt['oos_recall']:.2f}"
+        f"kapsam-dışı P/R={bt['oos_precision']:.2f}/{bt['oos_recall']:.2f} "
+        f"gri P/R={bt['gray_precision']:.2f}/{bt['gray_recall']:.2f}"
     )
     for row in bt["rows"]:
         mark = "✓" if row["match"] else "✗"
@@ -306,6 +317,14 @@ def main(argv: list[str] | None = None) -> int:
             return 2
 
     if args.dataset is not None:
+        if "heldout_v2" in str(args.dataset) and os.environ.get("ETKI_UNSEAL") != "1":
+            print(
+                "REDDEDİLDİ: heldout_v2 MÜHÜRLÜ bir tek-koşu setidir — koşmak onu yakar. "
+                "Bilinçli tek-koşu için ETKI_UNSEAL=1 ile çağırın ve sonucu README'ye "
+                "işleyip seti emekliye ayırın.",
+                file=sys.stderr,
+            )
+            return 3
         return asyncio.run(run_dataset(args.dataset, llm_client, args.connectors, args.engine))
     if llm_client is not None:
         # The full suite with LLM assist — for scoring a model against the standard sets.
