@@ -673,17 +673,31 @@ class TriageEngine:
         all_modules = await self._code_repo.list_modules()
         if not items and not all_modules:
             return None
+        # Prompt budget: 40 clauses/modules, chosen by LEXICAL RELEVANCE to the
+        # request — the old first-40 slice cut the living baseline's tail, so
+        # exactly the NEWEST approved CRs were invisible to the LLM assist.
+        query = tokenize(request)
+        top_items = sorted(
+            items,
+            key=lambda i: score(query, tokenize(f"{i.description} {i.category}")),
+            reverse=True,
+        )[:40]
+        top_modules = sorted(
+            all_modules,
+            key=lambda m: score(query, tokenize(f"{m.id} {' '.join(m.responsibilities)}")),
+            reverse=True,
+        )[:40]
         # Clause descriptions from the contract + the request text are UNTRUSTED
         # data: a poisoned document could try to steer the matching → delimiter +
         # guard (the whitelist verification below is kept as the second line of
         # defense).
         item_lines = "\n".join(
             f"- {i.id}: {sanitize_untrusted(i.description)} [{i.polarity.value}]"
-            for i in items[:40]
+            for i in top_items
         )
         mod_lines = "\n".join(
             f"- {m.id}: {sanitize_untrusted(', '.join(m.responsibilities) or m.path)}"
-            for m in all_modules[:40]
+            for m in top_modules
         )
         task = (
             "You are Etki's scope-matching assistant. Match the given request "
