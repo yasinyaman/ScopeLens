@@ -76,6 +76,30 @@ def test_list_audit_orders_by_seq_even_when_appended_out_of_order(tmp_path):
         assert [e.seq for e in repo.list_audit("R1")] == [0, 1, 2]
 
 
+def test_list_audit_many_matches_per_case_list_audit(tmp_path):
+    """The batched read that feeds the KPI approval-speed metric must be
+    byte-identical to calling list_audit per case: same events, same ascending
+    seq order, only cases WITH events present. Pinned for BOTH repos."""
+    from etki.persistence.memory_repo import InMemoryCaseFileRepository
+
+    for repo in (_repo(tmp_path), InMemoryCaseFileRepository()):
+        # R1: two events appended out of order; R2: one; R3: none.
+        repo.append_audit(AuditEvent(case_id="R1", seq=1, action="APPROVE"))
+        repo.append_audit(AuditEvent(case_id="R1", seq=0, action="TRIAGED"))
+        repo.append_audit(AuditEvent(case_id="R2", seq=0, action="TRIAGED"))
+
+        ids = ["R1", "R2", "R3"]
+        batched = repo.list_audit_many(ids)
+        expected = {cid: repo.list_audit(cid) for cid in ids if repo.list_audit(cid)}
+
+        assert set(batched) == set(expected) == {"R1", "R2"}  # R3 (no events) absent
+        for cid in expected:
+            assert [(e.seq, e.action, e.at) for e in batched[cid]] == [
+                (e.seq, e.action, e.at) for e in expected[cid]
+            ]
+        assert repo.list_audit_many([]) == {}  # empty id set → no query, empty map
+
+
 def test_baseline_versioning(tmp_path):
     repo = _repo(tmp_path)
     repo.save_baseline_version(Baseline(contract_id="C", version=1), source_case_id=None)

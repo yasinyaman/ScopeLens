@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from datetime import datetime
 
 from etki.core.enums import PmoDecision
@@ -46,6 +47,13 @@ class InMemoryCaseFileRepository:
         return sorted(
             (e for e in self._audit if e.case_id == case_id), key=lambda e: e.seq
         )
+
+    def list_audit_many(self, case_ids: Iterable[str]) -> dict[str, list[AuditEvent]]:
+        wanted = set(case_ids)
+        result: dict[str, list[AuditEvent]] = {}
+        for e in sorted((e for e in self._audit if e.case_id in wanted), key=lambda e: e.seq):
+            result.setdefault(e.case_id, []).append(e)
+        return result
 
     def record_override(self, override: Override) -> None:
         self._overrides.append(override.model_copy(deep=True))

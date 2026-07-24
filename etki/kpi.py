@@ -72,9 +72,12 @@ def compute_kpis(
 
     # Approval speed only makes sense for cases with a terminal PMO decision;
     # counting undecided cases would measure triage→last-edit, not approval time.
+    # One batched audit read for all decided cases (was a per-case query — the
+    # dominant cost of this view once a project accumulates thousands of cases).
+    audit_by_case = repo.list_audit_many([case.request_id for case in decided])
     speeds: list[float] = []
     for case in decided:
-        events = repo.list_audit(case.request_id)
+        events = audit_by_case.get(case.request_id, [])
         if len(events) >= 2 and events[0].at and events[-1].at:
             delta = _as_utc(events[-1].at) - _as_utc(events[0].at)
             speeds.append(delta.total_seconds() / 3600)

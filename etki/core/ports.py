@@ -22,6 +22,7 @@ docs/writing-an-adapter.md §"Optional methods".
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from datetime import datetime
 from typing import Protocol, runtime_checkable
 
@@ -223,6 +224,14 @@ class CaseFileRepository(Protocol):
 
     def list_audit(self, case_id: str) -> list[AuditEvent]:
         """Returns the case's events in ascending `seq` order."""
+        ...
+
+    def list_audit_many(self, case_ids: Iterable[str]) -> dict[str, list[AuditEvent]]:
+        """Batched `list_audit`: audit events grouped by case id, each list in
+        the SAME ascending-`seq` order `list_audit` returns. Cases with no
+        events are absent from the mapping. Lets aggregate views (the KPI
+        approval-speed metric) read the whole audit trail in one query instead
+        of one per case."""
         ...
 
     def record_override(self, override: Override) -> None: ...

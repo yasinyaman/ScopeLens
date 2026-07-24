@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Iterable
 from datetime import datetime
 
 from sqlalchemy import select
@@ -16,6 +17,11 @@ from etki.persistence.models import (
     CaseFileRow,
     OverrideRow,
 )
+
+# Cap on ids per IN (…) clause in list_audit_many — well under SQLite's
+# pre-3.32 999-parameter limit; Postgres allows far more. Larger id sets are
+# chunked, which is byte-identical (their union is the full set).
+_AUDIT_IN_CHUNK = 500
 
 
 def _jsonable(model: object) -> dict:
@@ -94,6 +100,31 @@ class SqlCaseFileRepository:
                 )
                 for r in rows
             ]
+
+    def list_audit_many(self, case_ids: Iterable[str]) -> dict[str, list[AuditEvent]]:
+        # One SELECT (chunked to stay under the backend's bound-parameter cap:
+        # SQLite pre-3.32 = 999, Postgres ~65535) instead of a query per case.
+        # Each case id appears in exactly one chunk, so ORDER BY seq keeps every
+        # case's events in the same ascending order list_audit returns.
+        ids = list(dict.fromkeys(case_ids))
+        result: dict[str, list[AuditEvent]] = {}
+        if not ids:
+            return result
+        with self._sf() as session:
+            for start in range(0, len(ids), _AUDIT_IN_CHUNK):
+                rows = session.scalars(
+                    select(AuditEventRow)
+                    .where(AuditEventRow.case_id.in_(ids[start : start + _AUDIT_IN_CHUNK]))
+                    .order_by(AuditEventRow.seq)
+                ).all()
+                for r in rows:
+                    result.setdefault(r.case_id, []).append(
+                        AuditEvent(
+                            case_id=r.case_id, seq=r.seq, actor=r.actor, action=r.action,
+                            detail=r.detail, at=r.at,
+                        )
+                    )
+        return result
 
     def record_override(self, override: Override) -> None:
         with self._sf() as session:
