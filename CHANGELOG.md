@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0a5] - 2026-07-24
+
 ### Added
 
 - **Quantity direction pairs** — "eşzamanlı oturum sınırı 3'ten 10'a çıkarılsın"
@@ -25,6 +27,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (not just at build) now degrades gracefully and shows the red health badge;
   cloned git repos are fetched fresh before every reindex.
 - GRAY precision/recall in the back-test report and a `gray_share` KPI tile.
+- **EtkiBench expansion** — 48 new Meridian cases (`etkibench_v0_ext.json`,
+  labels derived from the contract, v0 kept as the historical anchor) raise the
+  assist-lane benchmark to n=114, tightening the deterministic 95% CI half-width
+  from ±11 to ±8 pts.
 
 ### Changed
 
@@ -45,6 +51,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The pilot set was replaced with 12 fresh labeled cases (the old set
   duplicated the back-test); it honestly scores below the gate and is reported
   as a diagnostic, not enforced in CI.
+- Performance (follow-up): `compute_kpis` reads the whole audit trail in one
+  batched query (`CaseFileRepository.list_audit_many`) instead of one per case —
+  a 5k-case KPI view drops 356→84 ms on SQLite (one round-trip instead of
+  thousands on Postgres); the Anthropic system prompt is sent as a
+  cache-controlled block so a reused client reads the static prefix from cache.
+  Both byte-neutral (identical outputs, pinned by tests).
 
 ### Security
 
