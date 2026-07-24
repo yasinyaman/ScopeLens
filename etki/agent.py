@@ -145,14 +145,23 @@ def _dispatch(tools: IndexTools, name: str, args: dict[str, Any]) -> Any:
 async def _ask_anthropic(question: str, tools: IndexTools, settings: Settings, system: str) -> str:
     """Manual tool-call loop over the Claude Messages API (official anthropic SDK)."""
     from anthropic import AsyncAnthropic
+    from anthropic.types import TextBlockParam
 
     client = AsyncAnthropic(api_key=settings.anthropic_api_key, timeout=180.0)
     messages: list[Any] = [{"role": "user", "content": question}]
+    # Cache the fixed prefix (tools render before system, so a breakpoint on the
+    # single system block caches BOTH the tool schemas and the system prompt).
+    # This prefix is re-sent on every one of the up-to-6 tool-loop iterations for
+    # one question; caching it makes later iterations read it at ~0.1x instead of
+    # re-billing the whole schema+preamble each turn. Byte-neutral.
+    system_blocks: list[TextBlockParam] = [
+        {"type": "text", "text": system, "cache_control": {"type": "ephemeral"}}
+    ]
     for _ in range(6):
         response = await client.messages.create(
             model=settings.anthropic_model,
             max_tokens=4096,
-            system=system,
+            system=system_blocks,
             tools=_ANTHROPIC_TOOLS,
             messages=messages,
         )

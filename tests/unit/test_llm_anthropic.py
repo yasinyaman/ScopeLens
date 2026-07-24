@@ -54,3 +54,30 @@ async def test_complete_json_parses_fenced_response(monkeypatch):
     monkeypatch.setattr(client._client.messages, "create", fake_create)
     out = await client.complete_json(system="sys", user="metin")
     assert out == {"items": [{"id": "1"}]}
+
+
+async def test_system_prompt_is_cache_controlled(monkeypatch):
+    """The stable system prefix (preamble + fixed RESPONSE instruction) is sent as
+    a cache-controlled content block, so a reused client reads it from cache across
+    a burst of calls; the varying `user` turn stays uncached after the breakpoint.
+    Byte-neutral by API contract — this only pins that we emit cache_control."""
+    client = AnthropicLLMClient(api_key="sk-ant-test")
+    captured: dict = {}
+
+    class _Message:
+        content = [type("_B", (), {"type": "text", "text": '{"ok": true}'})()]
+
+    async def fake_create(**kwargs):
+        captured.update(kwargs)
+        return _Message()
+
+    monkeypatch.setattr(client._client.messages, "create", fake_create)
+    await client.complete_json(system="PREAMBLE", user="talep")
+
+    system = captured["system"]
+    assert isinstance(system, list) and len(system) == 1
+    assert system[0]["type"] == "text"
+    assert system[0]["cache_control"] == {"type": "ephemeral"}
+    assert "PREAMBLE" in system[0]["text"]
+    assert "one valid JSON object" in system[0]["text"]  # the fixed instruction is cached too
+    assert captured["messages"] == [{"role": "user", "content": "talep"}]  # varying, uncached

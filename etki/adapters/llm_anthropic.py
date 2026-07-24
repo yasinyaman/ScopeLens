@@ -46,12 +46,27 @@ class AnthropicLLMClient:
         self._max_tokens = max_tokens
 
     async def complete_json(self, *, system: str, user: str) -> dict[str, Any]:
-        # Opus 4.8: temperature/top_p removed (400 if sent) — steer via prompt only.
+        from anthropic.types import TextBlockParam
+
+        system_text = (
+            system + "\n\nRESPONSE: return exactly one valid JSON object; "
+            "no explanation, preamble or code fence."
+        )
+        # Prompt caching: the system prefix (project preamble + injection guard +
+        # this fixed RESPONSE instruction) is STABLE across calls, while `user`
+        # varies. One AnthropicLLMClient is reused across every triage/extraction,
+        # so a burst of calls (batch scope extraction, a triage flurry) reads the
+        # system prefix from cache (~0.1x) instead of re-billing it. Byte-neutral:
+        # cache_control changes only billing/latency, never the model's output.
+        # A prefix below the model's cacheable minimum silently doesn't cache — no
+        # error, no regression. Opus 4.8: temperature/top_p removed (400 if sent).
+        system_blocks: list[TextBlockParam] = [
+            {"type": "text", "text": system_text, "cache_control": {"type": "ephemeral"}}
+        ]
         message = await self._client.messages.create(
             model=self._model,
             max_tokens=self._max_tokens,
-            system=system + "\n\nRESPONSE: return exactly one valid JSON object; "
-            "no explanation, preamble or code fence.",
+            system=system_blocks,
             messages=[{"role": "user", "content": user}],
         )
         text = "".join(block.text for block in message.content if block.type == "text")
